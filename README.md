@@ -1,4 +1,4 @@
-# Guidance Title (required)
+# Guidance for Protein language model training with NVIDIA BioNeMo framework on AWS SageMaker Hyperpod
 
 The Guidance title should be consistent with the title established first in Alchemy.
 
@@ -34,11 +34,27 @@ List the top-level sections of the README template, along with a hyperlink to th
 
 1. Provide a brief overview explaining the what, why, or how of your Guidance. You can answer any one of the following to help you write this:
 
-    - **Why did you build this Guidance?**
-    - **What problem does this Guidance solve?**
+As generative artificial intelligence (generative AI) continues to transform industries, the life sciences sector is leveraging these advanced technologies to accelerate drug discovery. Generative AI tools powered by deep learning models make it possible to analyze massive datasets, identify patterns, and generate insights to aid the search for new drug compounds. However, running these generative AI workloads requires a full-stack approach that combines robust computing infrastructure with optimized domain-specific software that can accelerate time to solution.
+
+In this blog post, we’ll show you how to leverage the [NVIDIA BioNeMo](https://github.com/NVIDIA/bionemo-framework) platform on [Amazon Elastic Kubernetes Service (Amazon EKS)](https://aws.amazon.com/eks/) to accelerate drug discovery by using generative AI and other machine learning technologies.
+
+### NVIDIA BioNeMo
+
+NVIDIA BioNeMo is a generative AI platform for drug discovery that simplifies and accelerates the training of models using your own data. BioNeMo provides researchers and developers a fast and easy way to build and integrate state-of-the-art generative AI applications across the entire drug discovery pipeline—from target identification to lead optimization—with AI workflows for 3D protein structure prediction, de novo design, virtual screening, docking, and property prediction.
+
+The BioNeMo framework facilitates centralized model training, optimization, fine-tuning, and inferencing for protein and molecular design. Researchers can build and train foundation models from scratch at scale, or use pre-trained model checkpoints provided with the BioNeMo Framework for fine-tuning for downstream tasks. Currently, BioNeMo supports models such as ESM1nv, ESM2nv, ProtT5nv, DNABERT, OpenFold, EquiDock, DiffDock, and MegaMolBART. To read more about BioNeMo, visit the documentation page.
 
 2. Include the architecture diagram image, as well as the steps explaining the high-level overview and flow of the architecture. 
-    - To add a screenshot, create an ‘assets/images’ folder in your repository and upload your screenshot to it. Then, using the relative file path, add it to your README. 
+    - To add a screenshot, create an ‘assets/images’ folder in your repository and upload your screenshot to it. Then, using the relative file path, add it to your README.
+  
+### Architecture overview
+This section provides an architecture diagram and describes the components deployed with this Guidance.
+
+<p align="center">
+<img src="./assets/bionemo_EKS_architecture.png" alt="Guidance Reference Architecture (original)">
+</p>
+
+### Architecture steps
 
 ### Cost ( required )
 
