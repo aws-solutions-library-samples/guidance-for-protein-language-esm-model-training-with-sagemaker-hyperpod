@@ -7,21 +7,22 @@ The Guidance title should be consistent with the title established first in Alch
 This title correlates exactly to the Guidance it’s linked to, including its corresponding sample code repository. 
 
 
-## Table of Contents (required)
+## Table of Contents
 
 List the top-level sections of the README template, along with a hyperlink to the specific section.
 
 ### Required
 
 1. [Overview](#overview-required)
+    - [Architecture overview](#architecture-overview)
     - [Cost](#cost)
-2. [Prerequisites](#prerequisites-required)
+3. [Prerequisites](#prerequisites-required)
     - [Operating System](#operating-system-required)
-3. [Deployment Steps](#deployment-steps-required)
-4. [Deployment Validation](#deployment-validation-required)
-5. [Running the Guidance](#running-the-guidance-required)
-6. [Next Steps](#next-steps-required)
-7. [Cleanup](#cleanup-required)
+4. [Deployment Steps](#deployment-steps-required)
+5. [Deployment Validation](#deployment-validation-required)
+6. [Running the Guidance](#running-the-guidance-required)
+7. [Next Steps](#next-steps-required)
+8. [Cleanup](#cleanup-required)
 
 ***Optional***
 
@@ -54,7 +55,7 @@ This section provides an architecture diagram and describes the components deplo
 <img src="./assets/bionemo_EKS_architecture.png" alt="Guidance Reference Architecture (original)">
 </p>
 
-### Architecture steps
+ **Architecture steps**
 
 ### Cost ( required )
 
