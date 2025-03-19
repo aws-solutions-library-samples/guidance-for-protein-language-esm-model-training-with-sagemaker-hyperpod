@@ -52,10 +52,31 @@ The BioNeMo framework facilitates centralized model training, optimization, fine
 This section provides an architecture diagram and describes the components deployed with this Guidance.
 
 <p align="center">
-<img src="./assets/bionemo_EKS_architecture.png" alt="Guidance Reference Architecture (original)">
+<img src="assets/ref_arch_hyperpod_slurm.jpg" alt="Reference Architecture HyperPod SLURM Cluster">
 </p>
 
- **Architecture steps**
+ **Architecture steps for HyperPod SLURM Cluster**
+<p>
+1.
+2.
+3.
+4.
+5.
+6.
+</p>
+<p align="center">
+<img src="assets/ref_arch_hyperpod_eks.jpg" alt="Reference Architecture HyperPod SLURM Cluster">
+</p>
+
+ **Architecture steps for HyperPod EKS Cluster**
+<p>
+1.
+2.
+3.
+4.
+5.
+6.
+</p>
 
 ### Cost ( required )
 
