@@ -1,4 +1,4 @@
-# Guidance for Protein language model training with NVIDIA BioNeMo framework on AWS SageMaker Hyperpod
+# Guidance for Protein language ESM model training with NVIDIA BioNeMo framework on AWS SageMaker Hyperpod
 
 The Guidance title should be consistent with the title established first in Alchemy.
 
