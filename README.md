@@ -51,7 +51,6 @@ This section provides an architecture diagram and describes the components deplo
 </p>
 
  **Architecture steps for HyperPod SLURM Cluster**
-<p>
     1. Account team reserves compute capacity with ODCRs or [Flexible Training Plans](https://aws.amazon.com/about-aws/whats-new/2024/12/amazon-sagemaker-hyperpod-flexible-training-plans/)
     2. Admin/DevOps Engineers use the [Sagemaker HyperPod]((https://aws.amazon.com/sagemaker-ai/hyperpod/)) [Virtual Private Cloud VPC](https://aws.amazon.com/vpc/) stack to deploy networking, storage and Identity and Access Management IAM resources.
     3. Admin/DevOps Engineers push Lifecycle scripts to S3 bucket created in Step 2
@@ -60,13 +59,13 @@ This section provides an architecture diagram and describes the components deplo
     6. Once the cluster is created, admin can test ssh in the controller and compute nodes and get to know the cluster
     7. Admin/DevOps Engineers configures [IAM](https://aws.amazon.com/iam/) to use [Amazon Managed Prometheus](https://aws.amazon.com/prometheus/) to collect metrics and [Amazon Managed Grafana](https://aws.amazon.com/grafana/) to set up the observability stack
     8. Admin/DevOps Engineers can make changes to the cluster using the HyperPod CLI
-</p>
+
 <p align="center">
 <img src="assets/ref_arch_hyperpod_eks.jpg" alt="Reference Architecture HyperPod SLURM Cluster">
 </p>
 
  **Architecture steps for HyperPod EKS Cluster**
-<p>
+ 
     1. Account team reserves capacity with ODCRs or [Flexible Training Plans]((https://aws.amazon.com/about-aws/whats-new/2024/12/amazon-sagemaker-hyperpod-flexible-training-plans/)).
     2. Admin/DevOps Engineers can use eksctl ClI to provision an [Amazon EKS](https://aws.amazon.com/eks/) cluster
     3. Admin/DevOps Engineers use the Sagemaker HyperPod [VPC]((https://aws.amazon.com/vpc/)) stack to deploy Hyperpod managed node group on the EKS cluster
@@ -75,7 +74,6 @@ This section provides an architecture diagram and describes the components deplo
     6. Admin/DevOps Engineers install Amazon EFA Kubernetes device plugin
     7. Admin/DevOps Engineers configures IAM to use [Amazon Managed Prometheus]((https://aws.amazon.com/prometheus/)) to collect metrics and [Amazon Managed Grafana]((https://aws.amazon.com/grafana/)) to set up the observability stack
     8. Admin/DevOps Engineers can configure [Container Insights](https://docs.aws.amazon.com/AmazonCloudWatch/latest/monitoring/ContainerInsights.html) to push metrics in [Amazon Cloudwatch](https://aws.amazon.com/cloudwatch/)
-</p>
 
 ### Cost ( required )
 
