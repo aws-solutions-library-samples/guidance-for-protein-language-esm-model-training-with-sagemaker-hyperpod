@@ -1,15 +1,9 @@
 # Guidance for Protein language Evolutionary Scale Modeling (ESM) model training with NVIDIA BioNeMo framework on AWS SageMaker HyperPod
 
-The Guidance title should be consistent with the title established first in Alchemy.
-
-**Example:** *Guidance for Product Substitutions on AWS*
-
-This title correlates exactly to the Guidance it’s linked to, including its corresponding sample code repository. 
+This guidance aims to instruct and guide users how to pretrain popular computational drug discovery models such as Evolutionary Scale Models using the NVIDIA [BioNeMo](https://docs.nvidia.com/bionemo-framework/latest/) framework on Amazon [Sagemaker Hyperpod](https://aws.amazon.com/sagemaker-ai/hyperpod/). This guidance instructs users on how to create Sagemaker Hyperpod clusters using both [Slurm](https://slurm.schedmd.com/documentation.html) and [Kubernetes](https://kubernetes.io/) orchestrations. In addition, this guidance will showcase how to train ESM models on the HyperPod cluster.
 
 
 ## Table of Contents
-
-List the top-level sections of the README template, along with a hyperlink to the specific section.
 
 ### Required
 
@@ -58,12 +52,14 @@ This section provides an architecture diagram and describes the components deplo
 
  **Architecture steps for HyperPod SLURM Cluster**
 <p>
-1.
-2.
-3.
-4.
-5.
-6.
+1. Account team reserves compute capacity with ODCRs or [Flexible Training Plans](https://aws.amazon.com/about-aws/whats-new/2024/12/amazon-sagemaker-hyperpod-flexible-training-plans/)
+2. Admin/DevOps Engineers use the [Sagemaker HyperPod]((https://aws.amazon.com/sagemaker-ai/hyperpod/)) [Virtual Private Cloud VPC](https://aws.amazon.com/vpc/) stack to deploy networking, storage and Identity and Access Management IAM resources.
+3. Admin/DevOps Engineers push Lifecycle scripts to S3 bucket created in Step 2
+4. Admin/DevOps Engineers use the aws sagemaker cli to create the cluster
+5. Admin/DevOps Engineers generate key-pairs to ssh in the controller node of the cluster.
+6. Once the cluster is created, admin can test ssh in the controller and compute nodes and get to know the cluster
+7. Admin/DevOps Engineers configures [IAM](https://aws.amazon.com/iam/) to use [Amazon Managed Prometheus](https://aws.amazon.com/prometheus/) to collect metrics and [Amazon Managed Grafana](https://aws.amazon.com/grafana/) to set up the observability stack
+8. Admin/DevOps Engineers can make changes to the cluster using the HyperPod CLI
 </p>
 <p align="center">
 <img src="assets/ref_arch_hyperpod_eks.jpg" alt="Reference Architecture HyperPod SLURM Cluster">
@@ -71,12 +67,14 @@ This section provides an architecture diagram and describes the components deplo
 
  **Architecture steps for HyperPod EKS Cluster**
 <p>
-1.
-2.
-3.
-4.
-5.
-6.
+1. Account team reserves capacity with ODCRs or [Flexible Training Plans]((https://aws.amazon.com/about-aws/whats-new/2024/12/amazon-sagemaker-hyperpod-flexible-training-plans/)).
+2. Admin/DevOps Engineers can use eksctl ClI to provision an [Amazon EKS](https://aws.amazon.com/eks/) cluster
+3. Admin/DevOps Engineers use the Sagemaker HyperPod [VPC]((https://aws.amazon.com/vpc/)) stack to deploy Hyperpod managed node group on the EKS cluster
+4. Admin/DevOps Engineers verify access to EKS cluster and SSM access to HyperPod nodes.
+5. Admin/DevOps Engineers can install [FSx for Lustre](https://aws.amazon.com/fsx/lustre/) CSI driver and mount file system on the EKS cluster
+6. Admin/DevOps Engineers install Amazon EFA Kubernetes device plugin
+7. Admin/DevOps Engineers configures IAM to use [Amazon Managed Prometheus]((https://aws.amazon.com/prometheus/)) to collect metrics and [Amazon Managed Grafana]((https://aws.amazon.com/grafana/)) to set up the observability stack
+8. Admin/DevOps Engineers can configure [Container Insights](https://docs.aws.amazon.com/AmazonCloudWatch/latest/monitoring/ContainerInsights.html) to push metrics in [Amazon Cloudwatch](https://aws.amazon.com/cloudwatch/)
 </p>
 
 ### Cost ( required )
@@ -98,10 +96,14 @@ _We recommend creating a [Budget](https://docs.aws.amazon.com/cost-management/l
 
 The following table provides a sample cost breakdown for deploying this Guidance with the default parameters in the US East (N. Virginia) Region for one month.
 
-| AWS service  | Dimensions | Cost [USD] |
-| ----------- | ------------ | ------------ |
-| Amazon API Gateway | 1,000,000 REST API calls per month  | $ 3.50month |
-| Amazon Cognito | 1,000 active users per month without advanced security feature | $ 0.00 |
+| AWS service  |   Dimensions   |  Cost [USD] / month |
+| ----------- | --------------- | ------------ |
+|   Compute   |   4xg5.12xlarge |   2235.90    |
+|   Compute   |   1xm5.12xlarge |    852.64    |
+|   Storage   |   S3 (100GB)    |     11.50    |
+|   Storage   |   EBS (500GB)   |    250.00    |
+|   Storage   |   FSx (1.2TB)    |   720.07    |
+|   Network   | VPC, Subnets, NAT Gateway, VPC Endpoints | 596.85|
 
 ## Prerequisites (required)
 
