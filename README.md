@@ -47,7 +47,7 @@ The BioNeMo framework facilitates centralized model training, optimization, fine
 This section provides an architecture diagram and describes the components deployed with this Guidance.
 
 <p align="center">
-<img src="assets/ref_arch_hyperpod_slurm.jpg" alt="Reference Architecture HyperPod SLURM Cluster">
+<img src="assets/ref_arch_traning_hyperpod_slurm.jpg" alt="Reference Architecture HyperPod SLURM Cluster">
 </p>
 
  **Architecture steps for HyperPod SLURM Cluster**
@@ -60,6 +60,16 @@ This section provides an architecture diagram and describes the components deplo
  6. Once the cluster is created, admin can test ssh in the controller and compute nodes and get to know the cluster
  7. Admin/DevOps Engineers configures [IAM](https://aws.amazon.com/iam/) to use [Amazon Managed Prometheus](https://aws.amazon.com/prometheus/) to collect metrics and [Amazon Managed Grafana](https://aws.amazon.com/grafana/) to set up the observability stack
  8. Admin/DevOps Engineers can make changes to the cluster using the HyperPod CLI
+
+ **Architecture steps for training BioNemo models on  HyperPod SLURM Cluster**
+
+<p align="center">
+<img src="assets/ref_arch_traning_hyperpod_slurm.jpg" alt="Reference Architecture HyperPod SLURM Cluster">
+</p>
+
+1. 
+2.
+3.
 
 <p align="center">
 <img src="assets/ref_arch_hyperpod_eks.jpg" alt="Reference Architecture HyperPod SLURM Cluster">
@@ -75,6 +85,15 @@ This section provides an architecture diagram and describes the components deplo
  6. Admin/DevOps Engineers install Amazon EFA Kubernetes device plugin
  7. Admin/DevOps Engineers configures IAM to use [Amazon Managed Prometheus]((https://aws.amazon.com/prometheus/)) to collect metrics and [Amazon Managed Grafana]((https://aws.amazon.com/grafana/)) to set up the observability stack
  8. Admin/DevOps Engineers can configure [Container Insights](https://docs.aws.amazon.com/AmazonCloudWatch/latest/monitoring/ContainerInsights.html) to push metrics in [Amazon Cloudwatch](https://aws.amazon.com/cloudwatch/)
+
+**Architecture steps for training BioNemo models on  HyperPod EKS Cluster**
+
+<p align="center">
+<img src="assets/ref_arch_traning_hyperpod_eks.jpg" alt="Reference Architecture HyperPod SLURM Cluster">
+</p>
+1. 
+2.
+3.
 
 ### Cost ( required )
 
