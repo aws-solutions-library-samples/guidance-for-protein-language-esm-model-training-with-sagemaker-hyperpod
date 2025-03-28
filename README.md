@@ -44,14 +44,14 @@ The BioNeMo framework facilitates centralized model training, optimization, fine
     - To add a screenshot, create an ‘assets/images’ folder in your repository and upload your screenshot to it. Then, using the relative file path, add it to your README.
   
 ### Architecture overview
-This section provides an architecture diagram and describes the components deployed with this Guidance.
+This section provides architecture diagrams and describes the components deployed with this Guidance.
 
-<p align="center">
+ **Architecture and steps for provisioning HyperPod SLURM Cluster**
+
+ <p align="center">
 <img src="assets/ref_arch_traning_hyperpod_slurm.jpg" alt="Reference Architecture HyperPod SLURM Cluster">
 </p>
 
- **Architecture steps for HyperPod SLURM Cluster**
- 
  1. Account team reserves compute capacity with ODCRs or [Flexible Training Plans](https://aws.amazon.com/about-aws/whats-new/2024/12/amazon-sagemaker-hyperpod-flexible-training-plans/)
  2. Admin/DevOps Engineers use the [Sagemaker HyperPod]((https://aws.amazon.com/sagemaker-ai/hyperpod/)) [Virtual Private Cloud VPC](https://aws.amazon.com/vpc/) stack to deploy networking, storage and Identity and Access Management IAM resources.
  3. Admin/DevOps Engineers push Lifecycle scripts to S3 bucket created in Step 2
@@ -61,7 +61,7 @@ This section provides an architecture diagram and describes the components deplo
  7. Admin/DevOps Engineers configures [IAM](https://aws.amazon.com/iam/) to use [Amazon Managed Prometheus](https://aws.amazon.com/prometheus/) to collect metrics and [Amazon Managed Grafana](https://aws.amazon.com/grafana/) to set up the observability stack
  8. Admin/DevOps Engineers can make changes to the cluster using the HyperPod CLI
 
- **Architecture steps for training BioNemo models on  HyperPod SLURM Cluster**
+ **Architecture and steps for training BioNemo models on HyperPod SLURM Cluster**
 
 <p align="center">
 <img src="assets/ref_arch_traning_hyperpod_slurm.jpg" alt="Reference Architecture HyperPod SLURM Cluster">
@@ -71,11 +71,10 @@ This section provides an architecture diagram and describes the components deplo
 2.
 3.
 
+ **Architecture and steps for for provisioning HyperPod EKS Cluster**
 <p align="center">
 <img src="assets/ref_arch_hyperpod_eks.jpg" alt="Reference Architecture HyperPod SLURM Cluster">
 </p>
-
- **Architecture steps for HyperPod EKS Cluster**
  
  1. Account team reserves capacity with ODCRs or [Flexible Training Plans]((https://aws.amazon.com/about-aws/whats-new/2024/12/amazon-sagemaker-hyperpod-flexible-training-plans/)).
  2. Admin/DevOps Engineers can use eksctl ClI to provision an [Amazon EKS](https://aws.amazon.com/eks/) cluster
@@ -86,7 +85,7 @@ This section provides an architecture diagram and describes the components deplo
  7. Admin/DevOps Engineers configures IAM to use [Amazon Managed Prometheus]((https://aws.amazon.com/prometheus/)) to collect metrics and [Amazon Managed Grafana]((https://aws.amazon.com/grafana/)) to set up the observability stack
  8. Admin/DevOps Engineers can configure [Container Insights](https://docs.aws.amazon.com/AmazonCloudWatch/latest/monitoring/ContainerInsights.html) to push metrics in [Amazon Cloudwatch](https://aws.amazon.com/cloudwatch/)
 
-**Architecture steps for training BioNemo models on  HyperPod EKS Cluster**
+**Architecture steps for training BioNemo models on HyperPod EKS Cluster**
 
 <p align="center">
 <img src="assets/ref_arch_traning_hyperpod_eks.jpg" alt="Reference Architecture HyperPod SLURM Cluster">
@@ -95,24 +94,21 @@ This section provides an architecture diagram and describes the components deplo
 2.
 3.
 
-### Cost ( required )
+### Cost
 
-This section is for a high-level cost estimate. Think of a likely straightforward scenario with reasonable assumptions based on the problem the Guidance is trying to solve. Provide an in-depth cost breakdown table in this section below ( you should use AWS Pricing Calculator to generate cost breakdown ).
 
-Start this section with the following boilerplate text:
 
 _You are responsible for the cost of the AWS services used while running this Guidance. As of <month> <year>, the cost for running this Guidance with the default settings in the <Default AWS Region (Most likely will be US East (N. Virginia)) > is approximately $<n.nn> per month for processing ( <nnnnn> records )._
 
 Replace this amount with the approximate cost for running your Guidance in the default Region. This estimate should be per month and for processing/serving resonable number of requests/entities.
 
-Suggest you keep this boilerplate text:
 _We recommend creating a [Budget](https://docs.aws.amazon.com/cost-management/latest/userguide/budgets-managing-costs.html) through [AWS Cost Explorer](https://aws.amazon.com/aws-cost-management/aws-cost-explorer/) to help manage costs. Prices are subject to change. For full details, refer to the pricing webpage for each AWS service used in this Guidance._
 
 ### Sample Cost Table ( required )
 
-**Note : Once you have created a sample cost table using AWS Pricing Calculator, copy the cost breakdown to below table and upload a PDF of the cost estimation on BuilderSpace. Do not add the link to the pricing calculator in the ReadMe.**
 
 The following table provides a sample cost breakdown for deploying this Guidance with the default parameters in the US East (N. Virginia) Region for one month.
+As of March, 2025 the cost for running this Guidance with the default settings in the US East (N. Virginia) region is approximately **$4043.18 per month** 
 
 | AWS service  |   Dimensions   |  Cost [USD] / month |
 | ----------- | --------------- | ------------ |
@@ -122,10 +118,11 @@ The following table provides a sample cost breakdown for deploying this Guidance
 |   Storage   |   EBS (500GB)   |    250.00    |
 |   Storage   |   FSx (1.2TB)    |   720.07    |
 |   Network   | VPC, Subnets, NAT Gateway, VPC Endpoints | 596.85|
+|   Total   |      |   4043.18    |
 
-## Prerequisites (required)
+## Prerequisites 
 
-### Operating System (required)
+### Operating System 
 
 - Talk about the base Operating System (OS) and environment that can be used to run or deploy this Guidance, such as *Mac, Linux, or Windows*. Include all installable packages or modules required for the deployment. 
 - By default, assume Amazon Linux 2/Amazon Linux 2023 AMI as the base environment. All packages that are not available by default in AMI must be listed out.  Include the specific version number of the package or module.
