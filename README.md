@@ -25,43 +25,38 @@ This guidance aims to instruct and guide users how to pretrain popular computati
 10. [Notices](#notices-optional)
 11. [Authors](#authors-optional)
 
-## Overview (required)
-
-1. Provide a brief overview explaining the what, why, or how of your Guidance. You can answer any one of the following to help you write this:
+## Overview
 
 As generative artificial intelligence (generative AI) continues to transform industries, the life sciences sector is leveraging these advanced technologies to accelerate drug discovery. Generative AI tools powered by deep learning models make it possible to analyze massive datasets, identify patterns, and generate insights to aid the search for new drug compounds. However, running these generative AI workloads requires a full-stack approach that combines robust computing infrastructure with optimized domain-specific software that can accelerate time to solution.
-
 
 With the recent proliferation of new models and tools in this field, researchers are looking for help to simplify the training, customization, and deployment of these generative AI models. And our high performance computing (HPC) customers are asking for how to easily perform distributed training with these models on AWS. In this guidance, we’ll demonstrate how to pre-train the [Evolutionary Scale Modeling](https://docs.nvidia.com/bionemo-framework/2.5/models/ESM-2/) ESM-1nv model with the nVIDIA [BioNeMo](https://docs.nvidia.com/bionemo-framework/2.5/) framework using nVIDIA GPUs on [AWS SageMaker HyperPod](https://aws.amazon.com/sagemaker-ai/hyperpod/) highly available managed application platform. NVIDIA BioNeMo is a generative AI platform for drug discovery.
 
 ### NVIDIA BioNeMo
 
-NVIDIA BioNeMo is a generative AI platform for drug discovery that simplifies and accelerates the training of models using your own data. BioNeMo provides researchers and developers a fast and easy way to build and integrate state-of-the-art generative AI applications across the entire drug discovery pipeline—from target identification to lead optimization—with AI workflows for 3D protein structure prediction, de novo design, virtual screening, docking, and property prediction.
+[NVIDIA BioNeMo](https://nvidia.github.io/bionemo-framework/) is a generative AI platform for drug discovery that simplifies and accelerates the training of models using your own data. BioNeMo provides researchers and developers a fast and easy way to build and integrate state-of-the-art generative AI applications across the entire drug discovery pipeline—from target identification to lead optimization—with AI workflows for 3D protein structure prediction, de novo design, virtual screening, docking, and property prediction.
 
 The BioNeMo framework facilitates centralized model training, optimization, fine-tuning, and inferencing for protein and molecular design. Researchers can build and train foundation models from scratch at scale, or use pre-trained model checkpoints provided with the BioNeMo Framework for fine-tuning for downstream tasks. Currently, BioNeMo supports models such as ESM1nv, ESM2nv, ProtT5nv, DNABERT, OpenFold, EquiDock, DiffDock, and MegaMolBART. To read more about BioNeMo, visit the documentation page.
 
-2. Include the architecture diagram image, as well as the steps explaining the high-level overview and flow of the architecture. 
-    - To add a screenshot, create an ‘assets/images’ folder in your repository and upload your screenshot to it. Then, using the relative file path, add it to your README.
   
 ### Architecture overview
 This section provides architecture diagrams and describes the components deployed with this Guidance.
 
- **Architecture and steps for provisioning HyperPod SLURM Cluster**
+ **Architecture and steps for provisioning SageMaker HyperPod SLURM Cluster**
 
  <p align="center">
 <img src="assets/ref_arch_traning_hyperpod_slurm.jpg" alt="Reference Architecture HyperPod SLURM Cluster">
 </p>
 
- 1. Account team reserves compute capacity with ODCRs or [Flexible Training Plans](https://aws.amazon.com/about-aws/whats-new/2024/12/amazon-sagemaker-hyperpod-flexible-training-plans/)
- 2. Admin/DevOps Engineers use the [Sagemaker HyperPod]((https://aws.amazon.com/sagemaker-ai/hyperpod/)) [Virtual Private Cloud VPC](https://aws.amazon.com/vpc/) stack to deploy networking, storage and Identity and Access Management IAM resources.
- 3. Admin/DevOps Engineers push Lifecycle scripts to S3 bucket created in Step 2
- 4. Admin/DevOps Engineers use the aws sagemaker cli to create the cluster
- 5. Admin/DevOps Engineers generate key-pairs to ssh in the controller node of the cluster.
- 6. Once the cluster is created, admin can test ssh in the controller and compute nodes and get to know the cluster
- 7. Admin/DevOps Engineers configures [IAM](https://aws.amazon.com/iam/) to use [Amazon Managed Prometheus](https://aws.amazon.com/prometheus/) to collect metrics and [Amazon Managed Grafana](https://aws.amazon.com/grafana/) to set up the observability stack
- 8. Admin/DevOps Engineers can make changes to the cluster using the HyperPod CLI
+ 1. Account team reserves compute capacity with [On-Demand Capacity Reservation (ODCR)](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/capacity-reservation-overview.html) or [Amazon SageMaker HyperPod Flexible Training Plans](https://aws.amazon.com/about-aws/whats-new/2024/12/amazon-sagemaker-hyperpod-flexible-training-plans/)
+ 2. Admins/DevOps Engineers use the [AWS CloudFormation](https://aws.amazon.com/cloudformation/) stack to deploy Virtual Private Cloud (VPC) networking, [Amazon Simple Storage Service (S3)](https://aws.amazon.com/s3/) or [FSx for Lustre (FSxL)](https://aws.amazon.com/fsx/lustre/) storage and [Identity and Access Management (IAM)](https://aws.amazon.com/iam/) resources into Customer Account
+ 3. Admins/DevOps Engineers push [Lifecycle scripts](https://catalog.workshops.aws/sagemaker-hyperpod/en-US/01-cluster/option-b-manual-cluster-setup/02-lifecycle-scripts) to S3 bucket created in the previous step
+ 4. Admins/DevOps Engineers use the [AWS CLI](https://aws.amazon.com/cli/) to create the [SageMaker HyperPod](https://aws.amazon.com/sagemaker-ai/hyperpod/) cluster,including Controller Node, Compute nodes etc.
+ 5. Admins/DevOps Engineers generate key pair to establish access to the Controller Node of the SageMaker HyperPod cluster.
+ 6. Once the SageMaker HyperPod cluster is created, Admins/DevOps Engineers and Data Scientists/ML engineers can test SSH access to the Controller and Compute nodes and examine the cluster
+ 7. Admin/DevOps Engineers configure [IAM](https://aws.amazon.com/iam/) to use [Amazon Managed Prometheus](https://aws.amazon.com/prometheus/) to collect metrics and [Amazon Managed Grafana](https://aws.amazon.com/grafana/) for metric visualization
+ 8. Admin/DevOps Engineers can make further changes to the cluster using the AWS CLI
 
- **Architecture and steps for training BioNemo models on HyperPod SLURM Cluster**
+ **Architecture and steps for training BioNemo models on SageMaker HyperPod SLURM Cluster**
 
 <p align="center">
 <img src="assets/ref_arch_traning_hyperpod_slurm.jpg" alt="Reference Architecture HyperPod SLURM Cluster">
@@ -71,7 +66,7 @@ This section provides architecture diagrams and describes the components deploye
 2.
 3.
 
- **Architecture and steps for for provisioning HyperPod EKS Cluster**
+ **Architecture and steps for for provisioning SageMaker HyperPod EKS Cluster**
 <p align="center">
 <img src="assets/ref_arch_hyperpod_eks.jpg" alt="Reference Architecture HyperPod SLURM Cluster">
 </p>
@@ -85,7 +80,7 @@ This section provides architecture diagrams and describes the components deploye
  7. Admin/DevOps Engineers configures IAM to use [Amazon Managed Prometheus]((https://aws.amazon.com/prometheus/)) to collect metrics and [Amazon Managed Grafana]((https://aws.amazon.com/grafana/)) to set up the observability stack
  8. Admin/DevOps Engineers can configure [Container Insights](https://docs.aws.amazon.com/AmazonCloudWatch/latest/monitoring/ContainerInsights.html) to push metrics in [Amazon Cloudwatch](https://aws.amazon.com/cloudwatch/)
 
-**Architecture steps for training BioNemo models on HyperPod EKS Cluster**
+**Architecture steps for training BioNemo models on SageMaker HyperPod EKS Cluster**
 
 <p align="center">
 <img src="assets/ref_arch_traning_hyperpod_eks.jpg" alt="Reference Architecture HyperPod SLURM Cluster">
