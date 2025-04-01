@@ -1,15 +1,11 @@
 #!/bin/bash
 #SBATCH --nodes=2                    # number of nodes
 #SBATCH --ntasks-per-node=8          # n tasks per machine (one task per gpu) <required>
-#SBATCH --gpus-per-node=8
 #SBATCH --exclusive                   # exclusive node access
 #SBATCH --output slurm-esm2-train-%j.out
 
-export FI_EFA_USE_HUGE_PAGE=0
 export FI_PROVIDER=efa
 export NCCL_DEBUG=INFO
-
-export DATA_HOME_DIR=/fsxl/awsankur/bionemo
 
 ###########################
 ###### User Variables #####
@@ -27,7 +23,7 @@ declare -a ARGS=(
 )
 
 # Enable fused attention in transformer engine for speed-up
-DATA_DIR=$(find $DATA_HOME_DIR -type d -name "*untar*" -print -quit)
+DATA_DIR=$(find ${TARGET_PATH} -type d -name "*untar*" -print -quit)
 
 srun -l "${ARGS[@]}"  python3 /workspace/bionemo2/sub-packages/bionemo-esm2/src/bionemo/esm2/scripts/train_esm2.py \
     --train-cluster-path ${DATA_DIR}/2024_03_sanity/train_clusters_sanity.parquet \
@@ -35,8 +31,8 @@ srun -l "${ARGS[@]}"  python3 /workspace/bionemo2/sub-packages/bionemo-esm2/src/
     --valid-cluster-path ${DATA_DIR}/2024_03_sanity/valid_clusters.parquet \
     --valid-database-path ${DATA_DIR}/2024_03_sanity/validation.db \
     --precision="bf16-mixed" \
-    --num-gpus 8 \
-    --num-nodes 2 \
+    --num-gpus $SLURM_NTASKS_PER_NODE \
+    --num-nodes $SLURM_NNODES \
     --num-steps 100 \
     --val-check-interval 25 \
     --max-seq-length 1024 \
@@ -48,4 +44,4 @@ srun -l "${ARGS[@]}"  python3 /workspace/bionemo2/sub-packages/bionemo-esm2/src/
     --ffn-hidden-size 5120 \
     --tensor-model-parallel-size 1 \
     --create-tensorboard-logger \
-    --result-dir ${DATA_HOME_DIR}
+    --result-dir ${TARGET_PATH}

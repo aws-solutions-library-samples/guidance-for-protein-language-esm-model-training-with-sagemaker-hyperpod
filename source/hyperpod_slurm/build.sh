@@ -1,3 +1,3 @@
 #!/bin/bash
 
-docker build -t bionemo:aws .
+docker build -t ${DOCKER_IMAGE_NAME}:aws .

@@ -1,149 +1,76 @@
 # Train Evolutionary Scale Models (ESM) with BioNemo
 
-## TO DO: UPDATE THIS PAGE fir BioNemo 2.5 images and related Dockerfiles and scripts!
+[NVIDIA BioNeMo](https://docs.nvidia.com/bionemo-framework/latest/) is a domain-specific machine learning framework for training and using foundation models for biology. This includes models for analyzing proteins, small molecules, and other biological molecules. To see the latest models available in BioNeMo 2.5 see [here](https://docs.nvidia.com/bionemo-framework/latest/models/).
 
-NVIDIA BioNeMo is a domain-specific machine learning framework for training and using foundation models for biology. This includes models for analyzing proteins, small molecules, and other biological molecules. NVIDIA first announced it in [September 2022](https://nvidianews.nvidia.com/news/nvidia-launches-large-language-model-cloud-services-to-advance-ai-and-digital-biology) and released a more comprehensive version on DGX cloud at [GTC 2023](https://nvidianews.nvidia.com/news/nvidia-unveils-large-language-models-and-generative-ai-services-to-advance-life-sciences-r-d). The GTC 2023 release included two main capabilities:
-1. A NeMo-based training framework to enable ML teams to create training and inference jobs via Python scripts. submitted via DGX-hosted notebooks
-2. A web application that enabled scientists to create inference jobs and visualize output data.
-
-|Num|                                    BioNeMo Model Support                                     |
-|:-:|:--------------------------------------------------------------------------------------------:|
-| 1 |      [ESM-1nv](https://docs.nvidia.com/bionemo-framework/latest/models/esm1-nv.html)         |
-| 2 |      [ESM-2nv](https://docs.nvidia.com/bionemo-framework/latest/models/esm2-nv.html)         |
-| 3 |      [MegaMolBART](https://docs.nvidia.com/bionemo-framework/latest/models/megamolbart.html) |
-| 4 |      [DiffDock](https://docs.nvidia.com/bionemo-framework/latest/models/diffdock.html)       |
-| 5 |      [EquiDock](https://docs.nvidia.com/bionemo-framework/latest/models/equidock.html)       |
-| 6 |      [ProtT5nv](https://docs.nvidia.com/bionemo-framework/latest/models/prott5nv.html)       |
-
-
-This project provides a guide to run [Nvidia's BioNemo](https://docs.nvidia.com/bionemo-framework/latest/index.html) on AWS ParallelCluster and pretrain the popular [ESM models](https://github.com/facebookresearch/esm) specifically the [ESM1nv](https://docs.nvidia.com/bionemo-framework/latest/notebooks/model_training_esm1nv.html) model.
-
+This guidance provides step by step instructions to pretrain [ESM2](https://docs.nvidia.com/bionemo-framework/latest/models/ESM-2/) models with NVIDIA BioNeMo on Sagemaker HyPerPod slurm clusters.
 
 ## 0. Prerequisites
 
-0. You have access to the bionemo container. To get the access to BioNeMo, visit the [information website](https://www.nvidia.com/en-us/clara/bionemo/).
+Have a slurm based Sagemaker HyperPod cluster with Nvidia GPUs.
 
-1. Have a slurm based AWS ParallelCluster created with a FSx for Lustre filesystem mounted. Below we are presenting instructions for a cluster with compute nodes instantiated with an Ubuntu based AMI.
+## 1. Setup environment variables
 
-## 1. Install Nvidia Container CLI
-
-### 1.1 If you have created your cluster with the AWS ParallelCluster Base AMI or [DLAMI](https://aws.amazon.com/machine-learning/amis/) or your custom AMI, please make sure `libnvidia-container cli` is installed. You can follow the instructions below to install it.   
-
-### 1.2 To install libnvidia-container cli:
-We need [libnvidia-container cli](https://github.com/NVIDIA/libnvidia-container) to train models in an Nvidia container. We follow the instructions [here](https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/latest/install-guide.html). This installation needs to be done in each compute node.
+SSH into the head or login node of your cluster and run:
 
 ```
-curl -fsSL https://nvidia.github.io/libnvidia-container/gpgkey | sudo gpg --dearmor -o /usr/share/keyrings/nvidia-container-toolkit-keyring.gpg \
-  && curl -s -L https://nvidia.github.io/libnvidia-container/stable/deb/nvidia-container-toolkit.list | \
-    sed 's#deb https://#deb [signed-by=/usr/share/keyrings/nvidia-container-toolkit-keyring.gpg] https://#g' | \
-    sudo tee /etc/apt/sources.list.d/nvidia-container-toolkit.list \
-  && \
-    sudo apt-get update \
-  && sudo apt-get install libnvidia-container1 \
-  && sudo apt-get install libnvidia-container-tools
-```
-### 1.3 You can set the Nemo Multimodal version and others as environment variables:
-
-SSH into the head node of your cluster and run:
-
-```
-export PYTHON_VERSION=3.10
-# We are using Python version 3.10 in this work. For a different Python version select the right Miniconda file from https://repo.anaconda.com/miniconda/
-export MINICONDA_INSTALLER=Miniconda3-py310_23.5.2-0-Linux-x86_64
-export TARGET_PATH=/apps/bionemo-src   # Must be a shared filesystem. This is where Nemo launcher scripts will reside.
+# Path to save training data and checkpoints
+export TARGET_PATH=/fsx/ubuntu/bionemo
 export DOCKER_IMAGE_NAME=bionemo
-export TAG=latest
-export ENROOT_IMAGE=/apps/${DOCKER_IMAGE_NAME}
-export DATASET_PATH=/fsx/
 ```
 
-## 1.4. Pull this github repo
+## 2. Pull this github repo
 
 ```bash
-cd /apps/
-git clone https://github.com/aws-samples/awsome-distributed-training.git
-cp -r /apps/awsome-distributed-training/3.test_cases/14.bionemo/* ./apps/
+cd ${TARGET_PATH}
+git clone https://github.com/aws-solutions-library-samples/guidance-for-protein-language-esm-model-training-with-nvidia-bionemo-framework.git
+
+cd guidance-for-protein-language-esm-model-training-with-nvidia-bionemo-framework/source/hyperpod_slurm
+chmod 777 *.sh
 ```
 
-## 2. Pull Image
+## 3. Build Docker Image
+
+We provide an AWS optimized Docker image that sets up networking components (EFA, AWS-OFI-NCCL) for a multi-node cluster correctly:
 
 ```bash
-cd /apps/
-docker pull nvcr.io/nvidia/clara/bionemo-framework:1.2
+./build.sh
 ```
 
-## 3. Create Conda env
-We need a conda environment that has the necessary dependencies for submitting multiple arrays of slurm jobs via [HYDRA](https://github.com/facebookresearch/hydra) which NeMo uses to configuring both NeMo models and the PyTorch Lightning Trainer. 
-```
-# Miniconda is already installed if you are using the DLAMI but needs installation with Base AMI
+## 4. Build Enroot Image
 
-wget -O miniconda.sh "https://repo.anaconda.com/miniconda/${MINICONDA_INSTALLER}.sh" \
-    && bash miniconda.sh -b -p /apps/.conda \
-          &&  /apps/.conda/bin/conda init bash  
-
-source ~/.bashrc    
-conda create --name bionemo python=${PYTHON_VERSION}
-
-source activate bionemo
-
-pip3 install -r requirements.txt
-
-```
-All package versions in the above `requirements.txt` file is recommended from Nvidia. An older version of the package `opencv-python-headless==4.8.0.74` has to be installed to avoid this [error](https://github.com/rom1504/img2dataset/issues/355) with [img2dataset](https://github.com/rom1504/img2dataset) package.
-
-
-
-## 4. Build customized docker image
-To achieve target performance of Nemo-Multimodal with EFA on P5 and P4de instances, we provide a customized 
-`3.test_cases/14.nemo-multimodal/0.Dockerfile` and we can build a image like below:
-
-```
-docker build -t ${DOCKER_IMAGE_NAME}:${TAG} -f 0.Dockerfile .
-```
-
-## 5. Convert image
-Convert the Docker container image to an [Enroot](https://github.com/NVIDIA/enroot) squash file that will be stored in `/apps`. This step takes a few minutes.
-```
-enroot import -o ${ENROOT_IMAGE}.sqsh dockerd://${DOCKER_IMAGE_NAME}
-
-```
-
-## 6. Download and preprocess data
-We will use the popular [UniRef50](https://www.uniprot.org/help/uniref) dataset for pretraining. We will use BioNemo's in-built functionality to download and pre-process data. To this end, we provide `prepare_uniref50.py` file to do so. You can edit the above to download and process [UniRef90]((https://www.uniprot.org/help/uniref)). To run the above python code on your slurm cluster in the BioNemo cluster execute the following:
+[NVIDIA Enroot](https://github.com/NVIDIA/enroot) is a lightweight container runtime that allows users to run containerized applications without requiring full-fledged container engines like Docker. It is designed for HPC environments, particularly the Slurm Workload Manager. To convert Docker images to Enroot squash files:
 
 ```bash
-sbatch 1.uniref50.slurm
+./enroot.sh
 ```
 
-This will download raw data in `/fsx/raw/` and save pre-processed `train, validation and test` csv files in `/fsx/processed/`. The log files for submitted jobs are written to the local directory. To check the status of the datasets download job, you can tail the log file:
+## 5. Download data
+
+BioNeMo 2.5 container provides a CLI `download_bionemo_data` to download test or full UniProt dataset from NVIDIA Catalog which we can run as below. `get-data.sh` runs a container based on the Docker image created above, runs the `download_bionemo_data` CLI to download test data and kills the container when done and saves `_sanity.tar.gz` compressed file (71M) and `_sanity.tar.gz.untar` (134M) with training and validation data.
 
 ```bash
-tail -f slurm-uniref-<slurm_job_id>.out
+./get-data.sh
 ```
 
+## 6. Pretrain ESM2 models
 
-
-## 7. Pretrain ESM models
-Now we are ready to submit distributed training jobs to pretrain `ESM1nv` models. We provide the `2.esm1nv_pretrain.slurm` script to run training 4 `p4de.24xlarge` nodes with `8xA100 80 GB` GPUs. Make sure data paths and model configuration is correct if you are running on custom data. To kick off distributed training execute:
+Now we are ready to submit distributed training jobs to pretrain `ESM2` models. We provide the `train-esm.slurm` script to run training on 2 `p5.48xlarge` nodes with `8xH100 80 GB` GPUs. Make sure data paths and model configuration is correct if you are running on custom data. To kick off distributed training execute:
 
 ```bash
-sbatch 2.esm1nv_pretrain.slurm
+sbatch train-esm.slurm
 
 ```
 
-Before kicking off training, first train, validation and test datasets are indexed and dataloaders are created and then you should see an example output like below:
-
-```bash
-Epoch 0:   3%|▎         | 34103/1100000 [5:28:58<171:22:21,  1.73it/s, loss=2.52, v_num=, reduced_train_loss=2.510, global_step=3.1e+4, consumed_samples=2.54e+8, val_loss=2.510]
-Epoch 0:   3%|▎         | 34106/1100000 [5:29:00<171:22:19,  1.73it/s, loss=2.52, v_num=, reduced_train_loss=2.520, global_step=3.1e+4, consumed_samples=2.54e+8, val_loss=2.510]
-Epoch 0:   3%|▎         | 34109/1100000 [5:29:02<171:22:09,  1.73it/s, loss=2.52, v_num=, reduced_train_loss=2.520, global_step=3.1e+4, consumed_samples=2.54e+8, val_loss=2.510]
-Epoch 0:   3%|▎         | 34112/1100000 [5:29:03<171:22:00,  1.73it/s, loss=2.52, v_num=, reduced_train_loss=2.520, global_step=3.1e+4, consumed_samples=2.54e+8, val_loss=2.510]
-```
-
-## 8. Run container on Head Node [Troubleshooting]
-Once the above image is pulled, you can run the container on the head node like below. This step could be used for troubleshooting purposes. Here we are running the container just to be able to copy launcher scripts on the host machine. If you need to run the container on the compute nodes, you would need to add `--gpus all` flag to the run command. It is recommended to have the docker run flags like below, as recommended by Nvidia PyTorch containers, otherwise you may potentially run into an error like [this](https://github.com/NVIDIA/Megatron-LM/issues/516)
+Once training starts you should see logs as `tail -f slurm-esm2-train-xx.out`:
 
 ```
- docker run -it nvcr.io/nvidia/clara/bionemo-framework:latest bash
+0: Training epoch 0, iteration 28/99 | lr: 5.6e-06 | global_batch_size: 32 | global_step: 28 | reduced_train_loss: 2.778 | train_step_timing in s: 0.189 | consumed_samples: 928 | val_loss: 2.861 | val_ppl: 17.57
+ 0: Training epoch 0, iteration 29/99 | lr: 5.8e-06 | global_batch_size: 32 | global_step: 29 | reduced_train_loss: 2.782 | train_step_timing in s: 0.1903 | consumed_samples: 960 | val_loss: 2.861 | val_ppl: 17.57
+ 0: Training epoch 0, iteration 30/99 | lr: 6e-06 | global_batch_size: 32 | global_step: 30 | reduced_train_loss: 2.709 | train_step_timing in s: 0.1915 | consumed_samples: 992 | val_loss: 2.861 | val_ppl: 17.57
+ 0: Training epoch 0, iteration 31/99 | lr: 6.2e-06 | global_batch_size: 32 | global_step: 31 | reduced_train_loss: 2.803 | train_step_timing in s: 0.1894 | consumed_samples: 1024 | val_loss: 2.861 | val_ppl: 17.57
+ 0: Training epoch 0, iteration 32/99 | lr: 6.4e-06 | global_batch_size: 32 | global_step: 32 | reduced_train_loss: 2.886 | train_step_timing in s: 0.1921 | consumed_samples: 1056 | val_loss: 2.861 | val_ppl: 17.57
+ 0: Training epoch 0, iteration 33/99 | lr: 6.6e-06 | global_batch_size: 32 | global_step: 33 | reduced_train_loss: 2.791 | train_step_timing in s: 0.1893 | consumed_samples: 1088 | val_loss: 2.861 | val_ppl: 17.57
+ 0: Training epoch 0, iteration 34/99 | lr: 6.8e-06 | global_batch_size: 32 | global_step: 34 | reduced_train_loss: 2.788 | train_step_timing in s: 0.1902 | consumed_samples: 1120 | val_loss: 2.861 | val_ppl: 17.57
 ```
 
+Once training is done, you should see checkpoints stored in `${TARGET_PATH}/esm2` folder.
