@@ -1,11 +1,6 @@
 #!/bin/bash
 
-export AWS_REGION=us-east-1
 export ACCOUNT=$(aws sts get-caller-identity --query Account --output text)
-
-export IMAGE=bionemo
-export TAG=":aws"
-
 
 export REGISTRY=${ACCOUNT}.dkr.ecr.${AWS_REGION}.amazonaws.com/
 
@@ -21,4 +16,4 @@ if [ "$REGISTRY_COUNT" == "0" ]; then
 fi
 
 # Push image
-docker image push ${REGISTRY}${IMAGE}${TAG}
+docker image push ${REGISTRY}${DOCKER_IMAGE_NAME}:aws

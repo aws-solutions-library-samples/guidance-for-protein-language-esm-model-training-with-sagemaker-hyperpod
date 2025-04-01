@@ -1,12 +1,67 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: etcd
+spec:
+  ports:
+    - name: etcd-client-port
+      port: 2379
+      protocol: TCP
+      targetPort: 2379
+  selector:
+    app: etcd
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: etcd
+  name: etcd
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: etcd
+  template:
+    metadata:
+      labels:
+        app: etcd
+    spec:
+      containers:
+        - name: etcd
+          command: ["/usr/local/bin/etcd"]
+          args:
+            - "--data-dir"
+            - "/var/lib/etcd"
+            - "--enable-v2"
+            - "--listen-client-urls"
+            - "http://0.0.0.0:2379"
+            - "--advertise-client-urls"
+            - "http://0.0.0.0:2379"
+            - "--initial-cluster-state"
+            - "new"
+          image: quay.io/coreos/etcd:v3.5.19
+          ports:
+            - containerPort: 2379
+              name: client
+              protocol: TCP
+            - containerPort: 2380
+              name: server
+              protocol: TCP
+      restartPolicy: Always
+---
 apiVersion: "kubeflow.org/v1"
 kind: PyTorchJob
 metadata:
-  name: esm2-training
+  name: bionemo-esm2
 spec:
   elasticPolicy:
-    rdzvBackend: c10d
+    rdzvBackend: etcd
+    rdzvHost: etcd
+    rdzvPort: 2379
     minReplicas: 1
-    maxReplicas: 16
+    maxReplicas: 64
     maxRestarts: 100
     metrics:
       - type: Resource
@@ -14,11 +69,10 @@ spec:
           name: cpu
           target:
             type: Utilization
-            averageUtilization: 80
-  nprocPerNode: "4"
+            averageUtilization: 90
   pytorchReplicaSpecs:
     Worker:
-      replicas: 4
+      replicas: 2
       template:
         metadata:
           annotations:
@@ -31,10 +85,10 @@ spec:
           volumes:
           - name: fsx-pv-storage
             persistentVolumeClaim:
-              claimName: fsx-static-pvc
+              claimName: fsx-claim
           containers:
-            - name: pytorch
-              image: bionemo:aws
+            - name: bionemo
+              image: ${REGISTRY}${DOCKER_IMAGE_NAME}${TAG}
               resources:
                 requests:
                   nvidia.com/gpu: $GPU_PER_NODE
@@ -45,12 +99,8 @@ spec:
               env:
                 - name: NCCL_DEBUG
                   value: "INFO"
-                - name: DATA_PATH
-                  value: "/fsx/ubuntu"
-                - name: HYDRA_FULL_ERROR
-                  value: "1"
               volumeMounts:
-                - mountPath: "/fsx/ubuntu"
+                - mountPath: /fsx-shared
                   name: fsx-pv-storage
               imagePullPolicy: Always
               command:
@@ -61,7 +111,7 @@ spec:
                 - --valid-cluster-path ${DATA_DIR}/2024_03_sanity/valid_clusters.parquet \
                 - --valid-database-path ${DATA_DIR}/2024_03_sanity/validation.db \
                 - --precision="bf16-mixed" \
-                - --num-gpus 8 \
+                - --num-gpus ${GPU_PER_NODE} \
                 - --num-nodes 2 \
                 - --num-steps 100 \
                 - --val-check-interval 25 \
@@ -74,4 +124,4 @@ spec:
                 - --ffn-hidden-size 5120 \
                 - --tensor-model-parallel-size 1 \
                 - --create-tensorboard-logger \
-                - --result-dir ${DATA_HOME_DIR}
+                - --result-dir ${DATA_DIR}
