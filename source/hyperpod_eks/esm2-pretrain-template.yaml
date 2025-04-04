@@ -72,7 +72,7 @@ spec:
             averageUtilization: 90
   pytorchReplicaSpecs:
     Worker:
-      replicas: 2
+      replicas: ${NUM_NODES}
       template:
         metadata:
           annotations:
@@ -87,7 +87,7 @@ spec:
             persistentVolumeClaim:
               claimName: fsx-claim
           containers:
-            - name: bionemo
+            - name: pytorch
               image: ${REGISTRY}${DOCKER_IMAGE_NAME}${TAG}
               resources:
                 requests:
@@ -106,22 +106,22 @@ spec:
               command:
                 - "python3"
                 - /workspace/bionemo2/sub-packages/bionemo-esm2/src/bionemo/esm2/scripts/train_esm2.py
-                - --train-cluster-path ${DATA_DIR}/2024_03_sanity/train_clusters_sanity.parquet \
-                - --train-database-path ${DATA_DIR}/2024_03_sanity/train_sanity.db \
-                - --valid-cluster-path ${DATA_DIR}/2024_03_sanity/valid_clusters.parquet \
-                - --valid-database-path ${DATA_DIR}/2024_03_sanity/validation.db \
-                - --precision="bf16-mixed" \
-                - --num-gpus ${GPU_PER_NODE} \
-                - --num-nodes 2 \
-                - --num-steps 100 \
-                - --val-check-interval 25 \
-                - --max-seq-length 1024 \
-                - --limit-val-batches 2 \
-                - --micro-batch-size 2 \
-                - --num-layers 33 \
-                - --hidden-size 1280 \
-                - --num-attention-head 20 \
-                - --ffn-hidden-size 5120 \
-                - --tensor-model-parallel-size 1 \
-                - --create-tensorboard-logger \
-                - --result-dir ${DATA_DIR}
+                - --train-cluster-path=${DATA_DIR}/2024_03_sanity/train_clusters_sanity.parquet
+                - --train-database-path=${DATA_DIR}/2024_03_sanity/train_sanity.db
+                - --valid-cluster-path=${DATA_DIR}/2024_03_sanity/valid_clusters.parquet
+                - --valid-database-path=${DATA_DIR}/2024_03_sanity/validation.db
+                - --precision=bf16-mixed
+                - --num-gpus=${GPU_PER_NODE}
+                - --num-nodes=${NUM_NODES}
+                - --num-steps=100
+                - --val-check-interval=25
+                - --max-seq-length=1024
+                - --limit-val-batches=2
+                - --micro-batch-size=2
+                - --num-layers=33
+                - --hidden-size=1280
+                - --num-attention-head=20
+                - --ffn-hidden-size=5120
+                - --tensor-model-parallel-size=1
+                - --create-tensorboard-logger
+                - --result-dir=${OUTPUT_DIR}
