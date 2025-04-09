@@ -230,7 +230,7 @@ BioNeMo 2.5 container provides a CLI `download_bionemo_data` to download test or
 ./get-data.sh
 ```
 
-6. Pretrain ESM-2 models
+6. Pretrain ESM-2 models using SLURM scheduler
 
 Now we are ready to submit distributed training jobs to pretrain `ESM2` models. We provide the `train-esm.slurm` script to run training on 2 `p5.48xlarge` nodes with `8xH100 80 GB` GPUs. Make sure data paths and model configuration is correct if you are running on custom data. To kick off distributed training execute:
 
@@ -333,20 +333,24 @@ And then run the training job as below. The pod will take roughly 6 minutes to s
 ```bash
 kubectl apply -f get-data.yaml
 ```
+Upon completion of Model training data import that pod should be in `Complete` state:
+```bash
+kubectl get po
+NAME                                                         READY   STATUS      RESTARTS         AGE
+download-bionemo-data                                        0/1     Completed   10 (5m18s ago)   26m
+fsx-share-test                                               1/1     Running     0                43h
+```
 
-To verify that the data is available in the filesystem, we need a dummy pod with the filesystem mounted. To do so, we provide       `view-fsx.yaml` which creates a pod called `fsx-share-test`. To view the contents of the file system we can exec in the pod as below:
+To verify that the Model data is available in the filesystem, we need a dummy pod with the filesystem mounted. To do so, we provide the `view-fsx.yaml` which creates a pod called `fsx-share-test`. To view the contents of the file system we can exec into that pod as shown below:
 
 ```bash
-# Create the pod
+# Create the dummy pod
 kubectl apply -f view-fsx.yaml
 # Exec in the pod
-kubectl exec fsx-share-test -- ls /fsx-shared
-```
-```bash
-[ec2-user@ip-172-31-4-12 hyperpod_eks]$ kubectl exec fsx-share-test -- ls /fsx-shared
-006911f92bbc0ded7ea302bbdbfab4c694b409e699c32fd49de1c527a99dba3e-2024_03_sanity.tar.gz
-006911f92bbc0ded7ea302bbdbfab4c694b409e699c32fd49de1c527a99dba3e-2024_03_sanity.tar.gz.untar
-test.txt
+kubectl exec fsx-share-test -- ls -l /fsx-shared
+total 72040
+-rw-r--r-- 1 root root 73307674 Apr  9 18:51 006911f92bbc0ded7ea302bbdbfab4c694b409e699c32fd49de1c527a99dba3e-2024_03_sanity.tar.gz
+drwxr-xr-x 3 root root    25600 Apr  9 18:51 006911f92bbc0ded7ea302bbdbfab4c694b409e699c32fd49de1c527a99dba3e-2024_03_sanity.tar.gz.untar
 ```
 
 Once completed, export the `DATA_DIR` as an environment variable as below using the `*.untar` folder name:
@@ -357,16 +361,175 @@ export DATA_DIR=/fsx-shared/006911f92bbc0ded7ea302bbdbfab4c694b409e699c32fd49de1
 
 5. Pretrain ESM2 models
 
-Now we are ready to submit distributed training jobs to pretrain `ESM2` models. We provide the `esm2-pretrain-template.yaml` script to run training on two `p5.48xlarge` nodes with `8xH100 80 GB` GPUs (or a similar GPU based nodes) 
-Make sure data paths and model configuration is correct if you are running on custom data. To kick off distributed training execute:
+Now we are ready to submit distributed training jobs to pretrain `ESM2` models. We provide the `esm2-pretrain-template.yaml` script to run training on two `ml.p5.48xlarge` nodes with `8xH100 80 GB` GPUs (or a similar GPU based nodes like `ml.g5.48xlarge`) 
+Make sure data paths and model configuration is correct if you are running on custom data. To kick off distributed training job execute:
 
 ```bash
 cat esm2-pretrain-template.yaml | envsubst > esm2-pretrain.yaml
+cat esm2-pretrain.yaml
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: etcd
+spec:
+  ports:
+    - name: etcd-client-port
+      port: 2379
+      protocol: TCP
+      targetPort: 2379
+  selector:
+    app: etcd
 
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: etcd
+  name: etcd
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: etcd
+  template:
+    metadata:
+      labels:
+        app: etcd
+    spec:
+      containers:
+        - name: etcd
+          command: ["/usr/local/bin/etcd"]
+          args:
+            - "--data-dir"
+            - "/var/lib/etcd"
+            - "--enable-v2"
+            - "--listen-client-urls"
+            - "http://0.0.0.0:2379"
+            - "--advertise-client-urls"
+            - "http://0.0.0.0:2379"
+            - "--initial-cluster-state"
+            - "new"
+          image: quay.io/coreos/etcd:v3.5.19
+          ports:
+            - containerPort: 2379
+              name: client
+              protocol: TCP
+            - containerPort: 2380
+              name: server
+              protocol: TCP
+      restartPolicy: Always
+---
+apiVersion: "kubeflow.org/v1"
+kind: PyTorchJob
+metadata:
+  name: bionemo-esm2
+spec:
+  elasticPolicy:
+    rdzvBackend: etcd
+    rdzvHost: etcd
+    rdzvPort: 2379
+    minReplicas: 1
+    maxReplicas: 64
+    maxRestarts: 100
+    metrics:
+      - type: Resource
+        resource:
+          name: cpu
+          target:
+            type: Utilization
+            averageUtilization: 90
+  pytorchReplicaSpecs:
+    Worker:
+      replicas: 2
+      template:
+        metadata:
+          annotations:
+            sidecar.istio.io/inject: "false"
+        spec:
+          tolerations:
+            - key: nvidia.com/gpu
+              operator: Exists
+              effect: NoSchedule
+          volumes:
+          - name: fsx-pv-storage
+            persistentVolumeClaim:
+              claimName: fsx-claim
+          containers:
+            - name: pytorch
+              image: XXXXXXXXXXXXXXX.dkr.ecr.us-east-1.amazonaws.com/bionemo:aws
+              resources:
+                requests:
+                  nvidia.com/gpu: 8
+                  vpc.amazonaws.com/efa: 32
+                limits:
+                  nvidia.com/gpu: 8
+                  vpc.amazonaws.com/efa: 32
+              env:
+                - name: NCCL_DEBUG
+                  value: "INFO"
+              volumeMounts:
+                - mountPath: /fsx-shared
+                  name: fsx-pv-storage
+              imagePullPolicy: Always
+              command:
+                - "python3"
+                - /workspace/bionemo2/sub-packages/bionemo-esm2/src/bionemo/esm2/scripts/train_esm2.py
+                - --train-cluster-path=/fsx-shared/006911f92bbc0ded7ea302bbdbfab4c694b409e699c32fd49de1c527a99dba3e-2024_03_sanity.tar.gz.untar/2024_03_sanity/train_clusters_sanity.parquet
+                - --train-database-path=/fsx-shared/006911f92bbc0ded7ea302bbdbfab4c694b409e699c32fd49de1c527a99dba3e-2024_03_sanity.tar.gz.untar/2024_03_sanity/train_sanity.db
+                - --valid-cluster-path=/fsx-shared/006911f92bbc0ded7ea302bbdbfab4c694b409e699c32fd49de1c527a99dba3e-2024_03_sanity.tar.gz.untar/2024_03_sanity/valid_clusters.parquet
+                - --valid-database-path=/fsx-shared/006911f92bbc0ded7ea302bbdbfab4c694b409e699c32fd49de1c527a99dba3e-2024_03_sanity.tar.gz.untar/2024_03_sanity/validation.db
+                - --precision=bf16-mixed
+                - --num-gpus=8
+                - --num-nodes=2
+                - --num-steps=100
+                - --val-check-interval=25
+                - --max-seq-length=1024
+                - --limit-val-batches=2
+                - --micro-batch-size=2
+                - --num-layers=33
+                - --hidden-size=1280
+                - --num-attention-head=20
+                - --ffn-hidden-size=5120
+                - --tensor-model-parallel-size=1
+                - --create-tensorboard-logger
+```
+Then initiate the pretrain job by applying that Deployment and PyTorchJob onti our EKS HyperPod cluster:
+
+```bash
 kubectl apply -f esm2-pretrain.yaml
-
+service/etcd created
+deployment.apps/etcd created
+pytorchjob.kubeflow.org/bionemo-esm2 created
 ```
 
+To check status of the pre-training job run the following command:
+```bash
+ubectl get deploy,po,svc
+NAME                                                        READY   UP-TO-DATE   AVAILABLE   AGE
+deployment.apps/etcd                                        1/1     1            1           108s
+deployment.apps/hyperpod-dependencies-hyperpod-helm-chart   1/1     1            1           91d
+deployment.apps/hyperpod-dependencies-mpi-operator          1/1     1            1           91d
+
+NAME                                                             READY   STATUS             RESTARTS       AGE
+pod/bionemo-esm2-worker-0                                        0/1     Pending            0              108s
+pod/bionemo-esm2-worker-1                                        0/1     Pending            0              108s
+pod/download-bionemo-data                                        0/1     Completed          15 (69s ago)   53m
+pod/etcd-6cd66c884c-cs49j                                        1/1     Running            0              108s
+pod/fsx-share-test                                               1/1     Running            0              43h
+pod/hyperpod-dependencies-aws-efa-k8s-device-plugin-5dgxv        1/1     Running            0              44h
+pod/hyperpod-dependencies-aws-efa-k8s-device-plugin-lqgfm        1/1     Running            0              44h
+pod/hyperpod-dependencies-hyperpod-helm-chart-6f8989f9bb-cr89p   1/1     Running            0              39h
+pod/hyperpod-dependencies-mpi-operator-574c8c7f-tq9h7            1/1     Running            0              39h
+
+NAME                                                TYPE        CLUSTER-IP       EXTERNAL-IP   PORT(S)     AGE
+service/bionemo-esm2-worker-0                       ClusterIP   None             <none>        23456/TCP   108s
+service/bionemo-esm2-worker-1                       ClusterIP   None             <none>        23456/TCP   108s
+service/etcd                                        ClusterIP   172.20.14.81     <none>        2379/TCP    108s
+service/hyperpod-dependencies-hyperpod-helm-chart   ClusterIP   172.20.93.235    <none>        80/TCP      91d
+service/kubernetes                                  ClusterIP   172.20.0.1       <none>        443/TCP     91d
+```
 ## Deployment Validation 
 
 <Provide steps to validate a successful deployment, such as terminal output, verifying that the resource is created, status of the CloudFormation template, etc.>
