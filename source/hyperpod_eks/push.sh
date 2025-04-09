@@ -15,6 +15,6 @@ if [ "$REGISTRY_COUNT" == "0" ]; then
         aws ecr create-repository --repository-name ${DOCKER_IMAGE_NAME}
 fi
 
-# Push image
-echo "pushing image: ${REGISTRY}${DOCKER_IMAGE_NAME}:aws"
-docker image push ${REGISTRY}${DOCKER_IMAGE_NAME}:aws
+# Push image into ECR registry using previously set in the Env variables ${TAG}
+echo "pushing image: ${REGISTRY}${DOCKER_IMAGE_NAME}${TAG}..."
+docker image push ${REGISTRY}${DOCKER_IMAGE_NAME}${TAG}
