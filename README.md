@@ -373,11 +373,25 @@ export DATA_DIR=/fsx-shared/006911f92bbc0ded7ea302bbdbfab4c694b409e699c32fd49de1
 
 5. Pretrain ESM2 models
 
-Now we are ready to submit distributed training jobs to pretrain `ESM2` models. We provide the `esm2-pretrain-template.yaml` script to run training on two `ml.p5.48xlarge` nodes with `8xH100 80 GB` GPUs (or a similar GPU based nodes like `ml.g5.48xlarge`) 
+Now we are ready to submit distributed training jobs to pretrain `ESM2` models. We provide the `esm2-pretrain-template.yaml` script to run training on two `ml.p5.48xlarge` nodes with `8xH100 80 GB` GPUs (or a similar GPU based nodes like `ml.g5.48xlarge`).
+
+First, it is always helpful to check Health status of HyperPod EKS nodes by running a command like:
+```bash
+kubectl get nodes -L sagemaker.amazonaws.com/node-health-status
+NAME                           STATUS   ROLES    AGE     VERSION               NODE-HEALTH-STATUS
+hyperpod-i-02cb1e5ddf52856ef   Ready    <none>   21h     v1.31.5-eks-5d632ec   Schedulable
+hyperpod-i-0ad7ba010d6cbdc38   Ready    <none>   21h     v1.31.5-eks-5d632ec   Schedulable
+```
+Those nodes should have GPU and EFA capacities that were specified above via environment variables:
+```bash
+export GPU_PER_NODE=8
+export EFA_PER_NODE=32
+```
+
 Make sure data paths and model configuration is correct if you are running on custom data. To kick off distributed training job execute:
 
 ```bash
-# populate values from environment variables into the pretrain job template
+# populate values from environment variables into the ESM2 pretrain job template
 cat esm2-pretrain-template.yaml | envsubst > esm2-pretrain.yaml
 cat esm2-pretrain.yaml
 ---
@@ -722,4 +736,5 @@ Include a legal disclaimer
 
 ## Authors (optional)
 
-Name of code contributors
+Daniel Zilberman, Sr SA AWS Tech Solutions
+Ankur Srivastava, Sr. WW Specialist SA GenAI
