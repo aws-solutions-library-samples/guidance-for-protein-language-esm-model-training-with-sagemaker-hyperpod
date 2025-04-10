@@ -165,7 +165,7 @@ Deployment steps must be numbered, comprehensive, and usable to customers at any
 5. Run this command to deploy the stack ```cdk deploy``` 
 6. Capture the domain name created by running this CLI command ```aws apigateway ............```
 
-### Training Evolutionary Scale Models (ESM) model on HyperPod SLURM cluster:
+### Training Evolutionary Scale Models (ESM2) model on HyperPod SLURM cluster:
 
 **Architecture and steps for training BioNemo models on SageMaker HyperPod SLURM Cluster**
 
@@ -180,7 +180,7 @@ Deployment steps must be numbered, comprehensive, and usable to customers at any
 
 [NVIDIA BioNeMo](https://docs.nvidia.com/bionemo-framework/latest/) is a domain-specific machine learning framework for training and using foundation models for biology. This includes models for analyzing proteins, small molecules, and other biological molecules. To see the latest models available in BioNeMo 2.5 see [here](https://docs.nvidia.com/bionemo-framework/latest/models/).
 
-This guidance provides step by step instructions to pretrain [ESM2](https://docs.nvidia.com/bionemo-framework/latest/models/ESM-2/) models with NVIDIA BioNeMo on Sagemaker HyPerPod slurm clusters.
+Below are instructions to pretrain [ESM2](https://docs.nvidia.com/bionemo-framework/latest/models/ESM-2/) models with NVIDIA BioNeMo on Sagemaker HyPerPod slurm clusters.
 
 0. Prerequisites
 
@@ -224,13 +224,14 @@ We provide an AWS optimized Docker image that sets up networking components (EFA
 
 5. Download Model traning data
 
-BioNeMo 2.5 container provides a CLI `download_bionemo_data` to download test or full UniProt dataset from NVIDIA Catalog which we can run as below. `get-data.sh` runs a container based on the Docker image created above, runs the `download_bionemo_data` CLI to download test data and kills the container when done and saves `_sanity.tar.gz` compressed file (71M) and `_sanity.tar.gz.untar` (134M) with training and validation data.
+BioNeMo 2.5 container provides a CLI `download_bionemo_data` to download test or full UniProt dataset from NVIDIA Catalog which we can run as below. 
+`get-data.sh` script runs a container based on the customizd BioNemo container image created above, runs the `download_bionemo_data` CLI to download test data and kills the container when done and saves `_sanity.tar.gz` compressed file (71M) and `_sanity.tar.gz.untar` (134M) with training and validation data.
 
 ```bash
 ./get-data.sh
 ```
 
-6. Pretrain ESM-2 models using SLURM scheduler
+6. Pretrain ESM2 models using SLURM scheduler
 
 Now we are ready to submit distributed training jobs to pretrain `ESM2` models. We provide the `train-esm.slurm` script to run training on 2 `p5.48xlarge` nodes with `8xH100 80 GB` GPUs. Make sure data paths and model configuration is correct if you are running on custom data. To kick off distributed training execute:
 
@@ -249,8 +250,21 @@ Once training starts you should see logs as `tail -f slurm-esm2-train-xx.out`:
  0: Training epoch 0, iteration 33/99 | lr: 6.6e-06 | global_batch_size: 32 | global_step: 33 | reduced_train_loss: 2.791 | train_step_timing in s: 0.1893 | consumed_samples: 1088 | val_loss: 2.861 | val_ppl: 17.57
  0: Training epoch 0, iteration 34/99 | lr: 6.8e-06 | global_batch_size: 32 | global_step: 34 | reduced_train_loss: 2.788 | train_step_timing in s: 0.1902 | consumed_samples: 1120 | val_loss: 2.861 | val_ppl: 17.57
 ```
+Upon completion of ESM model training job, we should be able to see entries in the shared data directory on the FSX Lustre file system:
 
-### Training Evolutionary Scale Models (ESM) model on HyperPod EKS cluster:
+```bash
+ls -l /fsx-shared/processed
+total 679472
+-rw-r--r-- 1 root root  11916956 Jan 17 14:54 __indexmap_32000mns_512msl_0.00ssp_1234s.npy
+-rw-r--r-- 1 root root 792260744 Jan 17 12:42 __indexmap_64000000mns_512msl_0.00ssp_1234s.npy
+-rw-r--r-- 1 root root  76860128 Jan 17 13:58 __indexmap_6403200mns_512msl_0.00ssp_1234s.npy
+drwxr-xr-x 3 root root     33280 Jan 17 12:41 fsx
+drwxr-xr-x 2 root root     41472 Jan 17 14:53 test
+drwxr-xr-x 2 root root     41472 Jan 17 12:41 train
+drwxr-xr-x 2 root root     41472 Jan 17 13:58 val
+```  
+
+### Training Evolutionary Scale Models (ESM2) model on HyperPod EKS cluster:
 
 **Architecture steps for training BioNemo models on SageMaker HyperPod EKS Cluster**
 
@@ -263,12 +277,11 @@ Once training starts you should see logs as `tail -f slurm-esm2-train-xx.out`:
 
 
 [NVIDIA BioNeMo](https://docs.nvidia.com/bionemo-framework/latest/) is a domain-specific machine learning framework for training and using foundation models for biology. This includes models for analyzing proteins, small molecules, and other biological molecules. To see the latest models available in BioNeMo 2.5 see [here](https://docs.nvidia.com/bionemo-framework/latest/models/).
-
-This guidance provides step by step instructions to pretrain [ESM2](https://docs.nvidia.com/bionemo-framework/latest/models/ESM-2/) models with NVIDIA BioNeMo on Sagemaker HyPerPod slurm clusters.
+Below are step by step instructions to pretrain [ESM2](https://docs.nvidia.com/bionemo-framework/latest/models/ESM-2/) models with NVIDIA BioNeMo on Sagemaker HyPerPod EKS clusters.
 
 0. Prerequisites
 
-Have a EKS based Sagemaker HyperPod cluster with Nvidia GPUs. You can verify available number of GPUs and number of EFA devices like below:
+Have a EKS based Sagemaker HyperPod cluster with nVidia GPUs. You can verify actually available number of GPUs and number of connected EFA devices like below:
 
 ```bash
 kubectl get nodes "-o=custom-columns=NAME:.metadata.name,INSTANCETYPE:.metadata.labels.node\.kubernetes\.io/instance-type,GPU:.status.allocatable.nvidia\.com/gpu,EFA:.status.allocatable.vpc\.amazonaws\.com/efa"
@@ -284,14 +297,13 @@ SSH into a machine that has full access to your HyperPod EKS cluster and run:
 
 ```
 # Path to save training data and checkpoints
-
 export AWS_REGION=us-east-1
 export DOCKER_IMAGE_NAME=bionemo
 export TAG=:aws
 export ACCOUNT=$(aws sts get-caller-identity --query Account --output text)
 export REGISTRY=${ACCOUNT}.dkr.ecr.${AWS_REGION}.amazonaws.com/
 
-#Settings below depend on actual GPU and EFA setting per selected GPU nodes and may vary
+# Settings below depend on actual GPU capacity and EFA setting per selected GPU nodes and may vary
 export GPU_PER_NODE=8
 export EFA_PER_NODE=32
 
@@ -365,6 +377,7 @@ Now we are ready to submit distributed training jobs to pretrain `ESM2` models. 
 Make sure data paths and model configuration is correct if you are running on custom data. To kick off distributed training job execute:
 
 ```bash
+# populate values from environment variables into the pretrain job template
 cat esm2-pretrain-template.yaml | envsubst > esm2-pretrain.yaml
 cat esm2-pretrain.yaml
 ---
@@ -504,44 +517,148 @@ deployment.apps/etcd created
 pytorchjob.kubeflow.org/bionemo-esm2 created
 ```
 
-To check status of the pre-training job run the following command:
-```bash
-ubectl get deploy,po,svc
-NAME                                                        READY   UP-TO-DATE   AVAILABLE   AGE
-deployment.apps/etcd                                        1/1     1            1           108s
-deployment.apps/hyperpod-dependencies-hyperpod-helm-chart   1/1     1            1           91d
-deployment.apps/hyperpod-dependencies-mpi-operator          1/1     1            1           91d
+That should deploy an `etcd` key-value database deployment and pod and `bionemo-esm2` related pods that carry out PyTorchJob
 
-NAME                                                             READY   STATUS             RESTARTS       AGE
-pod/bionemo-esm2-worker-0                                        0/1     Pending            0              108s
-pod/bionemo-esm2-worker-1                                        0/1     Pending            0              108s
-pod/download-bionemo-data                                        0/1     Completed          15 (69s ago)   53m
-pod/etcd-6cd66c884c-cs49j                                        1/1     Running            0              108s
-pod/fsx-share-test                                               1/1     Running            0              43h
-pod/hyperpod-dependencies-aws-efa-k8s-device-plugin-5dgxv        1/1     Running            0              44h
-pod/hyperpod-dependencies-aws-efa-k8s-device-plugin-lqgfm        1/1     Running            0              44h
-pod/hyperpod-dependencies-hyperpod-helm-chart-6f8989f9bb-cr89p   1/1     Running            0              39h
-pod/hyperpod-dependencies-mpi-operator-574c8c7f-tq9h7            1/1     Running            0              39h
-
-NAME                                                TYPE        CLUSTER-IP       EXTERNAL-IP   PORT(S)     AGE
-service/bionemo-esm2-worker-0                       ClusterIP   None             <none>        23456/TCP   108s
-service/bionemo-esm2-worker-1                       ClusterIP   None             <none>        23456/TCP   108s
-service/etcd                                        ClusterIP   172.20.14.81     <none>        2379/TCP    108s
-service/hyperpod-dependencies-hyperpod-helm-chart   ClusterIP   172.20.93.235    <none>        80/TCP      91d
-service/kubernetes                                  ClusterIP   172.20.0.1       <none>        443/TCP     91d
-```
 ## Deployment Validation 
 
 <Provide steps to validate a successful deployment, such as terminal output, verifying that the resource is created, status of the CloudFormation template, etc.>
+To validate that ESM2 pre-training job is actually running on HyperPod EKS cluster, check the K8s objects in the `default` namespace that should have been deployed
 
+```bash
+#first check if a PyTorchJob object has been created and is running:
+kubectl get pytorchjob
+NAME           STATE     AGE
+bionemo-esm2   Running   20m
 
-**Examples:**
+#Then get details about Deployments, pods and services
+kubectl get deploy,po,svc
+NAME                                                        READY   UP-TO-DATE   AVAILABLE   AGE
+deployment.apps/etcd                                        1/1     1            1           14s
+deployment.apps/hyperpod-dependencies-hyperpod-helm-chart   1/1     1            1           92d
+deployment.apps/hyperpod-dependencies-mpi-operator          1/1     1            1           92d
 
-* Open CloudFormation console and verify the status of the template with the name starting with xxxxxx.
-* If deployment is successful, you should see an active database instance with the name starting with <xxxxx> in        the RDS console.
-*  Run the following CLI command to validate the deployment: ```aws cloudformation describe xxxxxxxxxxxxx```
+NAME                                                             READY   STATUS              RESTARTS        AGE
+pod/bionemo-esm2-worker-0                                        0/1     ContainerCreating   0               14s
+pod/bionemo-esm2-worker-1                                        0/1     ContainerCreating   0               14s
+pod/etcd-6cd66c884c-9b7fh                                        1/1     Running             0               14s
+pod/fsx-share-test                                               1/1     Running             0               2m29s
+pod/hyperpod-dependencies-aws-efa-k8s-device-plugin-5dgxv        1/1     Running             1 (3m48s ago)   2d5h
+pod/hyperpod-dependencies-aws-efa-k8s-device-plugin-c8v6w        1/1     Running             0               6h46m
+```
+It takes a while to download previously built and uploaded to ECR customized BioNemo 2.5 container image. You can check status of each `bionemo-esm2-worker` pod by running commands like:
 
+```bash
+kubectl describe po bionemo-esm2-worker-0
+---------
+Name:             bionemo-esm2-worker-0
+Namespace:        defaultPriority:         0
+Service Account:  defaultNode:             hyperpod-i-0ad7ba010d6cbdc38/10.1.250.6
+Start Time:       Thu, 10 Apr 2025 04:50:05 +0000Labels:           training.kubeflow.org/job-name=bionemo-esm2
+                  training.kubeflow.org/operator-name=pytorchjob-controller                  training.kubeflow.org/replica-index=0
+                  training.kubeflow.org/replica-type=worker
+Annotations:      sidecar.istio.io/inject: false
+Status:           RunningIP:               10.1.0.44
+IPs:  IP:           10.1.0.44
+Controlled By:  PyTorchJob/bionemo-esm2Containers:
+  pytorch:    Container ID:  containerd://65487da33d5b5f2609e2c4058211573e323402d1da7a94be40bbeacf8798541a
+    Image:         XXXXXXXXXXXX.dkr.ecr.us-east-1.amazonaws.com/bionemo:aws    Image ID:      354918380621.dkr.ecr.us-east-1.amazonaws.com/bionemo@sha256:9df8db0cfac9eb88c308c8a8f944e2622a493856c6fa6bc868340e853e66f905
+    Port:          23456/TCP    Host Port:     0/TCP
+    Command:      python3
+      /workspace/bionemo2/sub-packages/bionemo-esm2/src/bionemo/esm2/scripts/train_esm2.py
+      --train-cluster-path=/fsx-shared/006911f92bbc0ded7ea302bbdbfab4c694b409e699c32fd49de1c527a99dba3e-2024_03_sanity.tar.gz.untar/2024_03_sanity/train_clusters_sanity.parquet
+      --train-database-path=/fsx-shared/006911f92bbc0ded7ea302bbdbfab4c694b409e699c32fd49de1c527a99dba3e-2024_03_sanity.tar.gz.untar/2024_03_sanity/train_sanity.db
+      --valid-cluster-path=/fsx-shared/006911f92bbc0ded7ea302bbdbfab4c694b409e699c32fd49de1c527a99dba3e-2024_03_sanity.tar.gz.untar/2024_03_sanity/valid_clusters.parquet
+      --valid-database-path=/fsx-shared/006911f92bbc0ded7ea302bbdbfab4c694b409e699c32fd49de1c527a99dba3e-2024_03_sanity.tar.gz.untar/2024_03_sanity/validation.db
+      --precision=bf16-mixed
+      --num-gpus=8
+      --num-nodes=2
+      --num-steps=100
+      --val-check-interval=25
+      --max-seq-length=1024
+      --limit-val-batches=2
+      --micro-batch-size=2
+      --num-layers=33
+      --hidden-size=1280
+      --num-attention-head=20
+      --ffn-hidden-size=5120
+      --tensor-model-parallel-size=1
+      --create-tensorboard-logger
+      --result-dir=/fsx-shared
+    State:          Running
+      Started:      Thu, 10 Apr 2025 04:56:41 +0000
+    Ready:          True
+    Restart Count:  0
+    Limits:
+      nvidia.com/gpu:         8
+      vpc.amazonaws.com/efa:  1
+    Requests:
+      nvidia.com/gpu:         8
+      vpc.amazonaws.com/efa:  1
+    Environment:
+      NCCL_DEBUG:         INFO
+      PYTHONUNBUFFERED:   1
+      PET_RDZV_ENDPOINT:  etcd:2379
+      PET_RDZV_BACKEND:   etcd
+      PET_NNODES:         1:64
+      PET_MAX_RESTARTS:   100
+    Mounts:
+      /fsx-shared from fsx-pv-storage (rw)
+      /var/run/secrets/kubernetes.io/serviceaccount from kube-api-access-2ghvm (ro)
+Conditions:
+  Type                        Status
+  PodReadyToStartContainers   True
+  Initialized                 True
+  Ready                       True
+  ContainersReady             True
+  PodScheduled                True
+Volumes:
+  fsx-pv-storage:
+    Type:       PersistentVolumeClaim (a reference to a PersistentVolumeClaim in the same namespace)
+    ClaimName:  fsx-claim
+    ReadOnly:   false
+  kube-api-access-2ghvm:
+    Type:                    Projected (a volume that contains injected data from multiple sources)
+    TokenExpirationSeconds:  3607
+    ConfigMapName:           kube-root-ca.crt
+    ConfigMapOptional:       <nil>
+    DownwardAPI:             true
+QoS Class:                   BestEffort
+Node-Selectors:              <none>
+Tolerations:                 node.kubernetes.io/not-ready:NoExecute op=Exists for 300s
+                             node.kubernetes.io/unreachable:NoExecute op=Exists for 300s
+                             nvidia.com/gpu:NoSchedule op=Exists
+                             vpc.amazonaws.com/efa:NoSchedule op=Exists
+Events:
+  Type    Reason     Age    From               Message
+  ----    ------     ----   ----               -------
+  Normal  Scheduled  7m13s  default-scheduler  Successfully assigned default/bionemo-esm2-worker-0 to hyperpod-i-0ad7ba010d6cbdc38
+  Normal  Pulling    7m13s  kubelet            Pulling image "354918380621.dkr.ecr.us-east-1.amazonaws.com/bionemo:aws"
+  Normal  Pulled     42s    kubelet            Successfully pulled image "354918380621.dkr.ecr.us-east-1.amazonaws.com/bionemo:aws" in 6m31.174s (6m31.174s including waiting). Image size: 16677241606 bytes.
+  Normal  Created    41s    kubelet            Created container pytorch
+  Normal  Started    38s    kubelet            Started container pytorch
+```
+The last 2 lines confirm that contaier `pytorch` in that pod has started. Similar command can be run for `bionemo-esm2-worker-0`
+In order to monitor training jobs in real-time you can run commands to tail the logs of running containers like:
 
+```bash
+kubectl logs -f bionemo-esm2-worker-0
+---
+...
+[WARNING  | py.warnings        ]: /usr/local/lib/python3.12/dist-packages/mamba_ssm/distributed/tensor_parallel.py:25: FutureWarning: `torch.cuda.amp.custom_fwd(args...)` is deprecated. Please use `torch.amp.custom_fwd(args..., device_type='cuda')` instead.
+  @custom_fwd
+[WARNING  | py.warnings        ]: /usr/local/lib/python3.12/dist-packages/mamba_ssm/distributed/tensor_parallel.py:61: FutureWarning: `torch.cuda.amp.custom_bwd(args...)` is deprecated. Please use `torch.amp.custom_bwd(args..., device_type='cuda')` instead.
+  @custom_bwd
+[WARNING  | py.warnings        ]: /usr/local/lib/python3.12/dist-packages/mamba_ssm/ops/triton/ssd_combined.py:757: FutureWarning: `torch.cuda.amp.custom_fwd(args...)` is deprecated. Please use `torch.amp.custom_fwd(args..., device_type='cuda')` instead.
+  @custom_fwd
+[WARNING  | py.warnings        ]: /usr/local/lib/python3.12/dist-packages/mamba_ssm/ops/triton/ssd_combined.py:835: FutureWarning: `torch.cuda.amp.custom_bwd(args...)` is deprecated. Please use `torch.amp.custom_bwd(args..., device_type='cuda')` instead.
+  @custom_bwd
+
+Initializing distributed: GLOBAL_RANK: 2, MEMBER: 3/16
+Initializing distributed: GLOBAL_RANK: 1, MEMBER: 2/16
+Initializing distributed: GLOBAL_RANK: 5, MEMBER: 6/16
+Initializing distributed: GLOBAL_RANK: 6, MEMBER: 7/16
+..
+```
 
 ## Running the Guidance (required)
 
@@ -553,8 +670,6 @@ This section should include:
 * Commands to run
 * Expected output (provide screenshot if possible)
 * Output description
-
-
 
 ## Next Steps (required)
 
@@ -588,7 +703,6 @@ Provide suggestions and recommendations about how customers can modify the param
 
 
 Provide a link to the *GitHub issues page* for users to provide feedback.
-
 
 **Example:** *“For any feedback, questions, or suggestions, please use the issues tab under this repo.”*
 
