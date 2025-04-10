@@ -1,6 +1,6 @@
 # Guidance for Protein language Evolutionary Scale Modeling (ESM) model training with NVIDIA BioNeMo framework on AWS SageMaker HyperPod Clusters
 
-This guidance aims to instruct and guide users how to pretrain popular computational drug discovery models such as Evolutionary Scale Models using the NVIDIA [BioNeMo](https://docs.nvidia.com/bionemo-framework/latest/) framework on Amazon [Sagemaker Hyperpod](https://aws.amazon.com/sagemaker-ai/hyperpod/). This guidance instructs users on how to create Sagemaker Hyperpod clusters using both [Slurm](https://slurm.schedmd.com/documentation.html) and [Kubernetes](https://kubernetes.io/) orchestrations. In addition, this guidance will showcase how to train ESM models on the HyperPod cluster.
+This guidance aims to instruct and guide users how to pretrain popular computational drug discovery models such as Evolutionary Scale Models (ESM) using the NVIDIA [BioNeMo](https://docs.nvidia.com/bionemo-framework/latest/) framework on Amazon [Sagemaker Hyperpod](https://aws.amazon.com/sagemaker-ai/hyperpod/). This guidance instructs users on how to create Sagemaker Hyperpod clusters using both [Slurm](https://slurm.schedmd.com/documentation.html) and [Kubernetes](https://kubernetes.io/) orchestrations. In addition, this guidance will showcase how to train ESM models on the HyperPod cluster.
 
 
 ## Table of Contents
@@ -214,7 +214,7 @@ We provide an AWS optimized Docker image that sets up networking components (EFA
 ./build.sh
 ```
 
-4. Build Enroot Image
+4. Build Enroot Container Image
 
 [NVIDIA Enroot](https://github.com/NVIDIA/enroot) is a lightweight container runtime that allows users to run containerized applications without requiring full-fledged container engines like Docker. It is designed for HPC environments, particularly the Slurm Workload Manager. To convert Docker images to Enroot squash files:
 
@@ -250,7 +250,7 @@ Once training starts you should see logs as `tail -f slurm-esm2-train-xx.out`:
  0: Training epoch 0, iteration 33/99 | lr: 6.6e-06 | global_batch_size: 32 | global_step: 33 | reduced_train_loss: 2.791 | train_step_timing in s: 0.1893 | consumed_samples: 1088 | val_loss: 2.861 | val_ppl: 17.57
  0: Training epoch 0, iteration 34/99 | lr: 6.8e-06 | global_batch_size: 32 | global_step: 34 | reduced_train_loss: 2.788 | train_step_timing in s: 0.1902 | consumed_samples: 1120 | val_loss: 2.861 | val_ppl: 17.57
 ```
-Upon completion of ESM model training job, we should be able to see entries in the shared data directory on the FSX Lustre file system:
+Upon completion of ESM model training job, we should be able to see entries in the shared data directory on the FSX Lustre file system similar to those:
 
 ```bash
 ls -l /fsx-shared/processed
@@ -271,10 +271,12 @@ drwxr-xr-x 2 root root     41472 Jan 17 13:58 val
 <p align="center">
 <img src="assets/ref_arch_traning_hyperpod_eks.jpg" alt="Reference Architecture HyperPod EKS Cluster">
 </p>
+
 1. 
 2.
 3.
-
+4.
+5.
 
 [NVIDIA BioNeMo](https://docs.nvidia.com/bionemo-framework/latest/) is a domain-specific machine learning framework for training and using foundation models for biology. This includes models for analyzing proteins, small molecules, and other biological molecules. To see the latest models available in BioNeMo 2.5 see [here](https://docs.nvidia.com/bionemo-framework/latest/models/).
 Below are step by step instructions to pretrain [ESM2](https://docs.nvidia.com/bionemo-framework/latest/models/ESM-2/) models with NVIDIA BioNeMo on Sagemaker HyPerPod EKS clusters.
@@ -544,7 +546,7 @@ kubectl get pytorchjob
 NAME           STATE     AGE
 bionemo-esm2   Running   20m
 
-#Then get details about Deployments, pods and services
+#Then get details about deployments, pods and services
 kubectl get deploy,po,svc
 NAME                                                        READY   UP-TO-DATE   AVAILABLE   AGE
 deployment.apps/etcd                                        1/1     1            1           14s
@@ -651,17 +653,19 @@ Events:
   Normal  Created    41s    kubelet            Created container pytorch
   Normal  Started    38s    kubelet            Started container pytorch
 ```
-The last 2 lines confirm that contaier `pytorch` in that pod has started. Similar command can be run for `bionemo-esm2-worker-0`
+The last 2 lines confirm that contaier `pytorch` in that pod has started. Similar command can be run for `bionemo-esm2-worker-0` and other pods, if applicable.
+You can also check AWS Console, EKS cluster service area for pods running on compute nodes visually:
+
+<p align="center">
+<img src="assets/bionemo-esm2-worker-console.jpg" alt="Reference Architecture HyperPod EKS Cluster">
+</p>
+
 In order to monitor training jobs in real-time you can run commands to tail the logs of running containers like:
 
 ```bash
 kubectl logs -f bionemo-esm2-worker-0
 ---
 ...
-[WARNING  | py.warnings        ]: /usr/local/lib/python3.12/dist-packages/mamba_ssm/distributed/tensor_parallel.py:25: FutureWarning: `torch.cuda.amp.custom_fwd(args...)` is deprecated. Please use `torch.amp.custom_fwd(args..., device_type='cuda')` instead.
-  @custom_fwd
-[WARNING  | py.warnings        ]: /usr/local/lib/python3.12/dist-packages/mamba_ssm/distributed/tensor_parallel.py:61: FutureWarning: `torch.cuda.amp.custom_bwd(args...)` is deprecated. Please use `torch.amp.custom_bwd(args..., device_type='cuda')` instead.
-  @custom_bwd
 [WARNING  | py.warnings        ]: /usr/local/lib/python3.12/dist-packages/mamba_ssm/ops/triton/ssd_combined.py:757: FutureWarning: `torch.cuda.amp.custom_fwd(args...)` is deprecated. Please use `torch.amp.custom_fwd(args..., device_type='cuda')` instead.
   @custom_fwd
 [WARNING  | py.warnings        ]: /usr/local/lib/python3.12/dist-packages/mamba_ssm/ops/triton/ssd_combined.py:835: FutureWarning: `torch.cuda.amp.custom_bwd(args...)` is deprecated. Please use `torch.amp.custom_bwd(args..., device_type='cuda')` instead.
@@ -673,6 +677,7 @@ Initializing distributed: GLOBAL_RANK: 5, MEMBER: 6/16
 Initializing distributed: GLOBAL_RANK: 6, MEMBER: 7/16
 ..
 ```
+and continue monitoring pod/container logs in real time. It is expected to take at least a few hours to complete pre-training of ESM-2 models on 2 `p5.48xlarge` nodes.
 
 ## Running the Guidance (required)
 
