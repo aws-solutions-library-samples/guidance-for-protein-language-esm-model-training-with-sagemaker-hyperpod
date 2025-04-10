@@ -1,4 +1,4 @@
-# Guidance for Protein language Evolutionary Scale Modeling (ESM) model training with NVIDIA BioNeMo framework on AWS SageMaker HyperPod
+# Guidance for Protein language Evolutionary Scale Modeling (ESM) model training with NVIDIA BioNeMo framework on AWS SageMaker HyperPod Clusters
 
 This guidance aims to instruct and guide users how to pretrain popular computational drug discovery models such as Evolutionary Scale Models using the NVIDIA [BioNeMo](https://docs.nvidia.com/bionemo-framework/latest/) framework on Amazon [Sagemaker Hyperpod](https://aws.amazon.com/sagemaker-ai/hyperpod/). This guidance instructs users on how to create Sagemaker Hyperpod clusters using both [Slurm](https://slurm.schedmd.com/documentation.html) and [Kubernetes](https://kubernetes.io/) orchestrations. In addition, this guidance will showcase how to train ESM models on the HyperPod cluster.
 
