@@ -146,7 +146,7 @@ As of March, 2025 the cost for running this Guidance with the default settings i
 
 
 ## Deployment Steps (required)
-
+<!--
 Deployment steps must be numbered, comprehensive, and usable to customers at any level of AWS expertise. The steps must include the precise commands to run, and describe the action it performs.
 
 * All steps must be numbered.
@@ -164,6 +164,7 @@ Deployment steps must be numbered, comprehensive, and usable to customers at any
 4. Edit content of **file-name** and replace **s3-bucket** with the bucket name in your account.
 5. Run this command to deploy the stack ```cdk deploy``` 
 6. Capture the domain name created by running this CLI command ```aws apigateway ............```
+-->
 
 ### Training Evolutionary Scale Models (ESM2) model on HyperPod SLURM cluster:
 
