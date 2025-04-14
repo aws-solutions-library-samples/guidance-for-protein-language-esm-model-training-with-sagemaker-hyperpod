@@ -1,6 +1,6 @@
 # Guidance for Protein language Evolutionary Scale Modeling (ESM) model training on AWS SageMaker HyperPod Clusters
 
-This guidance aims to instruct and guide users how to pretrain popular computational drug discovery models such as Evolutionary Scale Models (ESM) using the NVIDIA [BioNeMo](https://docs.nvidia.com/bionemo-framework/latest/) framework on Amazon [Sagemaker Hyperpod](https://aws.amazon.com/sagemaker-ai/hyperpod/). This guidance instructs users on how to create Sagemaker Hyperpod clusters using both [Slurm](https://slurm.schedmd.com/documentation.html) and [Kubernetes](https://kubernetes.io/) orchestrations. In addition, this guidance will showcase how to train ESM models on the HyperPod cluster.
+This guidance aims to instruct and guide users how to pretrain popular computational drug discovery models such as Evolutionary Scale Models (ESM) 2nd generation using the FSDP framework on Amazon [Sagemaker Hyperpod](https://aws.amazon.com/sagemaker-ai/hyperpod/). This guidance instructs users on how to create Sagemaker Hyperpod clusters using both [Slurm](https://slurm.schedmd.com/documentation.html) and [Kubernetes](https://kubernetes.io/) orchestrations. In addition, this guidance will showcase how to train ESM models on the HyperPod cluster.
 
 **TO DO: factor out nVIDIA BioNemo framework and replace with another oSS version of ESM-2 model**
 
@@ -30,14 +30,15 @@ This guidance aims to instruct and guide users how to pretrain popular computati
 
 As generative artificial intelligence (generative AI) continues to transform industries, the life sciences sector is leveraging these advanced technologies to accelerate drug discovery. Generative AI tools powered by deep learning models make it possible to analyze massive datasets, identify patterns, and generate insights to aid the search for new drug compounds. However, running these generative AI workloads requires a full-stack approach that combines robust computing infrastructure with optimized domain-specific software that can accelerate time to solution.
 
-With the recent proliferation of new models and tools in this field, researchers are looking for help to simplify the training, customization, and deployment of these generative AI models. And our high performance computing (HPC) customers are asking for how to easily perform distributed training with these models on AWS. In this guidance, we’ll demonstrate how to pre-train the [Evolutionary Scale Modeling](https://docs.nvidia.com/bionemo-framework/2.5/models/ESM-2/) ESM-1nv model with the nVIDIA [BioNeMo](https://docs.nvidia.com/bionemo-framework/2.5/) framework using nVIDIA GPUs on [AWS SageMaker HyperPod](https://aws.amazon.com/sagemaker-ai/hyperpod/) highly available managed application platform. NVIDIA BioNeMo is a generative AI platform for drug discovery.
+With the recent proliferation of new models and tools in this field, researchers are looking for help to simplify the training, customization, and deployment of these generative AI models. And our high performance computing (HPC) customers are asking for how to easily perform distributed training with these models on AWS. In this guidance, we’ll demonstrate how to pre-train the [Evolutionary Scale Modeling](https://docs.nvidia.com/bionemo-framework/2.5/models/ESM-2/) ESM-1nv model using nVIDIA GPUs on [AWS SageMaker HyperPod](https://aws.amazon.com/sagemaker-ai/hyperpod/) highly available managed application platform. 
 
+<!--
 ### NVIDIA BioNeMo
 
 [NVIDIA BioNeMo](https://nvidia.github.io/bionemo-framework/) is a generative AI platform for drug discovery that simplifies and accelerates the training of models using your own data. BioNeMo provides researchers and developers a fast and easy way to build and integrate state-of-the-art generative AI applications across the entire drug discovery pipeline—from target identification to lead optimization—with AI workflows for 3D protein structure prediction, de novo design, virtual screening, docking, and property prediction.
 
 The BioNeMo framework facilitates centralized model training, optimization, fine-tuning, and inferencing for protein and molecular design. Researchers can build and train foundation models from scratch at scale, or use pre-trained model checkpoints provided with the BioNeMo Framework for fine-tuning for downstream tasks. Currently, BioNeMo supports models such as ESM1nv, ESM2nv, ProtT5nv, DNABERT, OpenFold, EquiDock, DiffDock, and MegaMolBART. To read more about BioNeMo, visit the documentation page.
-
+-->
   
 ### Architecture overview
 This section provides architecture diagrams and describes the components deployed with this Guidance.
@@ -169,7 +170,7 @@ Deployment steps must be numbered, comprehensive, and usable to customers at any
 
 ### Training Evolutionary Scale Models (ESM2) model on HyperPod SLURM cluster:
 
-**Architecture and steps for training BioNemo models on SageMaker HyperPod SLURM Cluster**
+**Architecture and steps for training ESM-2 models on SageMaker HyperPod SLURM Cluster**
 
 <p align="center">
 <img src="assets/ref_arch_traning_hyperpod_slurm.jpg" alt="Reference Architecture HyperPod SLURM Cluster">
@@ -180,9 +181,8 @@ Deployment steps must be numbered, comprehensive, and usable to customers at any
 3.
 
 
-[NVIDIA BioNeMo](https://docs.nvidia.com/bionemo-framework/latest/) is a domain-specific machine learning framework for training and using foundation models for biology. This includes models for analyzing proteins, small molecules, and other biological molecules. To see the latest models available in BioNeMo 2.5 see [here](https://docs.nvidia.com/bionemo-framework/latest/models/).
 
-Below are instructions to pretrain [ESM2](https://docs.nvidia.com/bionemo-framework/latest/models/ESM-2/) models with NVIDIA BioNeMo on Sagemaker HyPerPod slurm clusters.
+Below are instructions to pretrain [ESM2](https://docs.nvidia.com/bionemo-framework/latest/models/ESM-2/) models  on Sagemaker HyperPod SLURM (HPC) clusters.
 
 0. Prerequisites
 
@@ -226,12 +226,14 @@ We provide an AWS optimized Docker image that sets up networking components (EFA
 
 5. Download Model traning data
 
+<!--
 BioNeMo 2.5 container provides a CLI `download_bionemo_data` to download test or full UniProt dataset from NVIDIA Catalog which we can run as below. 
-`get-data.sh` script runs a container based on the customizd BioNemo container image created above, runs the `download_bionemo_data` CLI to download test data and kills the container when done and saves `_sanity.tar.gz` compressed file (71M) and `_sanity.tar.gz.untar` (134M) with training and validation data.
+`get-data.sh` script runs a container based on the customized BioNemo container image created above, runs the `download_bionemo_data` CLI to download test data and kills the container when done and saves `_sanity.tar.gz` compressed file (71M) and `_sanity.tar.gz.untar` (134M) with training and validation data.
 
 ```bash
 ./get-data.sh
 ```
+-->
 
 6. Pretrain ESM2 models using SLURM scheduler
 
@@ -268,7 +270,7 @@ drwxr-xr-x 2 root root     41472 Jan 17 13:58 val
 
 ### Training Evolutionary Scale Models (ESM2) model on HyperPod EKS cluster:
 
-**Architecture steps for training BioNemo models on SageMaker HyperPod EKS Cluster**
+**Architecture steps for training ESM-2 models on SageMaker HyperPod EKS Cluster**
 
 <p align="center">
 <img src="assets/ref_arch_traning_hyperpod_eks.jpg" alt="Reference Architecture HyperPod EKS Cluster">
@@ -280,7 +282,6 @@ drwxr-xr-x 2 root root     41472 Jan 17 13:58 val
 4.
 5.
 
-[NVIDIA BioNeMo](https://docs.nvidia.com/bionemo-framework/latest/) is a domain-specific machine learning framework for training and using foundation models for biology. This includes models for analyzing proteins, small molecules, and other biological molecules. To see the latest models available in BioNeMo 2.5 see [here](https://docs.nvidia.com/bionemo-framework/latest/models/).
 Below are step by step instructions to pretrain [ESM2](https://docs.nvidia.com/bionemo-framework/latest/models/ESM-2/) models with NVIDIA BioNeMo on Sagemaker HyPerPod EKS clusters.
 
 0. Prerequisites
@@ -338,7 +339,7 @@ Once built you can push the Docker image to ECR as follows:
 
 4. Download Model Training data
 
-BioNeMo 2.5 container provides a CLI `download_bionemo_data` to download test or full UniProt dataset from NVIDIA Catalog which we can run as below. To that end we provide a `get-data-template.yaml`. First substitute the environment variables to generate `get-data.yaml` like below:
+Foundational container provides a CLI `download_bionemo_data` to download test or full UniProt dataset from NVIDIA Catalog which we can run as below. To that end we provide a `get-data-template.yaml`. First substitute the environment variables to generate `get-data.yaml` like below:
 
 ```bash
 cat get-data-template.yaml | envsubst > get-data.yaml
