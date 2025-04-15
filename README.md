@@ -168,6 +168,219 @@ Deployment steps must be numbered, comprehensive, and usable to customers at any
 6. Capture the domain name created by running this CLI command ```aws apigateway ............```
 -->
 
+### Deployment of SLURM based HyperPod cluster
+
+1. SageMaker HyperPod uses a collection of lifecycle scripts  to bootstrap the cluster, these scripts are responsible for setting up Slurm, mounting the FSx Lustre filesystem, among other actions. We'll be customizing these scripts in order to mount our FSx Lustre filesystem. A description of what each script does is included below:
+
+Script	     Description
+config.py 	Configuration file for the lifecycle scripts.
+lifecycle_script.py 	This is the main entrypoint, sets everything else up.
+on_create.sh 	Entrypoint for clusters. This script calls lifecycle_script.py.
+fsx_ubuntu.sh 	Maps home directory to /fsx.
+setup_mariadb_accounting.sh 	Sets up Slurm Accounting  with a local mariadb server running on the HeadNode.
+setup_rds_accounting.sh 	Sets up Slurm Accounting  with a RDS endpoint.
+setup_sssd.py 	Set up Active Directory/LDAP integration with SSSD .
+install_docker.sh 	[enabled by default] Installs docker, and sets data-root to /opt/dlami/nvme if available.
+install_enroot_pyxis.sh 	[enabled by default] Installs Nvidia Enroot and Pyxis , and sets data-root to /opt/dlami/nvme if available.
+start_slurm.sh 	Starts the Slurm scheduler daemon.
+add_users.sh 	[Optional] creates posix users specified in a file shared_users.txt.
+shared_users_sample.txt 	Sample of how to specify users for the add_users.sh script.
+update_neuron_sdk.sh 	[Configurable] if specified in config.py, will update neuron version.
+provisioning_parameters.json	Defines scheduler type Slurm and sets the partitions up. We'll create this in a later step.
+
+2. Setup Environment
+First, source in all the environment variables you need leveraging the output from cloudformation stack:
+```bash
+curl 'https://static.us-east-1.prod.workshops.aws/public/a16a7300-92d2-4c1c-81ac-82a289395fde/static/scripts/create_config.sh' --output create_config.sh
+bash create_config.sh
+source env_vars
+```
+Confirm all the environment variables were correctly set:
+```bash
+cat env_vars
+-------------
+export AWS_REGION=us-west-2
+export INSTANCES=g5.12xlarge
+export VPC_ID=vpc-0a53ef2f27b1a7593
+export SUBNET_ID=subnet-068d440c0547a14d9
+export FSX_ID=fs-0505889b9c83939e0
+export FSX_MOUNTNAME=ub2ejbev
+export SECURITY_GROUP=sg-07b82de9f3afed48d
+export ROLE=arn:aws:iam::xxxxx:role/sagemakervpc-AmazonSagemakerClusterExecutionRole-xxxxxx
+export ROLENAME=sagemakervpc-AmazonSagemakerClusterExecutionRole-xxxxxx
+export BUCKET=sagemaker-lifecycle-xxxxxxxx
+```
+
+3. Next, download the `Lifecycle scripts` :
+```bash
+git clone --depth=1 https://github.com/aws-samples/awsome-distributed-training/
+cd awsome-distributed-training/1.architectures/5.sagemaker-hyperpod/LifecycleScripts/
+```
+
+4. Modify `AmazonSagemakerClusterExecutionRole`:
+
+Additionally, it is required to add the following 2 AWS Managed IAM policies to your `AmazonSagemakerClusterExecutionRole`  prior to creating your cluster:
+
+```bash
+arn:aws:iam::aws:policy/AmazonPrometheusRemoteWriteAccess (permissions to allow prometheus remote-write on cluster to send metrics to Amazon Managed Prometheus )
+arn:aws:iam::aws:policy/AWSCloudFormationReadOnlyAccess (permissions to fetch the Prometheus remote write URL used in prometheus config on controller node)
+```
+Attach pilicies to IAM roles:
+```bash
+aws iam attach-role-policy --role-name $ROLENAME --policy-arn arn:aws:iam::aws:policy/AmazonPrometheusRemoteWriteAccess
+
+aws iam attach-role-policy --role-name $ROLENAME --policy-arn arn:aws:iam::aws:policy/AWSCloudFormationReadOnlyAccess
+```
+
+**Now, we can proceed with HyperPod cluster deployment**
+
+1. First we'll create the cluster config, for example in the following we have a configs for `p5.48xlarge` compute nodes and a m5.12xlarge headnode. Please choose the config that corresponds to your desired capacity type.
+
+```bash
+source env_vars
+cat > cluster-config.json << EOL
+{
+    "ClusterName": "ml-cluster",
+    "InstanceGroups": [
+      {
+        "InstanceGroupName": "login-group",
+        "InstanceType": "ml.m5.4xlarge",
+        "InstanceStorageConfigs": [
+          {
+            "EbsVolumeConfig": {
+              "VolumeSizeInGB": 500
+            }
+          }
+        ],
+        "InstanceCount": 1,
+        "LifeCycleConfig": {
+          "SourceS3Uri": "s3://${BUCKET}/src",
+          "OnCreate": "on_create.sh"
+        },
+        "ExecutionRole": "${ROLE}",
+        "ThreadsPerCore": 2
+      },
+      {
+        "InstanceGroupName": "controller-machine",
+        "InstanceType": "ml.m5.12xlarge",
+        "InstanceStorageConfigs": [
+          {
+            "EbsVolumeConfig": {
+              "VolumeSizeInGB": 500
+            }
+          }
+        ],
+        "InstanceCount": 1,
+        "LifeCycleConfig": {
+          "SourceS3Uri": "s3://${BUCKET}/src",
+          "OnCreate": "on_create.sh"
+        },
+        "ExecutionRole": "${ROLE}",
+        "ThreadsPerCore": 2
+      },
+      {
+        "InstanceGroupName": "worker-group-1",
+        "InstanceType": "ml.p5.48xlarge",
+        "InstanceCount": 1,
+        "InstanceStorageConfigs": [
+          {
+            "EbsVolumeConfig": {
+              "VolumeSizeInGB": 500
+            }
+          }
+        ],
+        "LifeCycleConfig": {
+          "SourceS3Uri": "s3://${BUCKET}/src",
+          "OnCreate": "on_create.sh"
+        },
+        "ExecutionRole": "${ROLE}",
+        "ThreadsPerCore": 1
+      }
+    ],
+    "VpcConfig": {
+      "SecurityGroupIds": ["$SECURITY_GROUP"],
+      "Subnets":["$SUBNET_ID"]
+    }
+}
+EOL
+```
+
+2. Create a config with the FSx Lustre config and upload it to the S3 bucket we created previously:
+```bash
+instance_type=$(jq '.InstanceGroups[] | select(.InstanceGroupName == "worker-group-1").InstanceType' cluster-config.json)
+cat > provisioning_parameters.json << EOL
+{
+  "version": "1.0.0",
+  "workload_manager": "slurm",
+  "controller_group": "controller-machine",
+  "login_group": "login-group",
+  "worker_groups": [
+    {
+      "instance_group_name": "worker-group-1",
+      "partition_name": ${instance_type}
+    }
+  ],
+  "fsx_dns_name": "${FSX_ID}.fsx.${AWS_REGION}.amazonaws.com",
+  "fsx_mountname": "${FSX_MOUNTNAME}"
+}
+EOL
+```
+Now upload that configuration to S3:
+```bash
+# copy to the S3 Bucket
+aws s3 cp provisioning_parameters.json s3://${BUCKET}/src/
+```
+
+Verify that the S3 file was copied successfully:
+```bash
+aws s3 cp s3://${BUCKET}/src/provisioning_parameters.json -
+```
+3. Next let's validate our cluster config:
+```bash
+curl -O https://raw.githubusercontent.com/aws-samples/awsome-distributed-training/main/1.architectures/5.sagemaker-hyperpod/validate-config.py
+
+# install boto3
+pip3 install boto3
+
+# check config for known issues
+python3 validate-config.py --cluster-config cluster-config.json --provisioning-parameters provisioning_parameters.json
+```
+
+If this succeeds we'll see:
+
+✔️  Validated instance group name worker-group-1 is correct ...
+✔️  Validated subnet subnet-0a1ccd53ea971f92a ...
+✔️  Validated security group sg-0d9483c69a4847fac ingress rules ...
+✔️  Validated security group sg-0d9483c69a4847fac egress rules ...
+✔️  Validated FSx Lustre DNS name fs-00eb138bda97b40b2.fsx.us-east-1.amazonaws.com
+✔️  Validated FSx Lustre mount name dzfijbev
+✅ Cluster Validation succeeded
+
+4. Create the cluster:
+If you see the error Unknown parameter in InstanceGroups[0]: "InstanceStorageConfigs", must be one of: InstanceCount, InstanceGroupName, InstanceType, LifeCycleConfig, ExecutionRole, ThreadsPerCore this means your AWS CLI version is too old and doesn't support Configurable cluster storage . Please see a. Install AWS CLI for update instructions.
+
+```bash
+aws sagemaker create-cluster \
+    --cli-input-json file://cluster-config.json \
+    --region $AWS_REGION
+```
+We can describe the state of the cluster:
+```shell
+aws sagemaker list-clusters --output table
+```
+You'll see output similar to the following:
+
+-------------------------------------------------------------------------------------------------------------------------------------------------
+|                                                                 ListClusters                                                                  |
++-----------------------------------------------------------------------------------------------------------------------------------------------+
+||                                                              ClusterSummaries                                                               ||
+|+----------------------------------------------------------------+----------------------+----------------+------------------------------------+|
+||                           ClusterArn                           |     ClusterName      | ClusterStatus  |           CreationTime             ||
+|+----------------------------------------------------------------+----------------------+----------------+------------------------------------+|
+||  arn:aws:sagemaker:us-west-2:159553542841:cluster/uwme6r18mhic |  ml-cluster          |  Creating     |  2023-12-07T16:59:09.433000+00:00   ||
+|+----------------------------------------------------------------+----------------------+----------------+------------------------------------+|
+
+
 ### Training Evolutionary Scale Models (ESM2) model on HyperPod SLURM cluster:
 
 **Architecture and steps for training ESM-2 models on SageMaker HyperPod SLURM Cluster**
