@@ -11,9 +11,9 @@ This guidance aims to instruct and guide users how to pretrain popular computati
 1. [Overview](#overview-required)
     - [Architecture overview](#architecture-overview)
     - [Cost](#cost)
-3. [Prerequisites](#prerequisites-required)
-    - [Operating System](#operating-system-required)
-4. [Deployment Steps](#deployment-steps-required)
+3. [Prerequisites](#prerequisites)
+    - [Operating System](#operating-system)
+4. [Deployment Steps](#deployment-steps)
 5. [Deployment Validation](#deployment-validation-required)
 6. [Running the Guidance](#running-the-guidance-required)
 7. [Next Steps](#next-steps-required)
@@ -76,10 +76,7 @@ This section provides architecture diagrams and describes the components deploye
 
 ### Cost
 
-
-_You are responsible for the cost of the AWS services used while running this Guidance. As of <month> <year>, the cost for running this Guidance with the default settings in the <Default AWS Region (Most likely will be US East (N. Virginia)) > is approximately $<n.nn> per month for processing ( <nnnnn> records )._
-
-Replace this amount with the approximate cost for running your Guidance in the default Region. This estimate should be per month and for processing/serving resonable number of requests/entities.
+_You are responsible for the cost of the AWS services used while running this Guidance. As of April 2025, the cost for running this Guidance with the default settings in the `us-east01` US East (N. Virginia)) region is approximately **$<n.nn>** per month for processing ( <nnnnn> records )._
 
 _We recommend creating a [Budget](https://docs.aws.amazon.com/cost-management/latest/userguide/budgets-managing-costs.html) through [AWS Cost Explorer](https://aws.amazon.com/aws-cost-management/aws-cost-explorer/) to help manage costs. Prices are subject to change. For full details, refer to the pricing webpage for each AWS service used in this Guidance._
 
@@ -114,8 +111,52 @@ As of March, 2025 the cost for running this Guidance with the default settings i
 
 ### Third-party tools (If applicable)
 
-*List any installable third-party tools required for deployment.*
+#### Install the AWS CLI (both kinds of HyperPod clusters)
+Depending on the OS that you are using, run a command similar to:
+```bash
+curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
+unzip awscliv2.zip
+sudo ./aws/install --update
+```
+#### Install kubectl (for EKS based clusters)
+The following command installs K8s API CLI client:
+```bash
+curl -O https://s3.us-west-2.amazonaws.com/amazon-eks/1.30.4/2024-09-11/bin/linux/amd64/kubectl
+chmod +x ./kubectl
+mkdir -p $HOME/bin && cp ./kubectl $HOME/bin/kubectl && export PATH=$HOME/bin:$PATH
+echo 'export PATH=$HOME/bin:$PATH' >> ~/.bashrc
+```
+#### Install eksctl CLI utility
+The following command installs `eksctl` AWS command line utility to manage EKS clusters
 
+```bash
+# for ARM systems, set ARCH to: `arm64`, `armv6` or `armv7`
+ARCH=amd64
+PLATFORM=$(uname -s)_$ARCH
+curl -sLO "https://github.com/eksctl-io/eksctl/releases/latest/download/eksctl_$PLATFORM.tar.gz"
+# (Optional) Verify checksum
+curl -sL "https://github.com/eksctl-io/eksctl/releases/latest/download/eksctl_checksums.txt" | grep $PLATFORM | sha256sum --check
+tar -xzf eksctl_$PLATFORM.tar.gz -C /tmp && rm eksctl_$PLATFORM.tar.gz
+sudo mv /tmp/eksctl /usr/local/bin
+``` 
+#### Install Helm Package manager
+Helm  is a package manager for Kubernetes that will be used to istall various dependancies using Charts , which bundle together all the resources needed to deploy an application to a Kubernetes cluster.
+
+```bash
+curl -fsSL -o get_helm.sh https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3
+chmod 700 get_helm.sh
+./get_helm.sh
+```
+#### Acquire AWS access long-term credentials
+Using the AWS credentials you fetched above, use aws configure to add the credentials to your terminal. See configure aws credentials  for more details.
+
+```bash
+$ aws configure
+AWS Access Key ID [None]: AKIAIOSFODNN7EXAMPLE
+AWS Secret Access Key [None]: wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY
+Default region name [None]: us-west-2
+Default output format [None]: json
+```
 
 ### AWS account requirements (If applicable)
 
@@ -131,23 +172,24 @@ As of March, 2025 the cost for running this Guidance with the default settings i
 - IAM role with specific permissions
 - Enabling a Region or service etc.
 
-
+<!--
 ### aws cdk bootstrap (if sample code has aws-cdk)
 
 <If using aws-cdk, include steps for account bootstrap for new cdk users.>
 
 **Example blurb:** “This Guidance uses aws-cdk. If you are using aws-cdk for first time, please perform the below bootstrapping....”
+-->
 
-### Service limits  (if applicable)
+### Service limits
 
 <Talk about any critical service limits that affect the regular functioning of the Guidance. If the Guidance requires service limit increase, include the service name, limit name and link to the service quotas page.>
 
-### Supported Regions (if applicable)
+### Supported Regions
 
 <If the Guidance is built for specific AWS Regions, or if the services used in the Guidance do not support all Regions, please specify the Region this Guidance is best suited for>
 
 
-## Deployment Steps (required)
+## Deployment Steps
 <!--
 Deployment steps must be numbered, comprehensive, and usable to customers at any level of AWS expertise. The steps must include the precise commands to run, and describe the action it performs.
 
@@ -168,25 +210,26 @@ Deployment steps must be numbered, comprehensive, and usable to customers at any
 6. Capture the domain name created by running this CLI command ```aws apigateway ............```
 -->
 
-### Deployment of SLURM based HyperPod cluster
+### Deployment of SLURM based SageMaker HyperPod cluster
 
 1. SageMaker HyperPod uses a collection of lifecycle scripts  to bootstrap the cluster, these scripts are responsible for setting up Slurm, mounting the FSx Lustre filesystem, among other actions. We'll be customizing these scripts in order to mount our FSx Lustre filesystem. A description of what each script does is included below:
 
-Script	     Description
-config.py 	Configuration file for the lifecycle scripts.
-lifecycle_script.py 	This is the main entrypoint, sets everything else up.
-on_create.sh 	Entrypoint for clusters. This script calls lifecycle_script.py.
-fsx_ubuntu.sh 	Maps home directory to /fsx.
-setup_mariadb_accounting.sh 	Sets up Slurm Accounting  with a local mariadb server running on the HeadNode.
-setup_rds_accounting.sh 	Sets up Slurm Accounting  with a RDS endpoint.
-setup_sssd.py 	Set up Active Directory/LDAP integration with SSSD .
-install_docker.sh 	[enabled by default] Installs docker, and sets data-root to /opt/dlami/nvme if available.
-install_enroot_pyxis.sh 	[enabled by default] Installs Nvidia Enroot and Pyxis , and sets data-root to /opt/dlami/nvme if available.
-start_slurm.sh 	Starts the Slurm scheduler daemon.
-add_users.sh 	[Optional] creates posix users specified in a file shared_users.txt.
-shared_users_sample.txt 	Sample of how to specify users for the add_users.sh script.
-update_neuron_sdk.sh 	[Configurable] if specified in config.py, will update neuron version.
-provisioning_parameters.json	Defines scheduler type Slurm and sets the partitions up. We'll create this in a later step.
+|**Script**| **Description** |
+|-----------|------------|
+|[config.py](deployment/hyperpod_slurm/LifecycleScripts/base-config/config.py) | Configuration file for the lifecycle scripts |
+|[lifecycle_script.py](deployment/hyperpod_slurm/LifecycleScripts/base-config/lifecycle_script.py) | This is the main entrypoint, sets everything else up.|
+|[on_create.sh](deployment/hyperpod_slurm/LifecycleScripts/base-config/on_create.sh)| Entrypoint for clusters. This script calls `lifecycle_script.py`|
+|[fsx_ubuntu.sh](deployment/hyperpod_slurm/LifecycleScripts/base-config/utils/fsx_ubuntu.sh) | Maps home directory to /fsx |
+|[setup_mariadb_accounting.sh](deployment/hyperpod_slurm/LifecycleScripts/base-config/setup_mariadb_accounting.sh)| Sets up Slurm Accounting  with a local mariadb server running on the HeadNode| 
+|[setup_rds_accounting.sh](deployment/hyperpod_slurm/LifecycleScripts/base-config/setup_rds_accounting.sh) | Sets up Slurm Accounting  with a RDS endpoint|
+|[setup_sssd.py](deployment/hyperpod_slurm/LifecycleScripts/base-config/setup_sssd.py) | Set up Active Directory/LDAP integration with SSSD |
+|[install_docker.sh](deployment/hyperpod_slurm/LifecycleScripts/base-config/utils/install_docker.sh) - enabled by default | Installs docker, and sets data-root to /opt/dlami/nvme if available |
+|[install_enroot_pyxis.sh](deployment/hyperpod_slurm/LifecycleScripts/base-config/utils/install_enroot_pyxis.sh) - enabled by default | Installs Nvidia Enroot and Pyxis , and sets data-root to /opt/dlami/nvme if available.
+|[start_slurm.sh](deployment/hyperpod_slurm/LifecycleScripts/base-config/start_slurm.sh) | Starts the Slurm scheduler daemon |
+|[add_users.sh](deployment/hyperpod_slurm/LifecycleScripts/base-config/add_users.sh) - Optional | creates posix users specified in a file shared_users.txt |
+|[shared_users_sample.txt](deployment/hyperpod_slurm/LifecycleScripts/base-config/shared_users_sample.txt) | Sample of how to specify users for the add_users.sh script |
+|[update_neuron_sdk.sh](deployment/hyperpod_slurm/LifecycleScripts/base-config/utils/update_neuron_sdk.sh) | Configurableif specified in config.py, will update neuron version |
+|*provisioning_parameters.json*	| Defines scheduler type Slurm and sets the partitions up. We'll create this in a later step |
 
 2. Setup Environment
 First, source in all the environment variables you need leveraging the output from cloudformation stack:
@@ -211,15 +254,15 @@ export ROLENAME=sagemakervpc-AmazonSagemakerClusterExecutionRole-xxxxxx
 export BUCKET=sagemaker-lifecycle-xxxxxxxx
 ```
 
-3. Next, download the `Lifecycle scripts` :
+3. Next, download the [`Lifecycle scripts`](deployment/hyperpod_slurm/LifecycleScripts) :
 ```bash
-git clone --depth=1 https://github.com/aws-samples/awsome-distributed-training/
-cd awsome-distributed-training/1.architectures/5.sagemaker-hyperpod/LifecycleScripts/
+git clone --depth=1 https://github.com/aws-solutions-library-samples/guidance-for-protein-language-esm-model-training-with-sagemaker-hyperpod
+cd guidance-for-protein-language-esm-model-training-with-sagemaker-hyperpod/deployment/hyperpod_slurm/LifecycleScripts
 ```
 
 4. Modify `AmazonSagemakerClusterExecutionRole`:
 
-Additionally, it is required to add the following 2 AWS Managed IAM policies to your `AmazonSagemakerClusterExecutionRole`  prior to creating your cluster:
+Additionally, it is required to add the following 2 AWS Managed IAM policies to your `AmazonSagemakerClusterExecutionRole`  prior to creating HyperPod cluster:
 
 ```bash
 arn:aws:iam::aws:policy/AmazonPrometheusRemoteWriteAccess (permissions to allow prometheus remote-write on cluster to send metrics to Amazon Managed Prometheus )
@@ -231,10 +274,19 @@ aws iam attach-role-policy --role-name $ROLENAME --policy-arn arn:aws:iam::aws:p
 
 aws iam attach-role-policy --role-name $ROLENAME --policy-arn arn:aws:iam::aws:policy/AWSCloudFormationReadOnlyAccess
 ```
+5. Upload the artifacts to the bucket:
+
+```bash
+# upload data
+aws s3 cp --recursive base-config/ s3://${BUCKET}/src
+
+# move back to env_var directory
+cd ../../../..
+```
 
 **Now, we can proceed with HyperPod cluster deployment**
 
-1. First we'll create the cluster config, for example in the following we have a configs for `p5.48xlarge` compute nodes and a m5.12xlarge headnode. Please choose the config that corresponds to your desired capacity type.
+6. First we'll create the cluster config, for example in the following we have the configuration for `p5.48xlarge` compute nodes and a m5.12xlarge headnode. Please modify the config that corresponds to your desired capacity type.
 
 ```bash
 source env_vars
@@ -305,7 +357,8 @@ cat > cluster-config.json << EOL
 EOL
 ```
 
-2. Create a config with the FSx Lustre config and upload it to the S3 bucket we created previously:
+7. Create a config with the `FSx Lustre` config and upload it to the S3 bucket we created previously:
+
 ```bash
 instance_type=$(jq '.InstanceGroups[] | select(.InstanceGroupName == "worker-group-1").InstanceType' cluster-config.json)
 cat > provisioning_parameters.json << EOL
@@ -325,7 +378,7 @@ cat > provisioning_parameters.json << EOL
 }
 EOL
 ```
-Now upload that configuration to S3:
+8. Now upload that configuration to S3 bucket:
 ```bash
 # copy to the S3 Bucket
 aws s3 cp provisioning_parameters.json s3://${BUCKET}/src/
@@ -335,10 +388,9 @@ Verify that the S3 file was copied successfully:
 ```bash
 aws s3 cp s3://${BUCKET}/src/provisioning_parameters.json -
 ```
-3. Next let's validate our cluster config:
+9. Validate our cluster config:
 ```bash
-curl -O https://raw.githubusercontent.com/aws-samples/awsome-distributed-training/main/1.architectures/5.sagemaker-hyperpod/validate-config.py
-
+curl -O https://github.com/aws-solutions-library-samples/guidance-for-protein-language-esm-model-training-with-sagemaker-hyperpod/blob/main/deployment/hyperpod_slurm/validate-config.py
 # install boto3
 pip3 install boto3
 
@@ -346,7 +398,7 @@ pip3 install boto3
 python3 validate-config.py --cluster-config cluster-config.json --provisioning-parameters provisioning_parameters.json
 ```
 
-If this succeeds we'll see:
+If this commands succeeds, you should see:
 
 ✔️  Validated instance group name worker-group-1 is correct ...
 ✔️  Validated subnet subnet-0a1ccd53ea971f92a ...
@@ -356,8 +408,8 @@ If this succeeds we'll see:
 ✔️  Validated FSx Lustre mount name dzfijbev
 ✅ Cluster Validation succeeded
 
-4. Create the cluster:
-If you see the error Unknown parameter in InstanceGroups[0]: "InstanceStorageConfigs", must be one of: InstanceCount, InstanceGroupName, InstanceType, LifeCycleConfig, ExecutionRole, ThreadsPerCore this means your AWS CLI version is too old and doesn't support Configurable cluster storage . Please see a. Install AWS CLI for update instructions.
+10. Create the cluster:
+If you see the error `Unknown parameter in InstanceGroups[0]: "InstanceStorageConfigs", must be one of: InstanceCount, InstanceGroupName, InstanceType, LifeCycleConfig, ExecutionRole, ThreadsPerCore` this means your AWS CLI version is too old and doesn't support Configurable cluster storage . Please see  `Install AWS CLI for update` instructions above.
 
 ```bash
 aws sagemaker create-cluster \
@@ -369,7 +421,7 @@ We can describe the state of the cluster:
 aws sagemaker list-clusters --output table
 ```
 You'll see output similar to the following:
-
+```bash
 -------------------------------------------------------------------------------------------------------------------------------------------------
 |                                                                 ListClusters                                                                  |
 +-----------------------------------------------------------------------------------------------------------------------------------------------+
@@ -379,7 +431,204 @@ You'll see output similar to the following:
 |+----------------------------------------------------------------+----------------------+----------------+------------------------------------+|
 ||  arn:aws:sagemaker:us-west-2:159553542841:cluster/uwme6r18mhic |  ml-cluster          |  Creating     |  2023-12-07T16:59:09.433000+00:00   ||
 |+----------------------------------------------------------------+----------------------+----------------+------------------------------------+|
+```
 
+### Deployment of EKS based SageMaker HyperPod cluster
+
+#### Install dependencies and configure
+
+1. Clone the `Hyperpod-cli` Repo 
+
+```bash
+git clone https://github.com/aws/sagemaker-hyperpod-cli.git
+cd sagemaker-hyperpod-cli/helm_chart
+```
+
+2. Install the Helm Chart
+
+Locally test the helm chart: 
+```bash
+helm lint HyperPodHelmChart
+```
+Update the dependencies: 
+```bash 
+helm dependencies update HyperPodHelmChart
+```
+Conduct a dry run: 
+```bash 
+helm install dependencies HyperPodHelmChart --dry-run
+```
+Deploy the helm chart: 
+```bash 
+helm install dependencies HyperPodHelmChart --namespace kube-system
+```
+
+3. Create SageMaker HyperPod cluster
+
+Now that we have all our infrastructure in place, we can create a cluster. 
+
+We need to setup few environment variables required for creating cluster. You will need to set the below environment parameters accordingly as per your requirement. 
+
+```bash
+export ACCEL_INSTANCE_TYPE=ml.g5.12xlarge #change this
+export AWS_REGION=us-west-2 #change this
+export ACCEL_COUNT=1 #change this
+export ACCEL_VOLUME_SIZE=500 #the size in GB of the EBS volume attached to the compute node.
+export GEN_INTANCE_TYPE= ml.m5.2xlarge	#The general purpose compute instance type you want to use
+export GEN_COUNT=1	#The number of general purpose compute nodes you want to deploy
+export GEN_VOLUME_SIZE=500 #The size in GB of the EBS volume attached to the general purpose compute nodes
+export NODE_RECOVEY=AUTOMATIC 
+
+```
+
+ If you have used the full deployment option while deploying cloud formation you can use the helper script([create_config.sh](./create_config.sh)) to retreive all the required. 
+
+ If you used Integrative Deployment Mode, set the below parameters:
+
+```bash
+export EKS_CLUSTER_ARN=<YOUR_EKS_CLUSTER_ARN_HERE>
+export EKS_CLUSTER_NAME=<YOUR_EKS_CLUSTER_NAME_HERE>
+```
+
+ If you used minimal deployment option you will have to explicitly set the below environment variables: 
+
+```bash
+export EKS_CLUSTER_ARN=<YOUR_EKS_CLUSTER_ARN_HERE>
+export EKS_CLUSTER_NAME=<YOUR_EKS_CLUSTER_NAME_HERE>
+export VPC_ID=<YOUR_VPC_ID_HERE>
+export SUBNET_ID=<YOUR_SUBNET_ID_HERE>
+export SECURITY_GROUP=<YOUR_SECURITY_GROUP_ID_HERE>
+```
+
+Once set you can run the create_config.sh to set all the required environment variables.
+
+```bash
+export STACK_ID=hyperpod-eks-full-stack # change this accordingly 
+bash ./create_config.sh
+source env_vars
+```
+
+#### Lifecycle scripts
+
+Lifecycle scripts tell SageMaker HyperPod how to setup your HyperPod cluster. You can use this to install any node level customizations needed for your cluster. 
+We provide a [base configuration](./LifecycleScripts/base-config) to get started. Below is a brief description of what each script is doing.
+
+| Script                       | Description                                                                                                                                    |
+|------------------------------|------------------------------------------------------------------------------------------------------------------------------------------------|
+| on_create.sh                 | Required dummy script that is needed to create cluster                                                                           |
+
+
+For now, let's just use the base configuration provided. Upload the scripts to the bucket you created earlier.
+```
+aws s3 cp --recursive LifecycleScripts/base-config s3://${BUCKET_NAME}/LifecycleScripts/base-config
+```
+
+#### Cluster configuration
+
+Next, we can configure our actual cluster. In this case, we are creating a cluster with 2 Instance Groups. One with ml.m5.2xlarge instance and one with ml.g5.12xlarge instance. 
+
+>Note - You can modify the number of instance groups as per your requirement. It is not mandatory to have 2 instance groups for cluster creation.
+
+Start by creating cluster-config.json using the below snippet that uses the environment variables. 
+
+```json
+cat > cluster-config.json << EOL
+{
+    "ClusterName": "ml-cluster",
+    "Orchestrator": { 
+      "Eks": 
+      {
+        "ClusterArn": "${EKS_CLUSTER_ARN}"
+      }
+    },
+    "InstanceGroups": [
+      {
+        "InstanceGroupName": "worker-group-1",
+        "InstanceType": "${ACCEL_INSTANCE_TYPE}",
+        "InstanceCount": ${ACCEL_COUNT},
+        "InstanceStorageConfigs": [
+          {
+            "EbsVolumeConfig": {
+              "VolumeSizeInGB": ${ACCEL_VOLUME_SIZE}
+            }
+          }
+        ],
+        "LifeCycleConfig": {
+          "SourceS3Uri": "s3://${BUCKET_NAME}",
+          "OnCreate": "on_create.sh"
+        },
+        "ExecutionRole": "${EXECUTION_ROLE}",
+        "ThreadsPerCore": 1,
+        "OnStartDeepHealthChecks": ["InstanceStress", "InstanceConnectivity"]
+      },
+      {
+        "InstanceGroupName": "worker-group-2",
+        "InstanceType": "${GEN_INSTANCE_TYPE}",
+        "InstanceCount": ${GEN_COUNT},
+        "InstanceStorageConfigs": [
+          {
+            "EbsVolumeConfig": {
+              "VolumeSizeInGB": ${GEN_VOLUME_SIZE}
+            }
+          }
+        ],
+        "LifeCycleConfig": {
+          "SourceS3Uri": "s3://${BUCKET_NAME}",
+          "OnCreate": "on_create.sh"
+        },
+        "ExecutionRole": "${EXECUTION_ROLE}",
+        "ThreadsPerCore": 1
+      }
+    ],
+    "VpcConfig": {
+      "SecurityGroupIds": ["$SECURITY_GROUP"],
+      "Subnets":["$SUBNET_ID"]
+    },
+    "NodeRecovery": "${NODE_RECOVERY}"
+}
+EOL
+```
+
+- You can configure up to 20 instance groups under the `InstanceGroups` parameter. 
+- For `Orchestrator.Eks.ClusterArn`, specify the ARN of the EKS cluster you want to use as the orchestrator. 
+- For `OnStartDeepHealthChecks`, add `InstanceStress` and `InstanceConnectivity` to enable deep health checks. 
+- For `NodeRecovery`, specify `Automatic` to enable automatic node recovery. HyperPod replaces or reboots instances (nodes) that fail the basic health or deep health checks (when enabled). 
+- For the `VpcConfig` parameter, specify the information of the VPC used in the EKS cluster. The subnets must be private
+
+#### Launch a new cluster
+
+Now that everything is in place, we can launch our cluster with the below command.
+
+```bash
+aws sagemaker create-cluster \
+    --cli-input-json file://cluster-config.json \
+    --region $AWS_REGION
+```
+
+You can see the current state of the cluster with
+
+```bash
+aws sagemaker list-clusters \
+ --output table \
+ --region $AWS_REGION
+```
+
+You'll see output similar to the following:
+
+```
+-------------------------------------------------------------------------------------------------------------------------------------------------
+|                                                                 ListClusters                                                                  |
++-----------------------------------------------------------------------------------------------------------------------------------------------+
+||                                                              ClusterSummaries                                                               ||
+|+----------------------------------------------------------------+----------------------+----------------+------------------------------------+|
+||                           ClusterArn                           |     ClusterName      | ClusterStatus  |           CreationTime             ||
+|+----------------------------------------------------------------+----------------------+----------------+------------------------------------+|
+||  arn:aws:sagemaker:us-west-2:xxxxxxxxxxxx:cluster/uwme6r18mhic |  ml-cluster          |  Creating     |  2024-07-11T16:30:42.219000-04:00   ||
+|+----------------------------------------------------------------+----------------------+----------------+------------------------------------+|
+```
+
+
+## Deployment Validation 
 
 ### Training Evolutionary Scale Models (ESM2) model on HyperPod SLURM cluster:
 
@@ -751,7 +1000,6 @@ pytorchjob.kubeflow.org/bionemo-esm2 created
 
 That should deploy an `etcd` key-value database deployment and pod and `bionemo-esm2` related pods that carry out PyTorchJob
 
-## Deployment Validation 
 
 <Provide steps to validate a successful deployment, such as terminal output, verifying that the resource is created, status of the CloudFormation template, etc.>
 To validate that ESM2 pre-training job is actually running on HyperPod EKS cluster, check the K8s objects in the `default` namespace that should have been deployed
