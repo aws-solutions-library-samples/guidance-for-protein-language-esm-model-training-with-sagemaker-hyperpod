@@ -2,8 +2,6 @@
 
 This guidance aims to instruct and guide users how to pretrain popular computational drug discovery models such as Evolutionary Scale Models (ESM) 2nd generation using the FSDP framework on Amazon [Sagemaker Hyperpod](https://aws.amazon.com/sagemaker-ai/hyperpod/). This guidance instructs users on how to create Sagemaker Hyperpod clusters using both [Slurm](https://slurm.schedmd.com/documentation.html) and [Kubernetes](https://kubernetes.io/) orchestrations. In addition, this guidance will showcase how to train ESM models on the HyperPod cluster.
 
-**TO DO: factor out nVIDIA BioNemo framework and replace with another oSS version of ESM-2 model**
-
 ## Table of Contents
 
 ### Required
@@ -1205,5 +1203,6 @@ Include a legal disclaimer
 
 ## Authors (optional)
 
-Daniel Zilberman, Sr SA AWS Tech Solutions
-Ankur Srivastava, Sr. WW Specialist SA GenAI
+Daniel Zilberman, Sr SA AWS Tech Solutions <br/>
+Ankur Srivastava, Sr. WW Specialist SA GenAI <br/>
+Alex Iankoulski, Principal WW Specialist SA GenAI <br/>
