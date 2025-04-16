@@ -1,0 +1,17 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: preprocess-data
+spec:
+  containers:
+  - name: preprocess-data
+    image: ${REGISTRY}${DOCKER_IMAGE_NAME}:${TAG}
+    command: ["/bin/bash"]
+    args: ["-c", "python3 1.tokenize_uniref_csv.py --input_dir ${TARGET_PATH}/csv --output_dir ${TARGET_PATH}/processed"]
+    volumeMounts:
+    - name: volume
+      mountPath: /fsx-shared
+  volumes:
+  - name: volume
+    persistentVolumeClaim:
+      claimName: fsx-claim

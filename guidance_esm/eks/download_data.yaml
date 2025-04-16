@@ -1,0 +1,17 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: download-uniref-data
+spec:
+  containers:
+  - name: download-uniref-data
+    image: ${REGISTRY}${DOCKER_IMAGE_NAME}:${TAG}
+    command: ["/bin/bash"]
+    args: ["-c", "python3 0.download_data.py --output_dir ${TARGET_PATH}"]
+    volumeMounts:
+    - name: volume
+      mountPath: /fsx-shared
+  volumes:
+  - name: volume
+    persistentVolumeClaim:
+      claimName: fsx-claim
