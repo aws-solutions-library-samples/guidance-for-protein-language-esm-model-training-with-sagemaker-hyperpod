@@ -68,16 +68,15 @@ kubectl apply -f preprocess.yaml
 
 Now we are ready to submit distributed training jobs to pretrain ESM2 models. We provide the train-esm.slurm script to run training on 2 p5.48xlarge nodes with 8xH100 80 GB GPUs. Make sure data paths and model configuration is correct if you are running on custom data. To kick off distributed training execute:
 
+```bash
 cat train-ddp-template.yaml.yaml | envsubst > train-ddp.yaml
-
 kubectl apply -f train-ddp.yaml
+```
 
 ## 7. FSDP
-
+```bash
 cat train-fsdp-template.yaml.yaml | envsubst > train-fsdp.yaml
-
 kubectl apply -f train-fsdp.yaml
-
-
+```
 
 sbatch train_fsdp.sh
