@@ -62,7 +62,7 @@ declare -a TRAINING_ARGS=(
     --output_dir ${TARGET_PATH} \
     --per_device_train_batch_size 8 \
     --max_train_samples 100000 \
-    --tokenizer_name "facebook/esm2_t30_150M_UR50D" \
+    --tokenizer_name ${MODEL} \
     --dataset_dir ${TARGET_PATH}/processed/arrow \
     --torch_compile True \
     --pad_to_max_length True \
