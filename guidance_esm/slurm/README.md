@@ -59,9 +59,10 @@ docker run --rm -v ${TARGET_PATH}:/workspace ${DOCKER_IMAGE_NAME}:${TAG} -v /wor
 ## 6. DDP
 
 Now we are ready to submit distributed training jobs to pretrain ESM2 models. We provide the train-esm.slurm script to run training on 2 p5.48xlarge nodes with 8xH100 80 GB GPUs. Make sure data paths and model configuration is correct if you are running on custom data. To kick off distributed training execute:
-
+```bash
 sbatch train_ddp.sh
-
+```
 ## 7. FSDP
-
+```bash
 sbatch train_fsdp.sh
+```
