@@ -43,16 +43,18 @@ We provide an AWS optimized Docker image that sets up networking components (EFA
 ```
 
 Once built you can push the Docker image to ECR as follows:
-
+```bash
 ./push.sh
+```
 
-
-## 4. Prepare dataset
+## 4. Prepare dataset of training data
 
 Next we need to download the Uniref50 training data. You can do so by running:
 
 ```bash
-kubectl apply -f download_data.yaml
+cat download_data.yaml | envsubst > download_data_real.yaml
+kubectl apply -f download_data_real.yaml
+pod/download-uniref-data created
 ```
 It would download the data and partitions the data in 50 .csv files in `/fsx/ubuntu/csv` folder. The whole process should take less than 30 mins.
 
@@ -66,7 +68,9 @@ kubectl apply -f preprocess.yaml
 
 ## 6. DDP
 
-Now we are ready to submit distributed training jobs to pretrain ESM2 models. We provide the train-esm.slurm script to run training on 2 p5.48xlarge nodes with 8xH100 80 GB GPUs. Make sure data paths and model configuration is correct if you are running on custom data. To kick off distributed training execute:
+Now we are ready to submit distributed training jobs to pretrain ESM2 models. We provide the `train-esm.slurm` script to run training on 2 p5.48xlarge nodes with 8xH100 80 GB GPUs. Make sure data paths and model configuration is correct if you are running on custom data. 
+
+To kick off distributed training execute:
 
 ```bash
 cat train-ddp-template.yaml.yaml | envsubst > train-ddp.yaml
