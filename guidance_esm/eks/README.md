@@ -56,7 +56,27 @@ cat download_data.yaml | envsubst > download_data_real.yaml
 kubectl apply -f download_data_real.yaml
 pod/download-uniref-data created
 ```
-It would download the data and partitions the data in 50 .csv files in `/fsx/ubuntu/csv` folder. The whole process should take less than 30 mins.
+It would download the data and partitions the data in 50 .csv files in `/fsx/ubuntu/csv` folder. The whole process should take less than 30 mins. 
+You can check the progress of that download by tailing the pod's log:
+
+```bash
+kubectl logs -f download-uniref-data
+04/18/2025 05:03:37 - INFO - Parsing arguments
+04/18/2025 05:03:37 - INFO - Downloading FASTA
+04/18/2025 05:03:37 - INFO - Downloading https://ftp.uniprot.org/pub/databases/uniprot/uniref/uniref50/uniref50.fasta.gz to /workspace/tmpg20mflpo/fasta
+https://ftp.uniprot.org/pub/databases/uniprot/uniref/uniref50/uniref50.fasta.gz: 100%|██████████| 13.5G/13.5G [00:59<00:00, 244MB/s]
+04/18/2025 05:04:36 - INFO - Generating csv files
+Reading FASTA file
+493954it [00:10, 67818.62it/s]04/18/2025 05:04:47 - INFO - Writing 500000 records to /fsx/ubuntu/esm/csv/x000.csv
+994203it [00:32, 90621.81it/s]04/18/2025 05:05:09 - INFO - Writing 500000 records to /fsx/ubuntu/esm/csv/x001.csv
+1493121it [00:46, 103209.79it/s]04/18/2025 05:05:23 - INFO - Writing 500000 records to /fsx/ubuntu/esm/csv/x002.csv
+1996057it [00:58, 113940.27it/s]04/18/2025 05:05:35 - INFO - Writing 500000 records to /fsx/ubuntu/esm/csv/x003.csv
+2495863it [01:08, 123839.35it/s]04/18/2025 05:05:45 - INFO - Writing 500000 records to /fsx/ubuntu/esm/csv/x004.csv
+2993022it [01:18, 131968.89it/s]04/18/2025 05:05:55 - INFO - Writing 500000 records to /fsx/ubuntu/esm/csv/x005.csv
+3492050it [01:27, 138942.11it/s]04/18/2025 05:06:04 - INFO - Writing 500000 records to /fsx/ubuntu/esm/csv/x006.csv
+3988951it [01:36, 146835.72it/s]04/18/2025 05:06:13 - INFO - Writing 500000 records to /fsx/ubuntu/esm/csv/x007.csv
+...
+```
 
 ## 5. Convert CSVs to HuggingFace Dataset and Tokenize
 
