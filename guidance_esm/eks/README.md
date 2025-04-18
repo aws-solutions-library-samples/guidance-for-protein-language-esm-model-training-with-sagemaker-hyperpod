@@ -55,7 +55,7 @@ pod/download-uniref-data created
 ```
 It would download the data and partitions the data in 50 .csv files in the folder specified by the `TARGET_PATH` environment variable. 
 The whole process should take less than 30 mins. 
-You can check the progress of data download by tailing the pod's log:
+
 
 ```bash
 kubectl logs -f download-uniref-data
@@ -70,15 +70,105 @@ Reading FASTA file
 1492283it [00:47, 102759.08it/s]04/18/2025 22:05:35 - INFO - Writing 500000 records to /fsx-shared/esm/csv/x002.csv
 1995100it [00:59, 113624.67it/s]04/18/2025 22:05:48 - INFO - Writing 500000 records to /fsx-shared/esm/csv/x003.csv
 ...
+8957193it [08:17, 686030.19it/s]04/18/2025 22:13:06 - INFO - Writing 500000 records to /fsx-shared/esm/csv/x137.csv
+69290910it [08:18, 139067.03it/s]
+04/18/2025 22:13:07 - INFO - Writing 290910 records to /fsx-shared/esm/csv/x138.csv
+04/18/2025 22:13:09 - INFO - Save complete
 ```
+We can valildate contents of the shared directory `fsx-shared/esm` using the provided `view-fsx.yaml` deployment descriptor:
+
+```bash
+kubectl apply -f view-fsx.yaml
+pod/fsx-share-test created
+```
+Then we can get "inside" that pod and review contents of the shared folder:
+```bash
+ubectl exec -it fsx-share-test -- /bin/bash
+root@fsx-share-test:/# ls -ltr /fsx-shared/esm/csv
+total 20538966
+-rw-r--r-- 1 root root  160442718 Apr 18 22:09 x043.csv
+-rw-r--r-- 1 root root  157890712 Apr 18 22:09 x044.csv
+-rw-r--r-- 1 root root  155384478 Apr 18 22:09 x045.csv
+-rw-r--r-- 1 root root  152885989 Apr 18 22:09 x046.csv
+-rw-r--r-- 1 root root  150458014 Apr 18 22:09 x047.csv
+...
+- rw-r--r-- 1 root root  168375903 Apr 18 22:19 x040.csv
+-rw-r--r-- 1 root root  165337183 Apr 18 22:19 x041.csv
+-rw-r--r-- 1 root root  163011902 Apr 18 22:19 x042.csv
+```
+
 
 ## 5. Convert CSVs to HuggingFace Dataset and Tokenize
 
 Next we need to tokenize the dataset in order to provide training data in the specified format. This will split the data in training, test and validation folders, tokenize them and save the arrow files in `processed` folder.
 
 ```bash
-kubectl apply -f preprocess.yaml
+cat preprocess-template.yaml | envsubst > preprocess-data.yaml
+cat preprocess-data.yaml
+apiVersion: v1
+kind: Pod
+metadata:
+  name: preprocess-data
+spec:
+  containers:
+  - name: preprocess-data
+    image: 354918380621.dkr.ecr.us-east-1.amazonaws.com/esm:aws
+    command: ["/bin/bash"]
+    args: ["-c", "python3 1.tokenize_uniref_csv.py --input_dir /fsx-shared/esm/csv --output_dir /fsx-shared/esm/processed"]
+    volumeMounts:
+    - name: volume
+      mountPath: /fsx-shared
+  volumes:
+  - name: volume
+    persistentVolumeClaim:
+      claimName: fsx-claim
 ```
+Then initiate pre-processing job using generated deployment descriptor:
+
+```bash
+kubectl apply -f preprocess-data.yaml
+pod/preprocess-data created
+```
+You can check the progress of data pre-processing by tailing that pod's log:
+```bash
+kubectl logs -f preprocess-data
+ubectl logs -f preprocess-data
+04/18/2025 22:34:40 - INFO - Parsing arguments
+04/18/2025 22:34:40 - INFO - Loading csv files from /fsx-shared/esm/csv
+Downloading data: 100%|██████████| 18/18 [00:00<00:00, 12503.72files/s]
+Downloading data: 100%|██████████| 18/18 [00:00<00:00, 16833.33files/s]
+Downloading data: 100%|██████████| 18/18 [00:00<00:00, 6349.13files/s]
+Downloading data: 100%|██████████| 18/18 [00:00<00:00, 7265.66files/s]
+Downloading data: 100%|██████████| 18/18 [00:00<00:00, 16677.15files/s]
+Downloading data: 100%|██████████| 18/18 [00:00<00:00, 11445.95files/s]
+Downloading data: 100%|██████████| 18/18 [00:00<00:00, 14586.06files/s]
+Downloading data:   0%|          | 0/18 [00:00<?, ?files/s]
+...
+enerating train split: 69290910 examples [00:44, 1557792.45 examples/s]
+04/18/2025 22:54:24 - INFO - DatasetDict({
+    train: Dataset({
+        features: ['text'],      | 0/18 [00:00<?, ?files/s]
+        num_rows: 69290910
+    })
+})
+04/18/2025 22:54:24 - INFO - Splitting dataset
+Flattening the indices: 100%|██████████| 10000000/10000000 [01:20<00:00, 124103.85 examples/s]
+Flattening the indices: 100%|██████████| 50000/50000 [00:00<00:00, 115540.92 examples/s]
+Flattening the indices: 100%|██████████| 50000/50000 [00:00<00:00, 114766.42 examples/s]
+04/18/2025 22:55:51 - INFO - Saving splits to csv
+
+```
+To review the status of data tokenization using the same `fsx-share-test` pod used in porevios step:
+
+```bash
+kubectl exec -it fsx-share-test -- /bin/bash
+ls -ltr /fsx-shared/esm/processed/csv
+total 98
+drwxr-xr-x 2 root root 33280 Apr 18 22:38 train
+drwxr-xr-x 2 root root 33280 Apr 18 22:39 val
+drwxr-xr-x 2 root root 33280 Apr 18 22:39 test
+```
+
 
 ## 6. using DDP
 
