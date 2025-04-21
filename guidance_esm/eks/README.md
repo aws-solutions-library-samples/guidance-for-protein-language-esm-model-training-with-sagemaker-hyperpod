@@ -131,46 +131,40 @@ pod/preprocess-data created
 ```
 You can check the progress of data pre-processing by tailing that pod's log:
 ```bash
-kubectl logs -f preprocess-data
-ubectl logs -f preprocess-data
-04/18/2025 22:34:40 - INFO - Parsing arguments
-04/18/2025 22:34:40 - INFO - Loading csv files from /fsx-shared/esm/csv
-Downloading data: 100%|██████████| 18/18 [00:00<00:00, 12503.72files/s]
-Downloading data: 100%|██████████| 18/18 [00:00<00:00, 16833.33files/s]
-Downloading data: 100%|██████████| 18/18 [00:00<00:00, 6349.13files/s]
-Downloading data: 100%|██████████| 18/18 [00:00<00:00, 7265.66files/s]
-Downloading data: 100%|██████████| 18/18 [00:00<00:00, 16677.15files/s]
-Downloading data: 100%|██████████| 18/18 [00:00<00:00, 11445.95files/s]
-Downloading data: 100%|██████████| 18/18 [00:00<00:00, 14586.06files/s]
-Downloading data:   0%|          | 0/18 [00:00<?, ?files/s]
+ubectl logs -f download-uniref-data
+04/21/2025 21:24:28 - INFO - Parsing arguments
+04/21/2025 21:24:28 - INFO - Downloading FASTA
+04/21/2025 21:24:28 - INFO - Downloading https://ftp.uniprot.org/pub/databases/uniprot/uniref/uniref50/uniref50.fasta.gz to /workspace/tmpudmgk0n4/fasta
+https://ftp.uniprot.org/pub/databases/uniprot/uniref/uniref50/uniref50.fasta.gz: 100%|██████████| 13.5G/13.5G [00:52<00:00, 277MB/s]
+04/21/2025 21:25:20 - INFO - Generating csv files
+Reading FASTA file
+497915it [00:10, 70083.08it/s]04/21/2025 21:25:31 - INFO - Writing 500000 records to /fsx-shared/esm/csv/x000.csv
+999288it [00:33, 90348.02it/s]04/21/2025 21:25:54 - INFO - Writing 500000 records to /fsx-shared/esm/csv/x001.csv
+1498964it [00:48, 103241.69it/s]04/21/2025 21:26:09 - INFO - Writing 500000 records to /fsx-shared/esm/csv/x002.csv
+1990491it [01:00, 113717.42it/s]04/21/2025 21:26:21 - INFO - Writing 500000 records to /fsx-shared/esm/csv/x003.csv
 ...
-enerating train split: 69290910 examples [00:44, 1557792.45 examples/s]
-04/18/2025 22:54:24 - INFO - DatasetDict({
-    train: Dataset({
-        features: ['text'],      | 0/18 [00:00<?, ?files/s]
-        num_rows: 69290910
-    })
-})
-04/18/2025 22:54:24 - INFO - Splitting dataset
-Flattening the indices: 100%|██████████| 10000000/10000000 [01:20<00:00, 124103.85 examples/s]
-Flattening the indices: 100%|██████████| 50000/50000 [00:00<00:00, 115540.92 examples/s]
-Flattening the indices: 100%|██████████| 50000/50000 [00:00<00:00, 114766.42 examples/s]
-04/18/2025 22:55:51 - INFO - Saving splits to csv
-
+68469244it [08:24, 693839.97it/s]04/21/2025 21:33:45 - INFO - Writing 500000 records to /fsx-shared/esm/csv/x136.csv
+68957193it [08:25, 685041.27it/s]04/21/2025 21:33:46 - INFO - Writing 500000 records to /fsx-shared/esm/csv/x137.csv
+69290910it [08:25, 136970.57it/s]
+04/21/2025 21:33:46 - INFO - Writing 290910 records to /fsx-shared/esm/csv/x138.csv
+04/21/2025 21:33:49 - INFO - Save complete
 ```
-To review the status of data tokenization using the same `fsx-share-test` pod used in porevios step:
+
+To review the status of data tokenization using the same `fsx-share-test` pod used in previous step, run the following command:
 
 ```bash
-kubectl exec -it fsx-share-test -- /bin/bash
-ls -ltr /fsx-shared/esm/processed/csv
-total 98
-drwxr-xr-x 2 root root 33280 Apr 18 22:38 train
-drwxr-xr-x 2 root root 33280 Apr 18 22:39 val
-drwxr-xr-x 2 root root 33280 Apr 18 22:39 test
+kubectl exec -it fsx-share-test -- ls -ltr /fsx-shared/esm/processed/csv
+otal 20538982
+-rw-r--r-- 1 root root  186095820 Apr 21 21:29 x034.csv
+-rw-r--r-- 1 root root  183011802 Apr 21 21:29 x035.csv
+-rw-r--r-- 1 root root  179675283 Apr 21 21:29 x036.csv
+-rw-r--r-- 1 root root  176861023 Apr 21 21:29 x037.csv
+-rw-r--r-- 1 root root  173874909 Apr 21 21:29 x038.csv
+-rw-r--r-- 1 root root  171157724 Apr 21 21:30 x039.csv
 ```
 
 
-## 6. using DDP
+## 6. Training Using DDP Framework
 
 Now we are ready to submit distributed training jobs to pretrain ESM2 models. We provide the `train-esm.slurm` script to run training on 2 p5.48xlarge nodes with 8xH100 80 GB GPUs. Make sure data paths and model configuration is correct if you are running on custom data. 
 
@@ -181,10 +175,13 @@ cat train-ddp-template.yaml | envsubst > train-ddp.yaml
 kubectl apply -f train-ddp.yaml
 ```
 
-## 7. Using FSDP
+## 7. Training Using FSDPFramework
+
+
 ```bash
 cat train-fsdp-template.yaml.yaml | envsubst > train-fsdp.yaml
 kubectl apply -f train-fsdp.yaml
 ```
-
+<!-- this is appliable for Slurm, not EKS clusters
 sbatch train_fsdp.sh
+-->
