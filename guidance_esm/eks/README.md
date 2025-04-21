@@ -172,8 +172,155 @@ To kick off distributed training execute:
 
 ```bash
 cat train-ddp-template.yaml | envsubst > train-ddp.yaml
+cat train-ddp.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: etcd
+spec:
+  ports:
+    - name: etcd-client-port
+      port: 2379
+      protocol: TCP
+      targetPort: 2379
+  selector:
+    app: etcd
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: etcd
+  name: etcd
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: etcd
+  template:
+    metadata:
+      labels:
+        app: etcd
+    spec:
+      containers:
+        - name: etcd
+          command: ["/usr/local/bin/etcd"]
+          args:
+            - "--data-dir"
+            - "/var/lib/etcd"
+            - "--enable-v2"
+            - "--listen-client-urls"
+            - "http://0.0.0.0:2379"
+            - "--advertise-client-urls"
+            - "http://0.0.0.0:2379"
+            - "--initial-cluster-state"
+            - "new"
+          image: quay.io/coreos/etcd:v3.5.19
+          ports:
+            - containerPort: 2379
+              name: client
+              protocol: TCP
+            - containerPort: 2380
+              name: server
+              protocol: TCP
+      restartPolicy: Always
+---
+apiVersion: "kubeflow.org/v1"
+kind: PyTorchJob
+metadata:
+  name: esm2
+spec:
+  elasticPolicy:
+    rdzvBackend: etcd
+    rdzvHost: etcd
+    rdzvPort: 2379
+    minReplicas: 1
+    maxReplicas: 64
+    maxRestarts: 100
+    metrics:
+      - type: Resource
+        resource:
+          name: cpu
+          target:
+            type: Utilization
+            averageUtilization: 90
+  pytorchReplicaSpecs:
+    Worker:
+      replicas: 4
+      template:
+        metadata:
+          annotations:
+            sidecar.istio.io/inject: "false"
+        spec:
+          tolerations:
+            - key: nvidia.com/gpu
+              operator: Exists
+              effect: NoSchedule
+          volumes:
+          - name: fsx-pv-storage
+            persistentVolumeClaim:
+              claimName: fsx-claim
+          containers:
+            - name: pytorch
+              image: 354918380621.dkr.ecr.us-east-1.amazonaws.com/esm:aws
+              resources:
+                requests:
+                  nvidia.com/gpu: 1
+                  vpc.amazonaws.com/efa: 1
+                limits:
+                  nvidia.com/gpu: 1
+                  vpc.amazonaws.com/efa: 1
+              env:
+                - name: NCCL_DEBUG
+                  value: "INFO"
+              volumeMounts:
+                - mountPath: /fsx-shared
+                  name: fsx-pv-storage
+              imagePullPolicy: Always
+              command:
+                - "torchrun"
+                - --nproc_per_node=1
+                - --nnodes=4
+                - /workspace/train.py
+                - --config_name=facebook/esm2_t6_8M_UR50D
+                - --dataloader_num_workers=8
+                - --bf16=True
+                - --do_eval=True
+                - --do_preprocess=False
+                - --do_train=True
+                - --gradient_accumulation_steps=1
+                - --logging_steps=16
+                - --num_train_epochs=1
+                - --output_dir=/fsx-shared/esm
+                - --per_device_train_batch_size=8
+                - --max_train_samples=100000
+                - --tokenizer_name=facebook/esm2_t6_8M_UR50D
+                - --dataset_dir=/fsx-shared/esm/processed/arrow
+                - --torch_compile=True
+                - --pad_to_max_length=True
+                - --max_seq_length=512
+                - --ddp_bucket_cap_mb=125
+    ```
+
+To initiate training, run the following command using generated deployment descriptor
+```bash
 kubectl apply -f train-ddp.yaml
+service/etcd created
+deployment.apps/etcd created
+pytorchjob.kubeflow.org/esm2 created
 ```
+To validate status of the ESM job containers, run the following command:
+```bash
+kubectl get job,po
+NAME                                                             READY   STATUS              RESTARTS         AGE
+pod/download-uniref-data                                         1/1     Running             11 (3m34s ago)   116m
+pod/esm2-worker-0                                                0/1     ContainerCreating    3 (30s ago)      2m4s
+pod/esm2-worker-1                                                0/1     ContainerCreating   0                2m4s
+pod/esm2-worker-2                                                0/1     ContainerCreating   0                2m4s
+pod/esm2-worker-3                                                0/1     ContainerCreating   0                2m4s
+```
+After the ESM worker pods finish training jobs, the job will be in COMPLETE state
 
 ## 7. Training Using FSDPFramework
 
