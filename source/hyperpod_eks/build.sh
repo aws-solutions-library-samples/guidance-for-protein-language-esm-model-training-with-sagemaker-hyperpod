@@ -11,8 +11,9 @@ aws ecr get-login-password | docker login --username AWS --password-stdin $REGIS
 REGISTRY_COUNT=$(aws ecr describe-repositories | grep ${DOCKER_IMAGE_NAME} | wc -l)
 if [ "$REGISTRY_COUNT" == "0" ]; then
         echo ""
-        echo "Creating repository ${DOCKER_IMAGE_NAME} ..."
+        echo "Creating ECR repository ${DOCKER_IMAGE_NAME} ..."
         aws ecr create-repository --repository-name ${DOCKER_IMAGE_NAME}
 fi
 
-docker build -t ${REGISTRY}${DOCKER_IMAGE_NAME}:aws .
+# Initiate docker build using Docker image name and TAG=:aws previously set in the env
+docker build -t ${REGISTRY}${DOCKER_IMAGE_NAME}${TAG} .
