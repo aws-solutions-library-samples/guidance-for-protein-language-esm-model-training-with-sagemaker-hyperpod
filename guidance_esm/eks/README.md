@@ -113,8 +113,17 @@ spec:
   containers:
   - name: preprocess-data
     image: 354918380621.dkr.ecr.us-east-1.amazonaws.com/esm:aws
+    imagePullPolicy: Always
+
     command: ["/bin/bash"]
     args: ["-c", "python3 1.tokenize_uniref_csv.py --input_dir /fsx-shared/esm/csv --output_dir /fsx-shared/esm/processed"]
+    env:
+      - name: TRANSFORMERS_CACHE
+        value: "/fsx-shared/.cache/models"
+      - name: HF_DATASETS_CACHE
+        value: "/fsx-shared/.cache/datasets"
+      - name: HF_HOME
+        value: "/fsx-shared/.cache/hfhome"
     volumeMounts:
     - name: volume
       mountPath: /fsx-shared
@@ -123,6 +132,8 @@ spec:
     persistentVolumeClaim:
       claimName: fsx-claim
 ```
+NOTE: use caching to avoid running out of storage space on smaller Compute nodes, as shown above
+
 Then initiate pre-processing job using generated deployment descriptor:
 
 ```bash
@@ -131,44 +142,65 @@ pod/preprocess-data created
 ```
 You can check the progress of data pre-processing by tailing that pod's log:
 ```bash
-ubectl logs -f download-uniref-data
-04/21/2025 21:24:28 - INFO - Parsing arguments
-04/21/2025 21:24:28 - INFO - Downloading FASTA
-04/21/2025 21:24:28 - INFO - Downloading https://ftp.uniprot.org/pub/databases/uniprot/uniref/uniref50/uniref50.fasta.gz to /workspace/tmpudmgk0n4/fasta
-https://ftp.uniprot.org/pub/databases/uniprot/uniref/uniref50/uniref50.fasta.gz: 100%|██████████| 13.5G/13.5G [00:52<00:00, 277MB/s]
-04/21/2025 21:25:20 - INFO - Generating csv files
-Reading FASTA file
-497915it [00:10, 70083.08it/s]04/21/2025 21:25:31 - INFO - Writing 500000 records to /fsx-shared/esm/csv/x000.csv
-999288it [00:33, 90348.02it/s]04/21/2025 21:25:54 - INFO - Writing 500000 records to /fsx-shared/esm/csv/x001.csv
-1498964it [00:48, 103241.69it/s]04/21/2025 21:26:09 - INFO - Writing 500000 records to /fsx-shared/esm/csv/x002.csv
-1990491it [01:00, 113717.42it/s]04/21/2025 21:26:21 - INFO - Writing 500000 records to /fsx-shared/esm/csv/x003.csv
-...
-68469244it [08:24, 693839.97it/s]04/21/2025 21:33:45 - INFO - Writing 500000 records to /fsx-shared/esm/csv/x136.csv
-68957193it [08:25, 685041.27it/s]04/21/2025 21:33:46 - INFO - Writing 500000 records to /fsx-shared/esm/csv/x137.csv
-69290910it [08:25, 136970.57it/s]
-04/21/2025 21:33:46 - INFO - Writing 290910 records to /fsx-shared/esm/csv/x138.csv
-04/21/2025 21:33:49 - INFO - Save complete
+usr/local/lib/python3.12/dist-packages/transformers/utils/hub.py:127: FutureWarning: Using `TRANSFORMERS_CACHE` is deprecated and will be removed in v5 of Transformers. Use `HF_HOME` instead.
+  warnings.warn(
+04/24/2025 18:47:49 - INFO - Parsing arguments
+04/24/2025 18:47:49 - INFO - Loading csv files from /fsx-shared/esm/csv
+Downloading data: 100%|██████████| 18/18 [00:00<00:00, 11638.27files/s]
+Downloading data: 100%|██████████| 18/18 [00:00<00:00, 11164.96files/s]
+Downloading data: 100%|██████████| 18/18 [00:00<00:00, 9749.16files/s]
+Downloading data: 100%|██████████| 18/18 [00:00<00:00, 6409.50files/s]
+Downloading data: 100%|██████████| 18/18 [00:00<00:00, 7044.65files/s]
+Downloading data: 100%|██████████| 18/18 [00:00<00:00, 22462.80files/s]
+Downloading data: 100%|██████████| 18/18 [00:00<00:00, 98560.67files/s]
+Generating train split: 69271261 examples [01:21, 850175.57 examples/s]
+04/24/2025 18:49:17 - INFO - DatasetDict({
+    train: Dataset({
+        features: ['text'],
+        num_rows: 69271261       | 0/18 [00:00<?, ?files/s]
+    })
+})
+04/24/2025 18:49:17 - INFO - Splitting dataset
+Flattening the indices: 100%|██████████| 10000000/10000000 [09:19<00:00, 17868.46 examples/s]
+Flattening the indices: 100%|██████████| 50000/50000 [00:01<00:00, 41290.51 examples/s]
+Flattening the indices: 100%|██████████| 50000/50000 [00:01<00:00, 33631.69 examples/s]
+04/24/2025 18:58:45 - INFO - Saving splits to csv
+Creating CSV from Arrow format: 100%|██████████| 10000/10000 [1:07:37<00:00,  2.46ba/s]
+Creating CSV from Arrow format: 100%|██████████| 50/50 [00:21<00:00,  2.31ba/s]
+Creating CSV from Arrow format: 100%|██████████| 50/50 [00:21<00:00,  2.30ba/s]
+04/24/2025 20:07:06 - INFO - Processing line by line
+Running tokenizer on dataset line_by_line (num_proc=8): 100%|██████████| 10000000/10000000 [19:22<00:00, 8600.75 examples/s]
+Running tokenizer on dataset line_by_line (num_proc=8): 100%|██████████| 50000/50000 [00:04<00:00, 10157.73 examples/s]
+Running tokenizer on dataset line_by_line (num_proc=8): 100%|██████████| 50000/50000 [00:05<00:00, 9801.23 examples/s]
+Saving the dataset (62/62 shards): 100%|██████████| 10000000/10000000 [01:19<00:00, 125729.95 examples/s]
+Saving the dataset (1/1 shards): 100%|██████████| 50000/50000 [00:00<00:00, 135181.52 examples/s]
+Saving the dataset (1/1 shards): 100%|██████████| 50000/50000 [00:00<00:00, 105235.24 examples/s]
 ```
 
 To review the status of data tokenization using the same `fsx-share-test` pod used in previous step, run the following command:
 
 ```bash
-kubectl exec -it fsx-share-test -- ls -ltr /fsx-shared/esm/processed/csv
-otal 20538982
--rw-r--r-- 1 root root  186095820 Apr 21 21:29 x034.csv
--rw-r--r-- 1 root root  183011802 Apr 21 21:29 x035.csv
--rw-r--r-- 1 root root  179675283 Apr 21 21:29 x036.csv
--rw-r--r-- 1 root root  176861023 Apr 21 21:29 x037.csv
--rw-r--r-- 1 root root  173874909 Apr 21 21:29 x038.csv
--rw-r--r-- 1 root root  171157724 Apr 21 21:30 x039.csv
+kubectl exec -it fsx-share-test  -- ls -ltr /fsx-shared/esm/processed/arrow/train
+total 7126383
+-rw-r--r-- 1 root root 497488288 Apr 24 20:26 data-00000-of-00062.arrow
+-rw-r--r-- 1 root root 497488288 Apr 24 20:26 data-00001-of-00062.arrow
+-rw-r--r-- 1 root root 497488288 Apr 24 20:26 data-00002-of-00062.arrow
+-rw-r--r-- 1 root root 497488288 Apr 24 20:26 data-00003-of-00062.arrow
+-rw-r--r-- 1 root root 497488288 Apr 24 20:26 data-00004-of-00062.arrow
+-rw-r--r-- 1 root root 497488288 Apr 24 20:26 data-00005-of-00062.arrow
+-rw-r--r-- 1 root root 497488288 Apr 24 20:26 data-00006-of-00062.arrow
+-rw-r--r-- 1 root root 497488288 Apr 24 20:26 data-00007-of-00062.arrow
+-rw-r--r-- 1 root root 497488288 Apr 24 20:26 data-00008-of-00062.arrow
+-rw-r--r-- 1 root root 497488288 Apr 24 20:26 data-00009-of-00062.arrow
+-rw-r--r-- 1 root root 497488288 Apr 24 20:26 data-00010-of-00062.arrow
+...
 ```
-
 
 ## 6. Training Using DDP Framework
 
-Now we are ready to submit distributed training jobs to pretrain ESM2 models. We provide the `train-esm.slurm` script to run training on 2 p5.48xlarge nodes with 8xH100 80 GB GPUs. Make sure data paths and model configuration is correct if you are running on custom data. 
+Now we are ready to submit distributed training jobs to pretrain ESM2 models. We provide the `train-esm.slurm` script to run training on 2 HyperPod cluster compute nodes with certain number of GPUs, per node specification. Make sure data paths and model configuration is correct if you are running on custom data set.
 
-To kick off distributed training execute:
+To kick off DDP based distributed training execute:
 
 ```bash
 cat train-ddp-template.yaml | envsubst > train-ddp.yaml
@@ -303,14 +335,14 @@ spec:
                 - --ddp_bucket_cap_mb=125
     ```
 
-To initiate training, run the following command using generated deployment descriptor
+To initiate training, run the following command generated PyTorchJob deployment descriptor
 ```bash
 kubectl apply -f train-ddp.yaml
 service/etcd created
 deployment.apps/etcd created
 pytorchjob.kubeflow.org/esm2 created
 ```
-To validate status of the ESM job containers, run the following command:
+To validate status of the ESM-2 job containers, run the following command:
 ```bash
 kubectl get job,po
 NAME                                                             READY   STATUS              RESTARTS         AGE
@@ -320,6 +352,35 @@ pod/esm2-worker-1                                                0/1     Contain
 pod/esm2-worker-2                                                0/1     ContainerCreating   0                2m4s
 pod/esm2-worker-3                                                0/1     ContainerCreating   0                2m4s
 ```
+To trace the training job logs, run the following command:
+```bash
+kubectl logs -f esm2-worker-0
+--
+esm2-worker-0:53:269 [0] NCCL INFO [Proxy Service] Device 0 CPU core 10
+esm2-worker-0:53:270 [0] NCCL INFO [Proxy Service UDS] Device 0 CPU core 15
+esm2-worker-0:53:267 [0] NCCL INFO threadThresholds 8/8/64 | 32/8/64 | 512 | 512
+esm2-worker-0:53:267 [0] NCCL INFO 2 coll channels, 2 collnet channels, 0 nvls channels, 2 p2p channels, 2 p2p channels per peer
+esm2-worker-0:53:267 [0] NCCL INFO TUNER/Plugin: Failed to find ncclTunerPlugin_v4 symbol.
+esm2-worker-0:53:267 [0] NCCL INFO TUNER/Plugin: Failed to find ncclTunerPlugin_v3 symbol.
+esm2-worker-0:53:267 [0] NCCL INFO TUNER/Plugin: Failed to find ncclTunerPlugin_v2 symbol, using internal tuner instead.
+esm2-worker-0:53:267 [0] NCCL INFO ncclCommInitRankConfig comm 0x36477e40 rank 3 nranks 4 cudaDev 0 nvmlDev 0 busId 1e0 commId 0x15c1c76db987339e - Init COMPLETE
+esm2-worker-0:53:267 [0] NCCL INFO Init timings - ncclCommInitRankConfig: rank 3 nranks 4 total 1.16 (kernels 0.18, alloc 0.04, bootstrap 0.93, allgathers 0.00, topo 0.00, graphs 0.00, connections 0.00, rest 0.00)
+esm2-worker-0:53:272 [0] NCCL INFO [Proxy Progress] Device 0 CPU core 24
+esm2-worker-0:53:271 [0] NCCL INFO Channel 00/0 : 2[0] -> 3[0] [receive] via NET/Socket/0
+esm2-worker-0:53:271 [0] NCCL INFO Channel 01/0 : 2[0] -> 3[0] [receive] via NET/Socket/0
+esm2-worker-0:53:271 [0] NCCL INFO Channel 00/0 : 3[0] -> 0[0] [send] via NET/Socket/0
+esm2-worker-0:53:271 [0] NCCL INFO Channel 01/0 : 3[0] -> 0[0] [send] via NET/Socket/0
+esm2-worker-0:53:271 [0] NCCL INFO Connected all rings, use ring PXN 0 GDR 0
+[INFO|trainer.py:2128] 2025-04-24 20:44:49,943 >> ***** Running training *****
+[INFO|trainer.py:2129] 2025-04-24 20:44:49,943 >>   Num examples = 100,000
+[INFO|trainer.py:2130] 2025-04-24 20:44:49,943 >>   Num Epochs = 1
+[INFO|trainer.py:2131] 2025-04-24 20:44:49,943 >>   Instantaneous batch size per device = 8
+[INFO|trainer.py:2134] 2025-04-24 20:44:49,943 >>   Total train batch size (w. parallel, distributed & accumulation) = 32
+[INFO|trainer.py:2135] 2025-04-24 20:44:49,943 >>   Gradient Accumulation steps = 1
+[INFO|trainer.py:2136] 2025-04-24 20:44:49,943 >>   Total optimization steps = 3,125
+[INFO|trainer.py:2137] 2025-04-24 20:44:49,943 >>   Number of trainable parameters = 7,840,794
+```
+Depending on the dataset size, it can take variable time to complete the traning jobs by ESM2 training pods.
 After the ESM worker pods finish training jobs, the job will be in COMPLETE state
 
 ## 7. Training Using FSDPFramework
