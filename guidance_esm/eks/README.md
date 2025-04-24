@@ -198,9 +198,9 @@ total 7126383
 
 ## 6. Training Using DDP Framework
 
-Now we are ready to submit distributed training jobs to pretrain ESM2 models. We provide the `train-esm.slurm` script to run training on 2 HyperPod cluster compute nodes with certain number of GPUs, per node specification. Make sure data paths and model configuration is correct if you are running on custom data set.
+Now we are ready to submit distributed training jobs to pretrain ESM2 models. We provide the `train-ddp-template.yaml` template to run training on  HyperPod cluster compute nodes with certain number of GPUs, per node specification. Make sure data paths and model configuration is correct if you are running on custom data set.
 
-To kick off DDP based distributed training execute:
+To kick off DDP based distributed training execute, we first need to generate specific training job manifest for K8s:
 
 ```bash
 cat train-ddp-template.yaml | envsubst > train-ddp.yaml
@@ -381,10 +381,25 @@ esm2-worker-0:53:271 [0] NCCL INFO Connected all rings, use ring PXN 0 GDR 0
 [INFO|trainer.py:2137] 2025-04-24 20:44:49,943 >>   Number of trainable parameters = 7,840,794
 ```
 Depending on the dataset size, it can take variable time to complete the traning jobs by ESM2 training pods.
-After the ESM worker pods finish training jobs, the job will be in COMPLETE state
+After the ESM worker pods finish training jobs, they will be in `COMPLETE` state:
+
+```bash
+kubectl get pytorchjob,po
+NAME                           STATE       AGE
+pytorchjob.kubeflow.org/esm2   Succeeded   40m
+
+NAME                                                             READY   STATUS      RESTARTS      AGE
+pod/esm2-worker-0                                                0/1     Completed   0             40m
+pod/esm2-worker-1                                                0/1     Completed   0             40m
+pod/esm2-worker-2                                                0/1     Completed   0             40m
+pod/esm2-worker-3                                                0/1     Completed   0             40m
+```
 
 ## 7. Training Using FSDPFramework
 
+Fully Sharded Data Parallel (FSDP) is an open-source distributed training technique provided by PyTorch. While Data Parallelism (DP) with no model sharding is typically the go-to method when a model fits within the memory of a single GPU, FSDP becomes an effective alternative for training models that exceed the memory capacity of a single GPU.
+
+In order to prepare a FSDP based training job,  to generate specific training job manifest for K8s similar to how we did for DDP based training: 
 
 ```bash
 cat train-fsdp-template.yaml.yaml | envsubst > train-fsdp.yaml
