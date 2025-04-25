@@ -394,8 +394,41 @@ pod/esm2-worker-1                                                0/1     Complet
 pod/esm2-worker-2                                                0/1     Completed   0             40m
 pod/esm2-worker-3                                                0/1     Completed   0             40m
 ```
-
-## 7. Training Using FSDPFramework
+Also, the following file with contents like shown below is expected at the OUTPUT shared directory:
+```bash
+/fsx-shared/esm/output/checkpoint-3125# cat config.json
+{
+  "_name_or_path": "facebook/esm2_t6_8M_UR50D",
+  "architectures": [
+    "EsmForMaskedLM"
+  ],
+  "attention_probs_dropout_prob": 0.0,
+  "classifier_dropout": null,
+  "emb_layer_norm_before": false,
+  "esmfold_config": null,
+  "hidden_act": "gelu",
+  "hidden_dropout_prob": 0.0,
+  "hidden_size": 320,
+  "initializer_range": 0.02,
+  "intermediate_size": 1280,
+  "is_folding_model": false,
+  "layer_norm_eps": 1e-05,
+  "mask_token_id": 32,
+  "max_position_embeddings": 1026,
+  "model_type": "esm",
+  "num_attention_heads": 20,
+  "num_hidden_layers": 6,
+  "pad_token_id": 1,
+  "position_embedding_type": "rotary",
+  "token_dropout": true,
+  "torch_dtype": "float32",
+  "transformers_version": "4.42.4",
+  "use_cache": true,
+  "vocab_list": null,
+  "vocab_size": 33
+}
+```
+## 7. Training Using FSDP Framework
 
 Fully Sharded Data Parallel (FSDP) is an open-source distributed training technique provided by PyTorch. While Data Parallelism (DP) with no model sharding is typically the go-to method when a model fits within the memory of a single GPU, FSDP becomes an effective alternative for training models that exceed the memory capacity of a single GPU.
 
@@ -403,6 +436,144 @@ In order to prepare a FSDP based training job,  to generate specific training jo
 
 ```bash
 cat train-fsdp-template.yaml.yaml | envsubst > train-fsdp.yaml
+--
+piVersion: v1
+kind: Service
+metadata:
+  name: etcd
+spec:
+  ports:
+    - name: etcd-client-port      port: 2379
+      protocol: TCP
+      targetPort: 2379
+  selector:
+    app: etcd
+
+---
+apiVersion: apps/v1kind: Deployment
+metadata:
+  labels:
+    app: etcd
+  name: etcd
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: etcd
+  template:
+    metadata:
+      labels:
+        app: etcd
+    spec:
+      containers:
+        - name: etcd
+          command: ["/usr/local/bin/etcd"]
+          args:
+            - "--data-dir"
+            - "/var/lib/etcd"
+            - "--enable-v2"
+            - "--listen-client-urls"
+            - "http://0.0.0.0:2379"
+            - "--advertise-client-urls"
+            - "http://0.0.0.0:2379"
+            - "--initial-cluster-state"
+            - "new"
+          image: quay.io/coreos/etcd:v3.5.19
+          ports:
+            - containerPort: 2379
+              name: client
+              protocol: TCP
+            - containerPort: 2380
+              name: server
+              protocol: TCP
+      restartPolicy: Always
+---
+apiVersion: "kubeflow.org/v1"
+kind: PyTorchJob
+metadata:
+  name: esm2
+spec:
+  elasticPolicy:
+    rdzvBackend: etcd
+    rdzvHost: etcd
+    rdzvPort: 2379
+    minReplicas: 1
+    maxReplicas: 64
+    maxRestarts: 100
+    metrics:
+      - type: Resource
+        resource:
+          name: cpu
+          target:
+            type: Utilization
+            averageUtilization: 90
+  pytorchReplicaSpecs:
+    Worker:
+      replicas: 4
+      template:
+        metadata:
+          annotations:
+            sidecar.istio.io/inject: "false"
+        spec:
+          tolerations:
+            - key: nvidia.com/gpu
+              operator: Exists
+              effect: NoSchedule
+          volumes:
+          - name: fsx-pv-storage
+            persistentVolumeClaim:
+              claimName: fsx-claim
+          containers:
+            - name: pytorch
+              image: 354918380621.dkr.ecr.us-east-1.amazonaws.com/esm:aws
+              resources:
+                requests:
+                  nvidia.com/gpu: 1
+                  vpc.amazonaws.com/efa: 1
+                limits:
+                  nvidia.com/gpu: 1
+                  vpc.amazonaws.com/efa: 1
+              env:
+                - name: NCCL_DEBUG
+                  value: "INFO"
+              volumeMounts:
+                - mountPath: /fsx-shared
+                  name: fsx-pv-storage
+              imagePullPolicy: Always
+              command:
+                - "accelerate launch"
+                - --num_processes=1*4
+                - --num_machines=4
+                - --use_fsdp
+                - --fsdp_sharding_strategy=FULL_SHARD
+                - --fsdp_auto_wrap_policy=TRANSFORMER_BASED_WRAP
+                - --fsdp_transformer_layer_cls_to_wrap=EsmLayer
+                - --fsdp_backward_prefetch=BACKWARD_PRE
+                - --fsdp_cpu_ram_efficient_loading=True
+                - --fsdp_sync_module_states=True
+                - --fsdp_use_orig_params=True
+                - /workspace/train.py
+                - --config_name=facebook/esm2_t6_8M_UR50D
+                - --dataloader_num_workers=8
+                - --bf16=True
+                - --do_eval=True
+                - --do_preprocess=False
+                - --do_train=True
+                - --gradient_accumulation_steps=1
+                - --logging_steps=16
+                - --num_train_epochs=1
+                - --output_dir=/fsx-shared/esm
+                - --per_device_train_batch_size=8
+                - --max_train_samples=100000
+                - --tokenizer_name=facebook/esm2_t6_8M_UR50D
+                - --dataset_dir=/fsx-shared/esm/processed/arrow
+                - --torch_compile=True
+                - --pad_to_max_length=True
+                - --max_seq_length=512
+---
+```
+To initiate FSDP based training, run the command: 
+```bash
 kubectl apply -f train-fsdp.yaml
 ```
 <!-- this is appliable for Slurm, not EKS clusters
