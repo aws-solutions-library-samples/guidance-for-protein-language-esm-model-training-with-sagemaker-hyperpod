@@ -333,16 +333,16 @@ spec:
                 - --pad_to_max_length=True
                 - --max_seq_length=512
                 - --ddp_bucket_cap_mb=125
-    ```
-
+```
 To initiate training, run the following command generated PyTorchJob deployment descriptor
+
 ```bash
 kubectl apply -f train-ddp.yaml
 service/etcd created
 deployment.apps/etcd created
 pytorchjob.kubeflow.org/esm2 created
 ```
-To validate status of the ESM-2 job containers, run the following command:
+To validate status of the ESM-2 training job containers, run the following command (assuming they run in the `default` namespace):
 ```bash
 kubectl get job,po
 NAME                                                             READY   STATUS              RESTARTS         AGE
