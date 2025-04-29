@@ -105,8 +105,7 @@ ls -al $TARGET_PATH
 Next we need to download the [Uniref50](https://huggingface.co/datasets/agemagician/uniref50) training data. You can do so by running the following command using the image previously built:
 
 ```bash
-docker run --rm -v ${TARGET_PATH}:/workspace ${DOCKER_IMAGE_NAME}:${TAG} -v /workspace:${TARGET_PATH} python3 0.download_data.py --output_dir ${TARGET_PATH}
-----
+docker run -v workspace:${TARGET_PATH}   ${DOCKER_IMAGE_NAME}:${TAG}  python3 0.download_data.py --output_dir ${TARGET_PATH}
 =============
 == PyTorch ==
 =============
@@ -117,7 +116,6 @@ Container image Copyright (c) 2025, NVIDIA CORPORATION & AFFILIATES. All rights 
 Copyright (c) 2014-2024 Facebook Inc.
 Copyright (c) 2011-2014 Idiap Research Institute (Ronan Collobert)
 ...
-Copyright (c) 2015      Yangqing Jia
 Copyright (c) 2013-2016 The Caffe contributors
 All rights reserved.
 
@@ -134,25 +132,55 @@ WARNING: The NVIDIA Driver was not detected.  GPU functionality will not be avai
 NOTE: The SHMEM allocation limit is set to the default of 64MB.  This may be
    insufficient for PyTorch.  NVIDIA recommends the use of the following flags:
    docker run --gpus all --ipc=host --ulimit memlock=-1 --ulimit stack=67108864 ...
+
+04/29/2025 21:47:08 - INFO - Parsing arguments
+04/29/2025 21:47:08 - INFO - Downloading FASTA
+04/29/2025 21:47:08 - INFO - Downloading https://ftp.uniprot.org/pub/databases/uniprot/uniref/uniref50/uniref50.fasta.gz to /workspace/tmptnzbx0cy/fasta
+https://ftp.uniprot.org/pub/databases/uniprot/uniref/uniref50/uniref50.fasta.gz: 100%|██████████| 13.6G/13.6G [01:46<00:00, 137MB/s]   
+04/29/2025 21:49:00 - INFO - Generating csv files
+Reading FASTA file
+497803it [00:12, 59302.21it/s]04/29/2025 21:49:12 - INFO - Writing 500000 records to /fsx/ubuntu/esm-slurm/csv/x000.csv
+996173it [00:51, 78221.42it/s]04/29/2025 21:49:51 - INFO - Writing 500000 records to /fsx/ubuntu/esm-slurm/csv/x001.csv
+1491434it [01:14, 89328.81it/s]04/29/2025 21:50:15 - INFO - Writing 500000 records to /fsx/ubuntu/esm-slurm/csv/x002.csv
+1993637it [01:34, 98401.67it/s]04/29/2025 21:50:35 - INFO - Writing 500000 records to /fsx/ubuntu/esm-slurm/csv/x003.csv
+2489503it [01:52, 106718.50it/s]04/29/2025 21:50:53 - INFO - Writing 500000 records to /fsx/ubuntu/esm-slurm/csv/x004.csv
 ...
+68486786it [12:57, 577039.89it/s]04/29/2025 22:01:57 - INFO - Writing 500000 records to /fsx/ubuntu/esm-slurm/csv/x136.csv
+68997227it [12:58, 568656.59it/s]04/29/2025 22:01:59 - INFO - Writing 500000 records to /fsx/ubuntu/esm-slurm/csv/x137.csv
+69488478it [13:00, 89085.85it/s] 
+04/29/2025 22:02:00 - INFO - Writing 488478 records to /fsx/ubuntu/esm-slurm/csv/x138.csv
+04/29/2025 22:02:02 - INFO - Save complete
 ```
+
 That container executuion  should download the data and partitions the data in 50 .csv files into the folder contained in the ${TARGET_PATH} environment variable. The whole process should take less than 30 mins.
+To confirm that the dataset files are indeed saved to that directory, we can run the following command:
+```bash
+ls -al  /fsx/ubuntu/esm-slurm/csv
+```
 
 ## 5. Convert CSVs to HuggingFace Dataset and Tokenize
 
-Next we need to tokenize the dataset. This will split the data in training, test and validation folders, tokenize them and save the arrow files in `processed` folder.
+Next we need to tokenize the downloaded dataset. This will split the data in `training`, `test` and `validation` folders, tokenize them and save the "arrow" files in `processed` folder.
 
 ```bash
 docker run --rm -v ${TARGET_PATH}:/workspace ${DOCKER_IMAGE_NAME}:${TAG} -v /workspace:${TARGET_PATH} python3 1.tokenize_uniref_csv.py --input_dir ${TARGET_PATH}/csv --output_dir ${TARGET_PATH}/processed
 ```
 
-## 6. DDP
+## 6. Training Using DDP Framework
 
-Now we are ready to submit distributed training jobs to pretrain ESM2 models. We provide the train-esm.slurm script to run training on 2 p5.48xlarge nodes with 8xH100 80 GB GPUs. Make sure data paths and model configuration is correct if you are running on custom data. To kick off distributed training execute:
+Now we are ready to submit distributed training jobs to pretrain ESM2 models. We provide the `train-ddp.ssh` batch script to initualize PyTorch training job basd on DDP framework on cluster compute nodes (e.g. `ml.g5.8xlarge`) with certain parameters for GPUs and EFSs . Make sure data paths and model configuration is correct if you are running on custom data. 
+
+To kick off distributed training job execute:
 ```bash
 sbatch train_ddp.sh
 ```
-## 7. FSDP
+An output of such command should be like shown below:
+
+## 7. Training Using FSDP Framework
+
+Now we are ready to submit distributed training jobs to pretrain ESM2 models. We provide the `train-fsdp.ssh` batch script to initualize PyTorch training job basd on FSDP framework on cluster compute nodes (e.g. `ml.g5.8xlarge`) with certain parameters for GPUs and EFSs . Make sure data paths and model configuration is correct if you are running on custom data. 
+
 ```bash
 sbatch train_fsdp.sh
 ```
+An output of such command should be like shown below:
