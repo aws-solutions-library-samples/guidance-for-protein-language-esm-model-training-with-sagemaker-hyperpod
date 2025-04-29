@@ -102,12 +102,41 @@ ls -al $TARGET_PATH
 
 ## 4. Prepare dataset
 
-Next we need to download the Uniref50 training data. You can do so by running the following command using the image previously built:
+Next we need to download the [Uniref50](https://huggingface.co/datasets/agemagician/uniref50) training data. You can do so by running the following command using the image previously built:
 
 ```bash
 docker run --rm -v ${TARGET_PATH}:/workspace ${DOCKER_IMAGE_NAME}:${TAG} -v /workspace:${TARGET_PATH} python3 0.download_data.py --output_dir ${TARGET_PATH}
+----
+=============
+== PyTorch ==
+=============
+
+NVIDIA Release 25.02 (build 143088496)
+PyTorch Version 2.7.0a0+ecf3bae
+Container image Copyright (c) 2025, NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+Copyright (c) 2014-2024 Facebook Inc.
+Copyright (c) 2011-2014 Idiap Research Institute (Ronan Collobert)
+...
+Copyright (c) 2015      Yangqing Jia
+Copyright (c) 2013-2016 The Caffe contributors
+All rights reserved.
+
+Various files include modifications (c) NVIDIA CORPORATION & AFFILIATES.  All rights reserved.
+
+This container image and its contents are governed by the NVIDIA Deep Learning Container License.
+By pulling and using the container, you accept the terms and conditions of this license:
+https://developer.nvidia.com/ngc/nvidia-deep-learning-container-license
+
+WARNING: The NVIDIA Driver was not detected.  GPU functionality will not be available.
+   Use the NVIDIA Container Toolkit to start this container with GPU support; see
+   https://docs.nvidia.com/datacenter/cloud-native/ .
+
+NOTE: The SHMEM allocation limit is set to the default of 64MB.  This may be
+   insufficient for PyTorch.  NVIDIA recommends the use of the following flags:
+   docker run --gpus all --ipc=host --ulimit memlock=-1 --ulimit stack=67108864 ...
+...
 ```
-It would download the data and partitions the data in 50 .csv files in `/fsx/ubuntu/csv` folder. The whole process should take less than 30 mins.
+That container executuion  should download the data and partitions the data in 50 .csv files into the folder contained in the ${TARGET_PATH} environment variable. The whole process should take less than 30 mins.
 
 ## 5. Convert CSVs to HuggingFace Dataset and Tokenize
 
