@@ -16,5 +16,5 @@ if [ "$REGISTRY_COUNT" == "0" ]; then
 fi
 
 # Push image into ECR registry using previously set in the Env variables ${TAG}
-echo "pushing image: ${REGISTRY}${DOCKER_IMAGE_NAME}${TAG}..."
+echo "pushing image: ${REGISTRY}${DOCKER_IMAGE_NAME}:${TAG}..."
 docker image push ${REGISTRY}${DOCKER_IMAGE_NAME}:${TAG}
