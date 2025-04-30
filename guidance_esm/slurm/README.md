@@ -80,11 +80,7 @@ Directory table size 8139303 bytes (7948.54 Kbytes)
         100.00% of uncompressed directory table size (8139303 bytes)
 No duplicate files removed
 Number of inodes 262919
-Number of files 228388
-Number of fragments 18184
-Number of symbolic links  1903
-Number of device nodes 0
-Number of fifo nodes 0
+.....
 Number of socket nodes 0
 Number of directories 32628
 Number of ids (unique uids + gids) 1
@@ -105,7 +101,9 @@ ls -al $TARGET_PATH
 Next we need to download the [Uniref50](https://huggingface.co/datasets/agemagician/uniref50) training data. You can do so by running the following command using the image previously built:
 
 ```bash
-docker run -v workspace:${TARGET_PATH}   ${DOCKER_IMAGE_NAME}:${TAG}  python3 0.download_data.py --output_dir ${TARGET_PATH}
+docker run -v ${TARGET_PATH}:/data  ${DOCKER_IMAGE_NAME}:${TAG}  python3 0.download_data.py --output_dir /data
+----
+
 =============
 == PyTorch ==
 =============
@@ -133,29 +131,42 @@ NOTE: The SHMEM allocation limit is set to the default of 64MB.  This may be
    insufficient for PyTorch.  NVIDIA recommends the use of the following flags:
    docker run --gpus all --ipc=host --ulimit memlock=-1 --ulimit stack=67108864 ...
 
-04/29/2025 21:47:08 - INFO - Parsing arguments
-04/29/2025 21:47:08 - INFO - Downloading FASTA
-04/29/2025 21:47:08 - INFO - Downloading https://ftp.uniprot.org/pub/databases/uniprot/uniref/uniref50/uniref50.fasta.gz to /workspace/tmptnzbx0cy/fasta
-https://ftp.uniprot.org/pub/databases/uniprot/uniref/uniref50/uniref50.fasta.gz: 100%|██████████| 13.6G/13.6G [01:46<00:00, 137MB/s]   
-04/29/2025 21:49:00 - INFO - Generating csv files
+04/30/2025 19:15:29 - INFO - Generating csv files
 Reading FASTA file
-497803it [00:12, 59302.21it/s]04/29/2025 21:49:12 - INFO - Writing 500000 records to /fsx/ubuntu/esm-slurm/csv/x000.csv
-996173it [00:51, 78221.42it/s]04/29/2025 21:49:51 - INFO - Writing 500000 records to /fsx/ubuntu/esm-slurm/csv/x001.csv
-1491434it [01:14, 89328.81it/s]04/29/2025 21:50:15 - INFO - Writing 500000 records to /fsx/ubuntu/esm-slurm/csv/x002.csv
-1993637it [01:34, 98401.67it/s]04/29/2025 21:50:35 - INFO - Writing 500000 records to /fsx/ubuntu/esm-slurm/csv/x003.csv
-2489503it [01:52, 106718.50it/s]04/29/2025 21:50:53 - INFO - Writing 500000 records to /fsx/ubuntu/esm-slurm/csv/x004.csv
+498366it [00:12, 59214.38it/s]04/30/2025 19:15:41 - INFO - Writing 500000 records to /data/csv/x000.csv
+996173it [00:51, 78288.46it/s]04/30/2025 19:16:21 - INFO - Writing 500000 records to /data/csv/x001.csv
+1491434it [01:15, 89203.73it/s]04/30/2025 19:16:45 - INFO - Writing 500000 records to /data/csv/x002.csv
 ...
-68486786it [12:57, 577039.89it/s]04/29/2025 22:01:57 - INFO - Writing 500000 records to /fsx/ubuntu/esm-slurm/csv/x136.csv
-68997227it [12:58, 568656.59it/s]04/29/2025 22:01:59 - INFO - Writing 500000 records to /fsx/ubuntu/esm-slurm/csv/x137.csv
-69488478it [13:00, 89085.85it/s] 
-04/29/2025 22:02:00 - INFO - Writing 488478 records to /fsx/ubuntu/esm-slurm/csv/x138.csv
-04/29/2025 22:02:02 - INFO - Save complete
+68949448it [13:11, 541961.50it/s]04/30/2025 19:28:41 - INFO - Writing 500000 records to /data/csv/x137.csv
+69488478it [13:13, 87610.77it/s] 
+04/30/2025 19:28:42 - INFO - Writing 488478 records to /data/csv/csv/x138.csv
+04/30/2025 19:28:44 - INFO - Save complete
 ```
 
-That container executuion  should download the data and partitions the data in 50 .csv files into the folder contained in the ${TARGET_PATH} environment variable. The whole process should take less than 30 mins.
+That container execution should download the Uniref 50 training data as 50 .csv formatted files into the folder derived from ${TARGET_PATH}/csv environment variable. The whole process should take less than 30 mins.
+
 To confirm that the dataset files are indeed saved to that directory, we can run the following command:
 ```bash
-ls -al  /fsx/ubuntu/esm-slurm/csv
+ls -al  $TARGET_PATH/csv
+total 20594019
+drwxr-xr-x 3 root   root        41472 Apr 30 19:46 .
+drwxrwxr-x 3 ubuntu ubuntu      33280 Apr 30 19:10 ..
+-rw-r--r-- 1 root   root   1338965519 Apr 30 20:02 x000.csv
+-rw-r--r-- 1 root   root    739136803 Apr 30 20:03 x001.csv
+-rw-r--r-- 1 root   root    608770034 Apr 30 20:03 x002.csv
+-rw-r--r-- 1 root   root    537187950 Apr 30 20:03 x003.csv
+-rw-r--r-- 1 root   root    487469687 Apr 30 20:03 x004.csv
+-rw-r--r-- 1 root   root    449800266 Apr 30 20:04 x005.csv
+-rw-r--r-- 1 root   root    419801146 Apr 30 20:04 x006.csv
+-rw-r--r-- 1 root   root    395810836 Apr 30 20:04 x007.csv
+-rw-r--r-- 1 root   root    375021260 Apr 30 20:04 x008.csv
+-rw-r--r-- 1 root   root    357140420 Apr 30 20:05 x009.csv
+-rw-r--r-- 1 root   root    341566749 Apr 30 20:05 x010.csv
+-rw-r--r-- 1 root   root    327643505 Apr 30 20:05 x011.csv
+-rw-r--r-- 1 root   root    315227208 Apr 30 20:05 x012.csv
+...
+-rw-r--r-- 1 root   root     29808230 Apr 30 20:15 x137.csv
+-rw-r--r-- 1 root   root     23821111 Apr 30 20:15 x138.csv
 ```
 
 ## 5. Convert CSVs to HuggingFace Dataset and Tokenize
@@ -163,7 +174,7 @@ ls -al  /fsx/ubuntu/esm-slurm/csv
 Next we need to tokenize the downloaded dataset. This will split the data in `training`, `test` and `validation` folders, tokenize them and save the "arrow" files in `processed` folder.
 
 ```bash
-docker run --rm -v ${TARGET_PATH}:/workspace ${DOCKER_IMAGE_NAME}:${TAG} -v /workspace:${TARGET_PATH} python3 1.tokenize_uniref_csv.py --input_dir ${TARGET_PATH}/csv --output_dir ${TARGET_PATH}/processed
+docker run --rm -v ${TARGET_PATH}:/data ${DOCKER_IMAGE_NAME}:${TAG}  python3 1.tokenize_uniref_csv.py --input_dir /data/csv --output_dir /data/processed
 ```
 
 ## 6. Training Using DDP Framework
