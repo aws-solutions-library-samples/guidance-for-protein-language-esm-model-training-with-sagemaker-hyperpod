@@ -572,10 +572,12 @@ spec:
                 - --max_seq_length=512
 ---
 ```
-To initiate FSDP based training, run the command: 
+To initiate FSDP based PyTurch training job, run the command: 
 ```bash
 kubectl apply -f train-fsdp.yaml
+---
+service/etcd created
+deployment.apps/etcd created
+pytorchjob.kubeflow.org/esm2 created
 ```
-<!-- this is appliable for Slurm, not EKS clusters
-sbatch train_fsdp.sh
--->
+
