@@ -174,7 +174,16 @@ drwxrwxr-x 3 ubuntu ubuntu      33280 Apr 30 19:10 ..
 Next we need to tokenize the downloaded dataset. This will split the data in `training`, `test` and `validation` folders, tokenize them and save the "arrow" files in `processed` folder.
 
 ```bash
-docker run --rm -v ${TARGET_PATH}:/data ${DOCKER_IMAGE_NAME}:${TAG}  python3 1.tokenize_uniref_csv.py --input_dir /data/csv --output_dir /data/processed
+docker run --rm -v ${TARGET_PATH}:/data ${DOCKER_IMAGE_NAME}:${TAG} /bin/bash -c "python3 1.tokenize_uniref_csv.py --input_dir /data/csv --output_dir /data/processed"
+----
+05/02/2025 20:47:00 - INFO - Parsing arguments
+05/02/2025 20:47:00 - INFO - Loading csv files from /data/csv
+Downloading data: 100%|██████████| 18/18 [00:00<00:00, 11694.16files/s]
+Downloading data: 100%|██████████| 18/18 [00:00<00:00, 18048.64files/s]
+Downloading data: 100%|██████████| 18/18 [00:00<00:00, 10751.56files/s]
+Downloading data: 100%|██████████| 18/18 [00:00<00:00, 23038.59files/s]
+Downloading data: 100%|██████████| 18/18 [00:00<00:00, 32486.00files/s]
+...
 ```
 
 ## 6. Training Using DDP Framework
