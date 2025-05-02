@@ -184,6 +184,9 @@ Downloading data: 100%|██████████| 18/18 [00:00<00:00, 10751
 Downloading data: 100%|██████████| 18/18 [00:00<00:00, 23038.59files/s]
 Downloading data: 100%|██████████| 18/18 [00:00<00:00, 32486.00files/s]
 ...
+Saving the dataset (62/62 shards): 100%|██████████| 10000000/10000000 [02:10<00:00, 76357.10 examples/s]
+Saving the dataset (1/1 shards): 100%|██████████| 50000/50000 [00:00<00:00, 54862.74 examples/s]
+Saving the dataset (1/1 shards): 100%|██████████| 50000/50000 [00:00<00:00, 54984.57 examples/s]
 ```
 
 ## 6. Training Using DDP Framework
@@ -193,8 +196,78 @@ Now we are ready to submit distributed training jobs to pretrain ESM2 models. We
 To kick off distributed training job execute:
 ```bash
 sbatch train_ddp.sh
+---
+squeue
+JOBID PARTITION     NAME     USER ST       TIME  NODES NODELIST(REASON)
+1       dev  ESM-DDP   ubuntu  R       0:07      4 ip-10-1-29-[105,166],ip-10-1-39-225,ip-10-1-40-172
 ```
 An output of such command should be like shown below:
+
+If we want to follow the log output, we can run a command like
+```bash
+tail -f <slurm-N.log>
+---
+[INFO     | __main__           ]: *** Evaluate ***
+0: [INFO|trainer.py:805] 2025-05-02 21:39:49,138 >> The following columns in the evaluation set don't have a corresponding argument in `EsmForMaskedLM.forward` and have been ignored: special_tokens_mask. If special_tokens_mask are not expected by `EsmForMaskedLM.forward`,  you can safely ignore this message.
+0: [INFO|trainer.py:3788] 2025-05-02 21:39:49,140 >> 
+0: ***** Running Evaluation *****
+0: [INFO|trainer.py:3790] 2025-05-02 21:39:49,140 >>   Num examples = 50000
+0: [INFO|trainer.py:3793] 2025-05-02 21:39:49,140 >>   Batch size = 8
+  3%|▎         | 98/3125 [00:02<01:04, 46.87it/s]
+  6%|▋         | 198/3125 [00:04<01:02, 46.85it/s]
+  9%|▉         | 293/3125 [00:06<01:00, 46.74it/s]
+ 12%|█▏        | 388/3125 [00:08<00:58, 46.69it/s]
+ 15%|█▌        | 483/3125 [00:10<00:56, 46.56it/s]
+ 18%|█▊        | 573/3125 [00:12<00:55, 46.35it/s]
+ 21%|██▏       | 668/3125 [00:14<00:53, 46.29it/s]
+ 24%|██▍       | 758/3125 [00:16<00:51, 46.11it/s]
+ 27%|██▋       | 848/3125 [00:18<00:49, 46.08it/s]
+ 30%|███       | 938/3125 [00:20<00:47, 45.93it/s]
+ 33%|███▎      | 1023/3125 [00:22<00:45, 45.91it/s]
+ 36%|█�█▌      | 1108/3125 [00:23<00:44, 45.73it/s]
+ 38%|██�▊      | 1193/3125 [00:25<00:42, 45.73it/s]
+ 41%|████      | 1278/3125 [00:27<00:40, 45.61it/s]
+ 44%|████▎     | 1363/3125 [00:29<00:38, 45.52it/s]
+ 46%|████▋     | 1443/3125 [00:31<00:37, 45.38it/s]
+ 49%|████▉     | 1528/3125 [00:33<00:35, 45.23it/s]
+ 52%|█████�    | 1608/3125 [00:34<00:33, 45.07it/s]
+ 54%|█████�    | 1688/3125 [00:36<00:31, 44.98it/s]
+ 57%|█████�    | 1768/3125 [00:38<00:30, 44.87it/s]
+ 59%|█████�    | 1848/3125 [00:40<00:28, 44.79it/s]
+ 62%|███�██▏   | 1928/3125 [00:41<00:26, 44.70it/s]
+ 64%|██████▍   | 2008/3125 [00:43<00:25, 44.60it/s]
+ 67%|██████▋   | 2083/3125 [00:45<00:23, 44.47it/s]
+ 69%|██████▉   | 2163/3125 [00:47<00:21, 44.45it/s]
+ 72%|██�████▏  | 2238/3125 [00:48<00:19, 44.36it/s]
+ 74%|███████▍  | 2313/3125 [00:50<00:18, 44.27it/s]
+ 77%|█████�█▋  | 2388/3125 [00:52<00:16, 44.14it/s]
+ 79%|██████�▉  | 2463/3125 [00:54<00:14, 44.16it/s]
+ 81%|████████  | 2538/3125 [00:55<00:13, 44.07it/s]
+ 84%|████████▎ | 2613/3125 [00:57<00:11, 43.99it/s]
+ 86%|████████▌ | 2688/3125 [00:59<00:10, 43.88it/s]
+ 88%|█████�██▊ | 2758/3125 [01:00<00:08, 43.77it/s]
+ 91%|█████████ | 2833/3125 [01:02<00:06, 43.71it/s]
+ 93%|█████████▎| 2903/3125 [01:04<00:05, 43.62it/s]
+ 95%|█████████�| 2973/3125 [01:05<00:03, 43.55it/s]
+ 98%|█████████▊| 3048/3125 [01:07<00:01, 43.45it/s]
+100%|█████████▉| 3118/3125 [01:09<00:00, 43.44it/s]
+1: [INFO     | __main__           ]: Metrics are {'eval_loss': 2.6093177795410156, 'eval_accuracy': 0.20685649827919567, 'eval_runtime': 75.8886, 'eval_samples_per_second': 658.86, 'eval_steps_per_second': 41.179, 'epoch': 1.0}
+1: [INFO     | __main__           ]: Calculating perplexity
+1: [INFO     | __main__           ]: Perplexity: 13.589776465064947
+100%|██████████| 3125/3125 [01:16<00:00, 41.02it/s]
+0: [INFO     | __main__           ]: Metrics are {'eval_loss': 2.6093177795410156, 'eval_accuracy': 0.20685649827919567, 'eval_runtime': 76.5074, 'eval_samples_per_second': 653.532, 'eval_steps_per_second': 40.846, 'epoch': 1.0}
+0: [INFO     | __main__           ]: Calculating perplexity
+0: [INFO     | __main__           ]: Perplexity: 13.589776465064947
+0: ***** eval metrics *****
+0:   epoch                   =        1.0
+0:   eval_accuracy           =     0.2069
+0:   eval_loss               =     2.6093
+0:   eval_runtime            = 0:01:16.50
+0:   eval_samples            =      50000
+0:   eval_samples_per_second =    653.532
+0:   eval_steps_per_second   =     40.846
+0:   perplexity              =    13.5898
+```
 
 ## 7. Training Using FSDP Framework
 
