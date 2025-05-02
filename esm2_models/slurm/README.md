@@ -196,16 +196,19 @@ Now we are ready to submit distributed training jobs to pretrain ESM2 models. We
 To kick off distributed training job execute:
 ```bash
 sbatch train_ddp.sh
----
+```
+
+To verify that the training jobs are running on requested number of HyperPod nodes, run the following command: 
+```bash
 squeue
 JOBID PARTITION     NAME     USER ST       TIME  NODES NODELIST(REASON)
-1       dev  ESM-DDP   ubuntu  R       0:07      4 ip-10-1-29-[105,166],ip-10-1-39-225,ip-10-1-40-172
+1       dev  esm2-ddp   ubuntu  R       0:07      2 ip-10-1-29-[105,166]
 ```
-An output of such command should be like shown below:
 
-If we want to follow the training process output, we can run a command like
+
+If you need to follow the training process output, we can run a command like against the .OUT file
 ```bash
-tail -f <slurm-N.log>
+tail -f <esm2-ddp-esm2-ddp.N.out>
 ---
 [INFO     | __main__           ]: *** Evaluate ***
 0: [INFO|trainer.py:805] 2025-05-02 21:39:49,138 >> The following columns in the evaluation set don't have a corresponding argument in `EsmForMaskedLM.forward` and have been ignored: special_tokens_mask. If special_tokens_mask are not expected by `EsmForMaskedLM.forward`,  you can safely ignore this message.
@@ -224,28 +227,7 @@ tail -f <slurm-N.log>
  27%|██▋       | 848/3125 [00:18<00:49, 46.08it/s]
  30%|███       | 938/3125 [00:20<00:47, 45.93it/s]
  33%|███▎      | 1023/3125 [00:22<00:45, 45.91it/s]
- 36%|█�█▌      | 1108/3125 [00:23<00:44, 45.73it/s]
- 38%|██�▊      | 1193/3125 [00:25<00:42, 45.73it/s]
- 41%|████      | 1278/3125 [00:27<00:40, 45.61it/s]
- 44%|████▎     | 1363/3125 [00:29<00:38, 45.52it/s]
- 46%|████▋     | 1443/3125 [00:31<00:37, 45.38it/s]
- 49%|████▉     | 1528/3125 [00:33<00:35, 45.23it/s]
- 52%|█████�    | 1608/3125 [00:34<00:33, 45.07it/s]
- 54%|█████�    | 1688/3125 [00:36<00:31, 44.98it/s]
- 57%|█████�    | 1768/3125 [00:38<00:30, 44.87it/s]
- 59%|█████�    | 1848/3125 [00:40<00:28, 44.79it/s]
- 62%|███�██▏   | 1928/3125 [00:41<00:26, 44.70it/s]
- 64%|██████▍   | 2008/3125 [00:43<00:25, 44.60it/s]
- 67%|██████▋   | 2083/3125 [00:45<00:23, 44.47it/s]
- 69%|██████▉   | 2163/3125 [00:47<00:21, 44.45it/s]
- 72%|██�████▏  | 2238/3125 [00:48<00:19, 44.36it/s]
- 74%|███████▍  | 2313/3125 [00:50<00:18, 44.27it/s]
- 77%|█████�█▋  | 2388/3125 [00:52<00:16, 44.14it/s]
- 79%|██████�▉  | 2463/3125 [00:54<00:14, 44.16it/s]
- 81%|████████  | 2538/3125 [00:55<00:13, 44.07it/s]
- 84%|████████▎ | 2613/3125 [00:57<00:11, 43.99it/s]
- 86%|████████▌ | 2688/3125 [00:59<00:10, 43.88it/s]
- 88%|█████�██▊ | 2758/3125 [01:00<00:08, 43.77it/s]
+...
  91%|█████████ | 2833/3125 [01:02<00:06, 43.71it/s]
  93%|█████████▎| 2903/3125 [01:04<00:05, 43.62it/s]
  95%|█████████�| 2973/3125 [01:05<00:03, 43.55it/s]
@@ -268,10 +250,10 @@ tail -f <slurm-N.log>
 0:   eval_steps_per_second   =     40.846
 0:   perplexity              =    13.5898
 ```
-GTo validate that model was indeed trained we can run the following command:
+To validate that model was indeed trained we can run the following command in the output directory:
 
 ```bash
-/esm-slurm/out$ cat all_results.json 
+/esm-slurm/out-ddp$ cat all_results.json 
 {
     "epoch": 1.0,
     "eval_accuracy": 0.20685649827919567,
@@ -289,6 +271,7 @@ GTo validate that model was indeed trained we can run the following command:
     "train_steps_per_second": 28.468
 }
 ```
+That confirms that model training was completed successfully with DDP framework
 
 ## 7. Training Using FSDP Framework
 
@@ -297,9 +280,16 @@ Now we are ready to submit distributed training jobs to pretrain ESM2 models. We
 ```bash
 sbatch train_fsdp.sh
 ```
+To verify that the training jobs are running on requested number of HyperPod nodes, run the following command: 
+```bash
+squeue
+JOBID PARTITION     NAME     USER ST       TIME  NODES NODELIST(REASON)
+1       dev  esm2-fsdp   ubuntu  R       0:07      2 ip-10-1-29-[105,166]
+```
+
 An output of such command should be like shown below:
 
-If we want to follow the output of FSDP training job, we cam run a comm,and like:
+If you want to follow the output of FSDP training job, you can run a command like:
 ```bash
 ail -f esm2-fsdp-esm2-fsdp.20.out
 1: [INFO|trainer.py:2134] 2025-05-02 22:42:34,741 >>   Total train batch size (w. parallel, distributed & accumulation) = 88
@@ -320,5 +310,43 @@ ail -f esm2-fsdp-esm2-fsdp.20.out
   8%|▊         | 89/1136 [00:40<07:55,  2.20it/s]
 0: {'loss': 2.7009, 'grad_norm': 1.8158063888549805, 'learning_rate': 4.577464788732395e-05, 'epoch': 0.08}
   9%|▉         | 106/1136 [00:48<07:43,  2.22it/s]
-0: {'loss': 2.6829, 'grad_norm': 1.777127981185913, 'learning_rate': 4.507042253521127e-05, 'epoch':..)
+...
+0: {'loss': 2.6211, 'grad_norm': 0.8737764954566956, 'learning_rate': 1.4084507042253521e-06, 'epoch': 0.97}
+ 98%|█████████▊| 1117/1136 [08:21<00:08,  2.25it/s]
+0: {'loss': 2.6324, 'grad_norm': 0.726458728313446, 'learning_rate': 7.042253521126761e-07, 'epoch': 0.99}
+ 99%|███████�█▉| 1129/1136 [08:26<00:03,  2.25it/s]
+0: {'loss': 2.6166, 'grad_norm': 0.8394569158554077, 'learning_rate': 0.0, 'epoch': 1.0}
+100%|██████████| 1136/1136 [08:29<00:00,  2.25it/s]/usr/local/lib/python3.12/dist-packages/torch/distributed/fsdp/fully_sharded_data_parallel.py:690: FutureWarning: FSDP.state_dict_type() and FSDP.set_state_dict_type() are being deprecated. Please use APIs, get_state_dict() and set_state_dict(), which can support different parallelisms, FSDP1, FSDP2, DDP. API doc: https://pytorch.org/docs/stable/distributed.checkpoint.html#torch.distributed.checkpoint.state_dict.get_sta
+0: te_dict .Tutorial: https://pytorch.org/tutorials/recipes/distributed_checkpoint_recipe.html .
+0:   warnings.warn(
+0: [INFO|trainer.py:3478] 2025-05-02 22:51:04,774 >> Saving model checkpoint to /fsx/ubuntu/esm-slurm/out-fsdp/checkpoint-1136
+0: [INFO|configuration_utils.py:472] 2025-05-02 22:51:04,779 >> Configuration saved in /fsx/ubuntu/esm-slurm/out-fsdp/checkpoint-1136/config.json
+0: [INFO|modeling_utils.py:2690] 2025-05-02 22:51:04,844 >> Model weights saved in /fsx/ubuntu/esm-slurm/out-fsdp/checkpoint-1136/model.safetensors
+0: [INFO|tokenization_utils_base.py:2574] 2025-05-02 22:51:04,847 >> tokenizer config file saved in /fsx/ubuntu/esm-slurm/out-fsdp/checkpoint-1136/tokenizer_config.json
+0: [INFO|tokenization_utils_base.py:2583] 2025-05-02 22:51:04,850 >> Special tokens file saved in /fsx/ubuntu/esm-slurm/out-fsdp/checkpoint-1136/special_tokens_map.json
+1: [INFO|trainer.py:2383] 2025-05-02 22:51:05,095 >> 
+1: 
+1: Training completed. Do not forget to share your model on huggingface.co/models =)
 ```
+To validate that model was indeed trained we can run the following command in the output directory:
+
+```bash
+/esm-slurm/out-fsdp$ cat all_results.json 
+{
+    "epoch": 0.99968,
+    "eval_accuracy": 0.20331036132698413,
+    "eval_loss": 2.628765344619751,
+    "eval_runtime": 88.2792,
+    "eval_samples": 50000,
+    "eval_samples_per_second": 566.385,
+    "eval_steps_per_second": 35.399,
+    "perplexity": 13.856651147531753,
+    "total_flos": 1151925283717120.0,
+    "train_loss": 2.6576662063598633,
+    "train_runtime": 510.4751,
+    "train_samples": 100000,
+    "train_samples_per_second": 195.896,
+    "train_steps_per_second": 2.225
+}
+```
+That confirms that model training was completed successfully with DDP framework
