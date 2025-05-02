@@ -203,7 +203,7 @@ JOBID PARTITION     NAME     USER ST       TIME  NODES NODELIST(REASON)
 ```
 An output of such command should be like shown below:
 
-If we want to follow the log output, we can run a command like
+If we want to follow the training process output, we can run a command like
 ```bash
 tail -f <slurm-N.log>
 ---
@@ -298,3 +298,27 @@ Now we are ready to submit distributed training jobs to pretrain ESM2 models. We
 sbatch train_fsdp.sh
 ```
 An output of such command should be like shown below:
+
+If we want to follow the output of FSDP training job, we cam run a comm,and like:
+```bash
+ail -f esm2-fsdp-esm2-fsdp.20.out
+1: [INFO|trainer.py:2134] 2025-05-02 22:42:34,741 >>   Total train batch size (w. parallel, distributed & accumulation) = 88
+1: [INFO|trainer.py:2135] 2025-05-02 22:42:34,741 >>   Gradient Accumulation steps = 11
+1: [INFO|trainer.py:2136] 2025-05-02 22:42:34,741 >>   Total optimization steps = 1,136
+1: [INFO|trainer.py:2137] 2025-05-02 22:42:34,742 >>   Number of trainable parameters = 3,920,390
+1: ip-10-1-40-172:48007:48141 [0] NCCL INFO Connected binomial trees
+0: ip-10-1-39-225:48124:48261 [0] NCCL INFO Connected binomial trees
+0: {'loss': 3.0288, 'grad_norm': 1.4424070119857788, 'learning_rate': 4.929577464788733e-05, 'epoch': 0.01}
+  2%|▏         | 18/1136 [00:08<08:31,  2.19it/s]
+0: {'loss': 2.8485, 'grad_norm': 3.385751724243164, 'learning_rate': 4.8591549295774653e-05, 'epoch': 0.03}
+  3%|▎         | 35/1136 [00:16<08:18,  2.21it/s]
+0: {'loss': 2.7659, 'grad_norm': 1.916214942932129, 'learning_rate': 4.788732394366197e-05, 'epoch': 0.04}
+  5%|▍         | 53/1136 [00:24<08:10,  2.21it/s]
+0: {'loss': 2.7257, 'grad_norm': 2.18135142326355, 'learning_rate': 4.71830985915493e-05, 'epoch': 0.06}
+  6%|▋         | 71/1136 [00:32<07:59,  2.22it/s]]
+0: {'loss': 2.708, 'grad_norm': 2.5152652263641357, 'learning_rate': 4.647887323943662e-05, 'epoch': 0.07}
+  8%|▊         | 89/1136 [00:40<07:55,  2.20it/s]
+0: {'loss': 2.7009, 'grad_norm': 1.8158063888549805, 'learning_rate': 4.577464788732395e-05, 'epoch': 0.08}
+  9%|▉         | 106/1136 [00:48<07:43,  2.22it/s]
+0: {'loss': 2.6829, 'grad_norm': 1.777127981185913, 'learning_rate': 4.507042253521127e-05, 'epoch':..)
+```
