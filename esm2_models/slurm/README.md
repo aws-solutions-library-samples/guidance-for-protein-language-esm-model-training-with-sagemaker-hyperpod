@@ -268,6 +268,27 @@ tail -f <slurm-N.log>
 0:   eval_steps_per_second   =     40.846
 0:   perplexity              =    13.5898
 ```
+GTo validate that model was indeed trained we can run the following command:
+
+```bash
+/esm-slurm/out$ cat all_results.json 
+{
+    "epoch": 1.0,
+    "eval_accuracy": 0.20685649827919567,
+    "eval_loss": 2.6093177795410156,
+    "eval_runtime": 76.5074,
+    "eval_samples": 50000,
+    "eval_samples_per_second": 653.532,
+    "eval_steps_per_second": 40.846,
+    "perplexity": 13.589776465064947,
+    "total_flos": 2304587980013568.0,
+    "train_loss": 2.6276449169921876,
+    "train_runtime": 439.0884,
+    "train_samples": 100000,
+    "train_samples_per_second": 227.745,
+    "train_steps_per_second": 28.468
+}
+```
 
 ## 7. Training Using FSDP Framework
 
