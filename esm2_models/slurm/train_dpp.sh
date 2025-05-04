@@ -4,8 +4,9 @@
 # SPDX-License-Identifier: MIT-0
 
 #SBATCH --nodes=2 # number of nodes to use
-#SBATCH --gpus-per-node=8
-#SBATCH --job-name=ESM-DDP # name of your job
+#SBATCH --gpus-per-node=1
+#SBATCH --job-name=esm2-ddp # name of your job
+#SBATCH --output=esm2-ddp-%x.%j.out
 #SBATCH --exclusive # job has exclusive use of the resource, no sharing
 
 set -ex;
@@ -14,9 +15,7 @@ set -ex;
 ###### User Variables #####
 ###########################
 
-GPUS_PER_NODE=8 # 4 for G5.12x, 8 for P4/P5
-
-
+GPUS_PER_NODE=1 # 4 for G5.12x, 8 for P4/P5
 
 IMAGE=${TARGET_PATH}/${DOCKER_IMAGE_NAME}.sqsh
 ###########################
@@ -51,7 +50,7 @@ export TRAIN_SCRIPT=/workspace/train.py
 
 declare -a TRAINING_ARGS=(
     --config_name ${MODEL} \
-    --dataloader_num_workers 8 \
+    --dataloader_num_workers 2 \
     --bf16 True \
     --do_eval True \
     --do_preprocess False \
@@ -59,8 +58,8 @@ declare -a TRAINING_ARGS=(
     --gradient_accumulation_steps 1 \
     --logging_steps 16 \
     --num_train_epochs 1 \
-    --output_dir ${TARGET_PATH} \
-    --per_device_train_batch_size 8 \
+    --output_dir ${TARGET_PATH}/out-ddp \
+    --per_device_train_batch_size 4 \
     --max_train_samples 100000 \
     --tokenizer_name ${MODEL} \
     --dataset_dir ${TARGET_PATH}/processed/arrow \
