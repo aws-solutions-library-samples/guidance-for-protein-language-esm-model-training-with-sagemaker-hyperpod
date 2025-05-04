@@ -1,14 +1,14 @@
 #!/bin/bash
 
-#SBATCH --job-name=esm2-accelerate
-#SBATCH --output=accelerate-%x.%j.out
+#SBATCH --job-name=esm2-fsdp
+#SBATCH --output=esm2-fsdp-%x.%j.out
 #SBATCH --nodes=2              # number of nodes
 #SBATCH --exclusive # job has exclusive use of the resource, no sharing
 
 
 IMAGE=${TARGET_PATH}/${DOCKER_IMAGE_NAME}.sqsh
 
-export GPUS_PER_NODE=8
+export GPUS_PER_NODE=1
 ######################
 
 export FI_PROVIDER=efa
@@ -40,7 +40,7 @@ export LAUNCHER="accelerate launch \
 export TRAIN_SCRIPT="/workspace/train.py"
 export TRAIN_SCRIPT_ARGS=" \
     --config_name ${MODEL} \
-    --dataloader_num_workers 8 \
+    --dataloader_num_workers 2 \
     --bf16 True \
     --do_eval True \
     --do_preprocess False \
@@ -48,8 +48,8 @@ export TRAIN_SCRIPT_ARGS=" \
     --gradient_accumulation_steps 11 \
     --logging_steps 16 \
     --num_train_epochs 1 \
-    --output_dir ${TARGET_PATH} \
-    --per_device_train_batch_size 8 \
+    --output_dir ${TARGET_PATH}/out-fsdp \
+    --per_device_train_batch_size 4 \
     --max_train_samples 100000 \
     --tokenizer_name ${MODEL} \
     --dataset_dir ${TARGET_PATH}/processed/arrow \
@@ -57,7 +57,21 @@ export TRAIN_SCRIPT_ARGS=" \
     --pad_to_max_length True \
     --max_seq_length 512
     "
-    
+
+AUTO_RESUME=""
+if [ -d "/opt/sagemaker_cluster" ]; then
+    echo "Detected Hyperpod cluster.. enabling --auto-resume=1"
+    AUTO_RESUME="--auto-resume=1"
+fi
+
+declare -a ARGS=(
+    --container-image ${IMAGE}
+    --container-mount-home
+    --container-mounts /fsx/ubuntu:/fsx/ubuntu
+    --no-container-remap-root
+)
+
+
 # This step is necessary because accelerate launch does not handle multiline arguments properly
-export CMD="$LAUNCHER $TRAIN_SCRIPT $TRAIN_SCRIPT_ARGS" 
+export CMD="${ARGS[@]} ${AUTO_RESUME} -l $LAUNCHER $TRAIN_SCRIPT $TRAIN_SCRIPT_ARGS" 
 srun $CMD
