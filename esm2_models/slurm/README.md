@@ -1,11 +1,11 @@
 ## 0. Available ESM2 models on HuggingFace
 
-1. facebook/esm2_t6_8M_UR50D
-2. facebook/esm2_t12_35M_UR50D
-3. facebook/esm2_t30_150M_UR50D
-4. facebook/esm2_t33_650M_UR50D
-5. facebook/esm2_t36_3B_UR50D
-6. facebook/esm2_t48_15B_UR50D
+1. [facebook/esm2_t6_8M_UR50D](https://huggingface.co/facebook/esm2_t6_8M_UR50D)
+2. [facebook/esm2_t12_35M_UR50D](https://huggingface.co/facebook/esm2_t12_35M_UR50D)
+3. [facebook/esm2_t30_150M_UR50D](https://huggingface.co/facebook/esm2_t30_150M_UR50D)
+4. [facebook/esm2_t33_650M_UR50D](https://huggingface.co/facebook/esm2_t33_650M_UR50D)
+5. [facebook/esm2_t36_3B_UR50D](https://huggingface.co/facebook/esm2_t36_3B_UR50D)
+6. [facebook/esm2_t48_15B_UR50D](https://huggingface.co/facebook/esm2_t48_15B_UR50D)
 
 
 ## 1. Setup environment variables
@@ -349,4 +349,4 @@ To validate that model was indeed trained we can run the following command in th
     "train_steps_per_second": 2.225
 }
 ```
-That confirms that model training was completed successfully with DDP framework
+That confirms that ESM-2 model training was completed successfully with FSDP framework
