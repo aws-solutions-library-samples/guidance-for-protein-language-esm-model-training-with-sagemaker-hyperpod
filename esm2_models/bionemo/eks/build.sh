@@ -15,5 +15,5 @@ if [ "$REGISTRY_COUNT" == "0" ]; then
         aws ecr create-repository --repository-name ${DOCKER_IMAGE_NAME}
 fi
 
-# Initiate docker build using Docker image name and TAG=:aws previously set in the env
-docker build -t ${REGISTRY}${DOCKER_IMAGE_NAME}${TAG} .
+# Initiate docker build using Docker image name and TAG=aws previously set in the env
+docker build -t ${REGISTRY}${DOCKER_IMAGE_NAME}:${TAG} .
