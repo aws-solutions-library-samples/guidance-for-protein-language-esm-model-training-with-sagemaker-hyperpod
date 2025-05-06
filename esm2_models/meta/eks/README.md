@@ -394,38 +394,18 @@ pod/esm2-worker-1                                                0/1     Complet
 pod/esm2-worker-2                                                0/1     Completed   0             40m
 pod/esm2-worker-3                                                0/1     Completed   0             40m
 ```
-Also, the following file with contents like shown below is expected at the OUTPUT shared directory:
+Finally, to verify that model training has been indeed complete, you can display that following file with contents like shown below is expected at the $OUTPUT_DIR shared directory using the "helper" pod `fsx-share-test`:
+
 ```bash
-/fsx-shared/esm/output/checkpoint-3125# cat config.json
+kubectl exec -it fsx-share-test -- cat /fsx-shared/esm/output/train_results.json
 {
-  "_name_or_path": "facebook/esm2_t6_8M_UR50D",
-  "architectures": [
-    "EsmForMaskedLM"
-  ],
-  "attention_probs_dropout_prob": 0.0,
-  "classifier_dropout": null,
-  "emb_layer_norm_before": false,
-  "esmfold_config": null,
-  "hidden_act": "gelu",
-  "hidden_dropout_prob": 0.0,
-  "hidden_size": 320,
-  "initializer_range": 0.02,
-  "intermediate_size": 1280,
-  "is_folding_model": false,
-  "layer_norm_eps": 1e-05,
-  "mask_token_id": 32,
-  "max_position_embeddings": 1026,
-  "model_type": "esm",
-  "num_attention_heads": 20,
-  "num_hidden_layers": 6,
-  "pad_token_id": 1,
-  "position_embedding_type": "rotary",
-  "token_dropout": true,
-  "torch_dtype": "float32",
-  "transformers_version": "4.42.4",
-  "use_cache": true,
-  "vocab_list": null,
-  "vocab_size": 33
+    "epoch": 1.0,
+    "total_flos": 2304587980079104.0,
+    "train_loss": 2.638172448425293,
+    "train_runtime": 278.2115,
+    "train_samples": 100000,
+    "train_samples_per_second": 359.439,
+    "train_steps_per_second": 11.232
 }
 ```
 ## 7. Training Using FSDP Framework
@@ -541,9 +521,14 @@ spec:
                   name: fsx-pv-storage
               imagePullPolicy: Always
               command:
-                - "accelerate launch"
-                - --num_processes=1*4
-                - --num_machines=4
+                - accelerate
+                - launch
+                - --num_processes=2 # Total GPUs
+                - --num_machines=2 # Num Nodes
+                - --machine_rank=$(POD_RANK)
+                - --rdzv_backend=etcd
+                - --main_process_port=2379
+                - --main_process_ip=etcd
                 - --use_fsdp
                 - --fsdp_sharding_strategy=FULL_SHARD
                 - --fsdp_auto_wrap_policy=TRANSFORMER_BASED_WRAP
@@ -554,20 +539,21 @@ spec:
                 - --fsdp_use_orig_params=True
                 - /workspace/train.py
                 - --config_name=facebook/esm2_t6_8M_UR50D
-                - --dataloader_num_workers=8
+                - --dataloader_num_workers=2
                 - --bf16=True
                 - --do_eval=True
                 - --do_preprocess=False
                 - --do_train=True
-                - --gradient_accumulation_steps=1
+                - --gradient_accumulation_steps=11
                 - --logging_steps=16
                 - --num_train_epochs=1
-                - --output_dir=/fsx-shared/esm
-                - --per_device_train_batch_size=8
+                - --output_dir=/fsx-shared/fsdp-ouput
+                - --overwrite_output_dir
+                - --per_device_train_batch_size=4
                 - --max_train_samples=100000
                 - --tokenizer_name=facebook/esm2_t6_8M_UR50D
                 - --dataset_dir=/fsx-shared/esm/processed/arrow
-                - --torch_compile=True
+                - --torch_compile=False
                 - --pad_to_max_length=True
                 - --max_seq_length=512
 ---
@@ -580,7 +566,7 @@ service/etcd created
 deployment.apps/etcd created
 pytorchjob.kubeflow.org/esm2 created
 ```
-To monitor how ESM worker pods process model training you can run the following command:
+To monitor how ESM worker pods process model training you can run the following command against one of the worker nodes
 
 ```bash
 kubectl logs -f esm2-worker-0
@@ -595,4 +581,66 @@ INFO 2025-05-06 04:09:27,463 New rendezvous state created: {'status': 'joinable'
 INFO 2025-05-06 04:09:27,565 Joined rendezvous version 1 as rank 0. Full state: {'status': 'joinable', 'version': '1', 'participants': [0]}
 INFO 2025-05-06 04:09:27,566 Waiting for remaining peers.
 ...
+[INFO|tokenization_utils_base.py:2583] 2025-05-06 20:51:15,555 >> Special tokens file saved in /fsx-shared/fsdp-ouput/special_tokens_map.json
+***** train metrics *****
+  epoch                    =     0.9997
+  total_flos               =  1072814GF
+  train_loss               =     2.6578
+  train_runtime            = 0:08:52.30
+  train_samples            =     100000
+  train_samples_per_second =    187.862
+  train_steps_per_second   =      2.134
+[INFO     | __main__           ]: *** Evaluate ***
+[INFO|trainer.py:805] 2025-05-06 20:51:15,572 >> The following columns in the evaluation set don't have a corresponding argument in `FullyShardedDataParallel.forward` and have been ignored: special_tokens_mask. If special_tokens_mask are not expected by `FullyShardedDataParallel.forward`,  you can safely ignore this message.
+[INFO|trainer.py:3788] 2025-05-06 20:51:15,574 >>
+***** Running Evaluation *****
+[INFO|trainer.py:3790] 2025-05-06 20:51:15,574 >>   Num examples = 50000
+[INFO|trainer.py:3793] 2025-05-06 20:51:15,574 >>   Batch size = 8
+100%|██████████| 3125/3125 [01:34<00:00, 33.23it/s]
+[INFO     | __main__           ]: Metrics are {'eval_loss': 2.6308915615081787, 'eval_accuracy': 0.20261175918653207, 'eval_runtime': 94.2151, 'eval_samples_per_second': 530.7, 'eval_steps_per_second': 33.169, 'epoch': 0.99968}
+[INFO     | __main__           ]: Calculating perplexity
+[INFO     | __main__           ]: Perplexity: 13.886144736991477
+***** eval metrics *****
+  epoch                   =     0.9997
+  eval_accuracy           =     0.2026
+  eval_loss               =     2.6309
+  eval_runtime            = 0:01:34.21
+  eval_samples            =      50000
+  eval_samples_per_second =      530.7
+  eval_steps_per_second   =     33.169
+  perplexity              =    13.8861
+[INFO|modelcard.py:449] 2025-05-06 20:52:49,880 >> Dropping the following result as it does not have all the necessary fields:
+{'task': {'name': 'Masked Language Modeling', 'type': 'fill-mask'}, 'metrics': [{'name': 'Accuracy', 'type': 'accuracy', 'value': 0.20261175918653207}]}
+[rank0]:[W506 20:52:51.546147488 ProcessGroupNCCL.cpp:1487] Warning: WARNING: destroy_process_group() was not called before program exit, which can leak resources. For more info, please see https://pytorch.org/docs/stable/distributed.html#shutdown (function operator())
+esm2-worker-0:161:315 [0] NCCL INFO misc/socket.cc:64 -> 3
+esm2-worker-0:161:315 [0] NCCL INFO misc/socket.cc:80 -> 3
+esm2-worker-0:161:315 [0] NCCL INFO misc/socket.cc:828 -> 3
+esm2-worker-0:161:286 [0] NCCL INFO misc/socket.cc:880 -> 3
+esm2-worker-0:161:315 [0] NCCL INFO comm 0x2e177b70 rank 0 nranks 2 cudaDev 0 busId 1e0 - Abort COMPLETE
 ```
+To confirm that PyTorch training job completed successfully along with ESM worker pods, you can run the following command:
+```bash
+kubectl get pytorchjob,po,svc
+NAME                           STATE       AGE
+pytorchjob.kubeflow.org/esm2   Succeeded   122m
+
+NAME                                                             READY   STATUS      RESTARTS      AGE
+pod/esm2-worker-0                                                0/1     Completed   0             122m
+pod/esm2-worker-1                                                0/1     Completed   0             122m
+pod/etcd-6cd66c884c-t4xm7                                        1/1     Running     0             122m
+pod/fsx-share-test                                               1/1     Running     0             108m
+....
+```
+Finally, to verify that model training has been indeed complete, you can display that following file with contents like shown below is expected at the $OUTPUT_DIR shared directory using the "helper" pod `fsx-share-test`:
+
+```bash
+kubectl exec -it fsx-share-test -- cat /fsx-shared/fsdp-output/train_results.json
+{
+    "epoch": 0.99968,
+    "total_flos": 1151925283717120.0,
+    "train_loss": 2.657833001982998,
+    "train_runtime": 532.3045,
+    "train_samples": 100000,
+    "train_samples_per_second": 187.862,
+    "train_steps_per_second": 2.134
+}
