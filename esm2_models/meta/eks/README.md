@@ -580,4 +580,19 @@ service/etcd created
 deployment.apps/etcd created
 pytorchjob.kubeflow.org/esm2 created
 ```
+To monitor how ESM worker pods process model training you can run the following command:
 
+```bash
+kubectl logs -f esm2-worker-0
+[WARNING  | accelerate.commands.launch]: The following values were not passed to `accelerate launch` and had defaults used instead:
+        `--mixed_precision` was set to a value of `'no'`
+        `--dynamo_backend` was set to a value of `'no'`
+To avoid this warning pass in values for each of the problematic parameters or run `accelerate config`.
+INFO 2025-05-06 04:09:27,315 Etcd machines: ['http://0.0.0.0:2379']
+...
+INFO 2025-05-06 04:09:27,391 Attempting to join next rendezvous
+INFO 2025-05-06 04:09:27,463 New rendezvous state created: {'status': 'joinable', 'version': '1', 'participants': []}
+INFO 2025-05-06 04:09:27,565 Joined rendezvous version 1 as rank 0. Full state: {'status': 'joinable', 'version': '1', 'participants': [0]}
+INFO 2025-05-06 04:09:27,566 Waiting for remaining peers.
+...
+```
