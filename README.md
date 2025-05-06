@@ -1203,5 +1203,5 @@ Include a legal disclaimer
 ## Authors (optional)
 
 Daniel Zilberman, Sr SA AWS Tech Solutions <br/>
-Ankur Srivastava, Sr. WW Specialist SA GenAI <br/>
+Mark Vinciguerra, Associate WW Specialist SA GenAI <br/>
 Alex Iankoulski, Principal WW Specialist SA GenAI <br/>
