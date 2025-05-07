@@ -5,7 +5,7 @@ metadata:
 spec:
   containers:
   - name: download-bionemo-data
-    image: ${REGISTRY}${DOCKER_IMAGE_NAME}${TAG}
+    image: ${REGISTRY}${DOCKER_IMAGE_NAME}:${TAG}
     command: ["/bin/bash"]
     args: ["-c", "download_bionemo_data esm2/testdata_esm2_pretrain:2.0"]
     volumeMounts:

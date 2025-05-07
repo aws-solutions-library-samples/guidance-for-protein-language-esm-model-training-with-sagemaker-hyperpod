@@ -88,7 +88,7 @@ spec:
               claimName: fsx-claim
           containers:
             - name: pytorch
-              image: ${REGISTRY}${DOCKER_IMAGE_NAME}${TAG}
+              image: ${REGISTRY}${DOCKER_IMAGE_NAME}:${TAG}
               resources:
                 requests:
                   nvidia.com/gpu: $GPU_PER_NODE
