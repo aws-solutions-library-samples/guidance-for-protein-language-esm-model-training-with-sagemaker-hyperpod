@@ -136,7 +136,7 @@ Untarring contents of '/root/.cache/bionemo/006911f92bbc0ded7ea302bbdbfab4c694b4
 
 ## 6. Pretrain ESM2 models
 
-Now we are ready to submit distributed training jobs to pretrain `ESM2` models. We provide the `train-esm.slurm` script to run training on HyperPod compute nodes with certain GPU resources. Make sure data paths and model configuration is correct if you are running on custom data. 
+Now we are ready to submit distributed training jobs to pretrain ESM-2 models. We provide the `train-esm.slurm` script to run training on HyperPod compute nodes with respective GPU resources. Make sure data paths and model configuration is correct if you are running on custom data. 
 
 Modify the `train-esm.slurm` script according to the actual GPU and EFA cluster resources 
 
@@ -149,8 +149,10 @@ Submitted batch job 1
 To check the status of submitted job, run the following command:
 ```bash
 squeue
+JOBID PARTITION     NAME     USER   ST       TIME  NODES NODELIST(REASON)
+      2     dev   train-es   ubuntu  R       0:07      2 ip-10-1-0-96,ip-10-1-39-225
 ```
-Once training starts you should see logs as `tail -f slurm-esm2-train-xx.out`:
+Once training job starts you should see logs as `tail -f slurm-esm2-train-xx.out`:
 
 ```
 0: Training epoch 0, iteration 28/99 | lr: 5.6e-06 | global_batch_size: 32 | global_step: 28 | reduced_train_loss: 2.778 | train_step_timing in s: 0.189 | consumed_samples: 928 | val_loss: 2.861 | val_ppl: 17.57
