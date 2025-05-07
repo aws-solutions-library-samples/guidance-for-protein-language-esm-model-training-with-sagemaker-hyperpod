@@ -18,14 +18,14 @@ hyperpod-i-09539ee1dd9971647   ml.p5.48xlarge   8     32
 
 ## 1. Setup environment variables
 
-SSH into the head or login node of your cluster and run:
+Set the following values in the OS environment where you will be running the BioNemo training:  
 
 ```
 # Path to save training data and checkpoints
 
 export AWS_REGION=us-west-1
 export DOCKER_IMAGE_NAME=bionemo
-export TAG=:aws
+export TAG=aws
 export ACCOUNT=$(aws sts get-caller-identity --query Account --output text)
 export REGISTRY=${ACCOUNT}.dkr.ecr.${AWS_REGION}.amazonaws.com/
 
@@ -116,13 +116,13 @@ total 71990
 drwxr-xr-x  3 root root    25600 May  6 23:38 006911f92bbc0ded7ea302bbdbfab4c694b409e699c32fd49de1c527a99dba3e-2024_03_sanity.tar.gz.untar
 ```
 
-Once data download is completed, export the `DATA_DIR` as an environment variable as below using the `*.untar` folder name:
+Once data download is completed, export the `DATA_DIR` as an environment variable as below using the `*.untar` folder name prefixing that with shared data folder path:
 
 ```bash
 export DATA_DIR=/fsx-shared/006911f92bbc0ded7ea302bbdbfab4c694b409e699c32fd49de1c527a99dba3e-2024_03_sanity.tar.gz.untar
 ```
 
-## 5. Pretrain ESM2 models
+## 5. Pretrain BioNemo ESM2 models
 
 Now we are ready to submit distributed training jobs to pretrain `ESM2` models. We provide the `esm2-pretrain-template.yaml` script to run training on various SageMaker HyperPode compute nodes with various number of GPUs. Make sure data paths and model configuration parameters is correct if you are running on custom data. 
 
@@ -284,7 +284,7 @@ pod/bionemo-esm2-worker-0                                        1/1     Running
 pod/bionemo-esm2-worker-1                                        0/1     ContainerCreating   0             2m37s
 ..
 ```
-To tail ESM training pod logs, you can run the following command:
+To tail ESM model training pod logs, you can run the following command:
 ```bash
 INFO     | pytorch_lightning.utilities.rank_zero]: Trainer already configured with model summary callbacks: [<class 'lightning.pytorch.callbacks.rich_model_summary.RichModelSummary'>]. Skipping setting a default `ModelSummary` callback.
 [INFO     | pytorch_lightning.utilities.rank_zero]: GPU available: True (cuda), used: True
@@ -301,21 +301,11 @@ INFO     | pytorch_lightning.utilities.rank_zero]: Trainer already configured wi
 [NeMo I 2025-05-06 23:48:47 nemo_logging:393] All data parallel group ranks with context parallel combined: [[0, 1]]
 [NeMo I 2025-05-06 23:48:47 nemo_logging:393] Ranks 0 has data parallel rank: 0
 [NeMo I 2025-05-06 23:48:47 nemo_logging:393] Rank 0 has context parallel group: [0]
-[NeMo I 2025-05-06 23:48:47 nemo_logging:393] All context parallel group ranks: [[0], [1]]
-[NeMo I 2025-05-06 23:48:47 nemo_logging:393] Ranks 0 has context parallel rank: 0
-[NeMo I 2025-05-06 23:48:47 nemo_logging:393] Rank 0 has model parallel group: [0]
-[NeMo I 2025-05-06 23:48:47 nemo_logging:393] All model parallel group ranks: [[0], [1]]
-[NeMo I 2025-05-06 23:48:47 nemo_logging:393] Rank 0 has tensor model parallel group: [0]
-[NeMo I 2025-05-06 23:48:47 nemo_logging:393] All tensor model parallel group ranks: [[0], [1]]
-[NeMo I 2025-05-06 23:48:47 nemo_logging:393] Rank 0 has tensor model parallel rank: 0
-[NeMo I 2025-05-06 23:48:47 nemo_logging:393] Rank 0 has pipeline model parallel group: [0]
-[NeMo I 2025-05-06 23:48:47 nemo_logging:393] Rank 0 has embedding group: [0]
-[NeMo I 2025-05-06 23:48:47 nemo_logging:393] All pipeline model parallel group ranks: [[0], [1]]
-[NeMo I 2025-05-06 23:48:47 nemo_logging:393] Rank 0 has pipeline model parallel rank 0
+......
 [NeMo I 2025-05-06 23:48:47 nemo_logging:393] All embedding group ranks: [[0], [1]]
 [NeMo I 2025-05-06 23:48:47 nemo_logging:393] Rank 0 has embedding rank: 0
 Initializing distributed: GLOBAL_RANK: 0, MEMBER: 1/2
-...
+.....
 ```
 Once completed, we should see the `bionemo-esm2` job in `Completed` state as well as the `bionemo-esm2-worker-0` and `bionemo-esm2-worker-1` pods
 
