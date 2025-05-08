@@ -1,4 +1,4 @@
-# Train Evolutionary Scale Models (ESM) with BioNemo
+# Train Evolutionary Scale Models (ESM-2) with BioNemo
 
 [NVIDIA BioNeMo](https://docs.nvidia.com/bionemo-framework/latest/) is a domain-specific machine learning framework for training and using foundation models for biology. This includes models for analyzing proteins, small molecules, and other biological molecules. To see the latest models available in BioNeMo 2.5 see [here](https://docs.nvidia.com/bionemo-framework/latest/models/).
 
@@ -150,11 +150,28 @@ To check the status of submitted job, run the following command:
 ```bash
 squeue
 JOBID PARTITION     NAME     USER   ST       TIME  NODES NODELIST(REASON)
-      2     dev   train-es   ubuntu  R       0:07      2 ip-10-1-0-96,ip-10-1-39-225
+      4     dev   train-es   ubuntu  R       0:07      2 ip-10-1-0-96,ip-10-1-39-225
 ```
-Once training job starts you should see logs as `tail -f slurm-esm2-train-xx.out`:
-
-```
+Once training job starts you should see logs by running:
+```bash
+tail -f bionemo-esm2-train-4.out
+--------
+...
+0: [NeMo I 2025-05-08 04:35:15 utils:302] Setting up optimizer with config OptimizerConfig(optimizer='adam', lr=0.0004, min_lr=None, decoupled_lr=None, decoupled_min_lr=None, weight_decay=0.01, fp16=False, bf16=True, params_dtype=torch.bfloat16, use_precision_aware_optimizer=False, main_grads_dtype=torch.float32, main_params_dtype=torch.float32, exp_avg_dtype=torch.float32, exp_avg_sq_dtype=torch.float32, loss_scale=None, initial_loss_scale=4294967296, min_loss_scale=1.0, loss_scale_window=1000, hysteresis=2, adam_beta1=0.9, adam_beta2=0.98, adam_eps=1e-08, sgd_momentum=0.9, use_distributed_optimizer=True, overlap_param_gather_with_optimizer_step=False, optimizer_cpu_offload=False, optimizer_offload_fraction=0.0, use_torch_optimizer_for_cpu_offload=False, overlap_cpu_optimizer_d2h_h2d=False, pin_cpu_grads=True, pin_cpu_params=True, clip_grad=1.0, log_num_zeros_in_grad=False, barrier_with_L1_time=False, timers=None, config_logger_dir='')
+0: ┏━━━┳━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━┳━━━━━━━━┳━━━━━━━┓
+0: ┃   ┃ Name                                ┃ Type              ┃ Params ┃ Mode  ┃
+0: ┡━━━╇━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━╇━━━━━━━━━━━━━━━━━━━╇━━━━━━━━╇━━━━━━━┩
+0: │ 0 │ valid_metric                        │ Perplexity        │      0 │ train │
+0: │ 1 │ module                              │ DDP               │  651 M │ train │
+0: │ 2 │ module.module                       │ Float16Module     │  651 M │ train │
+0: │ 3 │ module.module.module                │ ESM2Model         │  651 M │ train │
+0: │ 4 │ module.module.module.embedding      │ ESM2Embedding     │  163 K │ train │
+0: │ 5 │ module.module.module.rotary_pos_emb │ RotaryEmbedding   │      0 │ train │
+0: │ 6 │ module.module.module.encoder        │ TransformerBlock  │  649 M │ train │
+0: │ 7 │ module.module.module.lm_head        │ BertLMHead        │  1.6 M │ train │
+0: │ 8 │ module.module.module.output_layer   │ ColumnParallelLi… │    128 │ train │
+0: └───┴─────────────────────────────────────┴───────────────────┴────────┴───────┘
+.....
 0: Training epoch 0, iteration 28/99 | lr: 5.6e-06 | global_batch_size: 32 | global_step: 28 | reduced_train_loss: 2.778 | train_step_timing in s: 0.189 | consumed_samples: 928 | val_loss: 2.861 | val_ppl: 17.57
  0: Training epoch 0, iteration 29/99 | lr: 5.8e-06 | global_batch_size: 32 | global_step: 29 | reduced_train_loss: 2.782 | train_step_timing in s: 0.1903 | consumed_samples: 960 | val_loss: 2.861 | val_ppl: 17.57
  0: Training epoch 0, iteration 30/99 | lr: 6e-06 | global_batch_size: 32 | global_step: 30 | reduced_train_loss: 2.709 | train_step_timing in s: 0.1915 | consumed_samples: 992 | val_loss: 2.861 | val_ppl: 17.57
@@ -162,6 +179,31 @@ Once training job starts you should see logs as `tail -f slurm-esm2-train-xx.out
  0: Training epoch 0, iteration 32/99 | lr: 6.4e-06 | global_batch_size: 32 | global_step: 32 | reduced_train_loss: 2.886 | train_step_timing in s: 0.1921 | consumed_samples: 1056 | val_loss: 2.861 | val_ppl: 17.57
  0: Training epoch 0, iteration 33/99 | lr: 6.6e-06 | global_batch_size: 32 | global_step: 33 | reduced_train_loss: 2.791 | train_step_timing in s: 0.1893 | consumed_samples: 1088 | val_loss: 2.861 | val_ppl: 17.57
  0: Training epoch 0, iteration 34/99 | lr: 6.8e-06 | global_batch_size: 32 | global_step: 34 | reduced_train_loss: 2.788 | train_step_timing in s: 0.1902 | consumed_samples: 1120 | val_loss: 2.861 | val_ppl: 17.57
+...
+0: [NeMo I 2025-05-08 04:37:33 nemo_logging:393] Successfully saved checkpoint from iteration      99 to /fsx/ubuntu/bionemo/esm2/dev/checkpoints/epoch=0-val_loss=2.91-step=99-consumed_samples=400.0-last.ckpt
+0: [NeMo I 2025-05-08 04:37:33 nemo_logging:393] Async checkpoint save for step 100 (/fsx/ubuntu/bionemo/esm2/dev/checkpoints/epoch=0-val_loss=2.91-step=99-consumed_samples=400.0-last.ckpt) finalized successfully.
+0: [NeMo I 2025-05-08 04:37:35 nemo_logging:393] Async finalization time took 44.556 s
+1: ip-10-1-39-225:19976:21178 [0] NCCL INFO misc/socket.cc:64 -> 3
+1: ip-10-1-39-225:19976:21178 [0] NCCL INFO misc/socket.cc:80 -> 3
+1: ip-10-1-39-225:19976:21178 [0] NCCL INFO misc/socket.cc:828 -> 3
+1: ip-10-1-39-225:19976:20609 [0] NCCL INFO misc/socket.cc:880 -> 3
+1: ip-10-1-39-225:19976:21178 [0] NCCL INFO comm 0x5a16dc30 rank 1 nranks 2 cudaDev 0 busId 1e0 - Abort COMPLETE
+1: ip-10-1-39-225:19976:21191 [0] NCCL INFO comm 0x75823ff0 rank 0 nranks 1 cudaDev 0 busId 1e0 - Abort COMPLETE
 ```
 
-Once training is done, you should see checkpoints stored in `${TARGET_PATH}/esm2` folder.
+Once training is done, running `squeue` will not show any active jobs. 
+
+To confirm model creation, you should be able see checkpoints stored in the `${TARGET_PATH}/esm2/dev/checkpoints` folder:
+
+```bash
+ls -al /fsx/ubuntu/bionemo/esm2/dev/checkpoints/
+------------
+total 215
+....
+drwxrwxr-x 4 ubuntu ubuntu 25600 Mar 21 18:52 'epoch=0-val_loss=2.72-step=99-consumed_samples=3200.0'
+drwxrwxr-x 4 ubuntu ubuntu 25600 Mar 21 18:52 'epoch=0-val_loss=2.72-step=99-consumed_samples=3200.0-last'
+drwxrwxr-x 4 ubuntu ubuntu 25600 Mar 21 18:51 'epoch=0-val_loss=2.77-step=74-consumed_samples=2400.0'
+drwxrwxr-x 4 ubuntu ubuntu 25600 May  8 04:36 'epoch=0-val_loss=2.91-step=99-consumed_samples=400.0'
+drwxrwxr-x 4 ubuntu ubuntu 25600 May  8 04:36 'epoch=0-val_loss=2.91-step=99-consumed_samples=400.0-last'
+drwxrwxr-x 4 ubuntu ubuntu 25600 May  8 04:36 'epoch=0-val_loss=3.04-step=74-consumed_samples=300.0'
+```
