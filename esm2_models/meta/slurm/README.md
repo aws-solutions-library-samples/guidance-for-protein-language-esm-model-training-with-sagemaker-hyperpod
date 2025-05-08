@@ -291,7 +291,7 @@ An output of such command should be like shown below:
 
 If you want to follow the output of FSDP training job, you can run a command like:
 ```bash
-ail -f esm2-fsdp-esm2-fsdp.20.out
+tail -f esm2-fsdp-esm2-fsdp.20.out
 1: [INFO|trainer.py:2134] 2025-05-02 22:42:34,741 >>   Total train batch size (w. parallel, distributed & accumulation) = 88
 1: [INFO|trainer.py:2135] 2025-05-02 22:42:34,741 >>   Gradient Accumulation steps = 11
 1: [INFO|trainer.py:2136] 2025-05-02 22:42:34,741 >>   Total optimization steps = 1,136
