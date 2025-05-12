@@ -10,7 +10,7 @@ We will help set up your Studio environment so that:
 **Why login nodes?**
 Login nodes allow users to login to the cluster, submit jobs, and view and manipulate data without running on the critical `slurmctld` scheduler node. This also allows you to run monitoring servers like [aim](https://github.com/aimhubio/aim), [Tensorboard](https://www.tensorflow.org/tensorboard), or [Grafana/Prometheus](https://prometheus.io/docs/visualization/grafana/).
 
-![SageMaker Studio with Hyperpod integration](../../../assets/01-studio-hyperpod-architecture.png)
+![SageMaker Studio with Hyperpod integration](../../../../assets/01-studio-hyperpod-architecture.png)
 
 ## Table of Contents
 
@@ -59,13 +59,13 @@ You can deploy the CloudFormation template, which creates the following resource
     2. Associates the `security-group-for-inbound-nfs` security group to the FSx for Lustre ENIs
     3. **Optional**: If  **SharedFSx** is set to **True**, creates the partition *shared* in the FSx for Lustre volume, and associates it to the Studio domain
 
-![SageMaker Studio with Hyperpod integration](../../../assets/07-fsx-shared.png)
+![SageMaker Studio with Hyperpod integration](../../../../assets/07-fsx-shared.png)
 
 4. If **SharedFSx** is set to **False**, a Lambda function that:
     1. Creates the partition */{user_profile_name}*, and associates it to the Studio user profile
 5. If **SharedFSx** is set to **False**, an Event bridge rule that invokes the previously defined Lambda function each time a new user is created. 
 
-![SageMaker Studio with Hyperpod integration](../../../assets/08-fsx-partitioned.png)
+![SageMaker Studio with Hyperpod integration](../../../../assets/08-fsx-partitioned.png)
 
 You can deploy the stack via
 
@@ -93,7 +93,7 @@ As an admin user, once your SageMaker Studio Domain is provisioned, you may go i
 
 You can now select your preferred IDE from SageMaker Studio. 
 
-![SageMaker Studio with Hyperpod integration](../../../assets/02-studio-home.png)
+![SageMaker Studio with Hyperpod integration](../../../../assets/02-studio-home.png)
 
 For the purpose of this workshop, we are going to create a Code Editor environment.
 
@@ -107,13 +107,13 @@ From the top-left menu:
 6. From the **Lifecycle configuration** dropdown menu, select the available lifecycle configuration
  
 
-![SageMaker Studio with Hyperpod integration](../../../assets/03-codeditor-fsx.png)
+![SageMaker Studio with Hyperpod integration](../../../../assets/03-codeditor-fsx.png)
 
 Click on **Run Space**. Wait until the space is created, then click **Open Code Editor**
 
 To verify that your file system was mounted, you can check if you have a path mounted in the Code Editor space `custom-file-system/fsx_lustre/<FSX_ID>`:
 
-![SageMaker Studio with Hyperpod integration](../../../assets/10-filesystem-check.png)
+![SageMaker Studio with Hyperpod integration](../../../../assets/10-filesystem-check.png)
 
 
 You can also run:
