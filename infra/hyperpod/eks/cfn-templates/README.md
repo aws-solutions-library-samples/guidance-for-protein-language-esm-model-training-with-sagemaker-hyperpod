@@ -4,7 +4,7 @@
 
 As depicted below, the workshop infrastructure can be deployed using a series of nested CloudFormation stacks, each of which is responsible for deploying different aspects of a full HyperPod cluster environment.
 
-<img src="./../cfn-templates/nested-stack-modules.png" width="50%"/>
+<img src="../../../../assets/nested-stack-modules.png" width="50%"/>
 
 If you wish to create a new HyperPod cluster **without reusing any pre-existing cloud resources**, you may deploy the main stack by clicking the button below and keeping all of the sub-stacks enabled, just be sure to check the default parameter values, including the `AvailabilityZoneId`, which should correspond to the location of your accelerated compute capacity and must be a valid Availability Zone ID for your target region. The default value `usw2-az2` is valid only for `us-west-2` region. 
 
