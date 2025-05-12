@@ -6,7 +6,7 @@
 
 Amazon SageMaker HyperPod is a managed service that makes it easier for you to train foundation models without interruptions or delays. It provides resilient and persistent clusters for large scale deep learning training of foundation models on long-running compute clusters. With HyperPod integration with Amazon EKS, customers can associate a HyperPod cluster with an EKS cluster and manage ML workloads using the HyperPod cluster nodes as Kubernetes worker nodes, all through the Kubernetes control plane on the EKS cluster.
 
-<img src="./smhp-eks-arch.png" width="80%"/>
+<img src="../../../assets/smhp-eks-arch.png" width="80%"/>
 
 The example that follows describes the process of setting up a SageMaker HyperPod cluster with EKS.
 
@@ -50,7 +50,7 @@ sudo mv /tmp/eksctl /usr/local/bin
 
 ## 3. [Deploy HyperPod Infrastructure using CloudFormation](./cfn-templates/README.md)
 
-## 4. Connect to EKS cluster 
+## 4. Connect to HyperPod EKS cluster 
 
 Once you've deployed the HyperPod Infrastructure, we'll reference the EKS cluster as the orchestrator of the HyperPod compute nodes.
 
