@@ -1,4 +1,4 @@
-# AWS SageMaker HyperPod Distributed Training Reference Architectures
+# AWS SageMaker HyperPod (SLURM) Distributed Training Reference Architectures
 
 
 > [!IMPORTANT]  
@@ -61,13 +61,14 @@ aws s3 mb s3://${BUCKET}
 
 ### 2.3. Create VPC (Optional)
 
-Now we can create a VPC. This is only necessary if you want to attach your HyperPod cluster to VPC specific resources. For example, to attach a shared FSx for Lustre volume to your HyperPod cluster.
+Now we can create a VPC. This is only necessary if you want to attach your HyperPod cluster to VPC specific resources. For example, to attach a shared `FSx for Lustre` volume to your HyperPod cluster.
 
-You can create a VPC using the configuration in [2.SageMakerVPC.yaml](./2.SageMakerVPC.yaml). Which is also available via [<kbd> <br> 1-Click Deploy 🚀 <br> </kbd>](https://us-west-2.console.aws.amazon.com/cloudformation/home?region=us-west-2#/stacks/quickcreate?templateURL=https://awsome-distributed-training.s3.amazonaws.com/templates/Vpc.yaml&stackName=SageMakerVPC)
+You can create a VPC using the configuration in [2.SageMakerVPC.yaml](./2.SageMakerVPC.yaml). 
+It is also available via [<kbd> <br> 1-Click Deploy 🚀 <br> </kbd>](https://us-west-2.console.aws.amazon.com/cloudformation/home?region=us-west-2#/stacks/quickcreate?templateURL=https://awsome-distributed-training.s3.amazonaws.com/templates/Vpc.yaml&stackName=SageMakerVPC)
 
 <img src="../../../assets/vpc-template.png" width="800">
 
-Feel free to change the stack and VPC names. Make sure to select an availability zone that supports your preferred instance type ([Find an Amazon EC2 instance type](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/instance-discovery.html)). Leave both S3 and DynamoDB endpoints set to True. You can leave the IAM role blank.
+Feel free to change the stack and VPC names, make sure to select an availability zone that supports your preferred instance type ([Find an Amazon EC2 instance type](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/instance-discovery.html)). Leave both S3 and DynamoDB endpoints set to `True` and you can leave the IAM role blank.
 
 Wait for this CloudFormation script to complete before continuing to the next step (it takes about 5 minutes).
 
@@ -235,9 +236,9 @@ aws ec2 describe-security-groups \
               'Name=vpc-id,Values=vpc-0123456789012345a'
 ```
 
-### 3.3 Launch a new cluster
+### 3.3 Launch a new HyoerPod cluster
 
-Now that everything is in place, we can launch our cluster with the command from the `5.sagemaker-hyperpod` directory.
+Now that everything is in place, we can launch our cluster with the following command from the `5.sagemaker-hyperpod` directory.
 
 ```
 aws sagemaker create-cluster \
@@ -351,7 +352,6 @@ Follow the mitigations listed in this table if one of the checks fails:
 | check_if_user_directory_on_fsx | This checks if users are sharing /fsx file system mount                                                                     | Multi user setup will create /fsx/<user> mounts. Follow [those steps here](https://catalog.workshops.aws/sagemaker-hyperpod/en-US/04-advanced/01-multi-user)<br />If the user directory doesn't exist for nodes that have been replaced<br />Run a variant of this command for your nodes<br>`srun -N 2 usermod -d /fsx/ubuntu ubuntu`<br>(Replace ubuntu with username) |
 | nvidia_cli_installed           | Nvidia Container CLI is installed via docker life cycle scripts. It's unlikely this will be an issue.                       | Go to [this page](https://catalog.workshops.aws/sagemaker-hyperpod/en-US/03-megatron-lm/01-pre-process) and look for the command that runs the nvidia-container-cli installation.<br /> Create a script from those steps and either use sbatch or srun to execute across all compute nodes                                                                               |
 
-
 You can also run validation on the scripts you wish to run. This ensures you’re not using unsupported operations in the script.
 
 ```
@@ -362,7 +362,7 @@ python3 hyperpod-precheck.py -f ../../3.test_cases/1.megatron-lm/2.distributed-t
 
 ### 3.6 Patching your HyperPod cluster
 
-Run `update-cluster-software` to update existing HyperPod clusters with software and security patches provided by the SageMaker HyperPod service. For more details, see [Update the SageMaker HyperPod platform software of a cluster](https://docs.aws.amazon.com/sagemaker/latest/dg/sagemaker-hyperpod-operate.html#sagemaker-hyperpod-operate-cli-command-update-cluster-software) in the *Amazon SageMaker Developer Guide*.
+Run `update-cluster-software` command to update existing HyperPod clusters with software and security patches provided by the SageMaker HyperPod service. For more details, see [Update the SageMaker HyperPod platform software of a cluster](https://docs.aws.amazon.com/sagemaker/latest/dg/sagemaker-hyperpod-operate.html#sagemaker-hyperpod-operate-cli-command-update-cluster-software) in the *Amazon SageMaker Developer Guide*.
 
 ```
 aws sagemaker update-cluster-software --cluster-name ml-cluster --region us-west-2
