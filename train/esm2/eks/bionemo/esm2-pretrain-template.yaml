@@ -86,6 +86,9 @@ spec:
           - name: fsx-pv-storage
             persistentVolumeClaim:
               claimName: fsx-claim
+          - name: shmem
+            hostPath:
+              path: /dev/shm
           containers:
             - name: pytorch
               image: ${REGISTRY}${DOCKER_IMAGE_NAME}:${TAG}
@@ -99,12 +102,36 @@ spec:
               env:
                 - name: NCCL_DEBUG
                   value: "INFO"
+                #- name: LOGLEVEL
+                #  value: "DEBUG"
+                #- name: FI_PROVIDER
+                #  value: efa
+                #- name: FI_EFA_USE_DEVICE_RDMA
+                #  value: "1"
+                #- name: FI_EFA_FORK_SAFE
+                #  value: "1"
+                #- name: FI_LOG_LEVEL
+                #  value: "1"
+                #- name: FI_EFA_ENABLE_SHM_TRANSFER
+                #  value: "1"
+                #- name: TORCH_DISTRIBUTED_DEBUG
+                #  value: "DETAIL"
+                #- name: TORCH_NCCL_ASYNC_ERROR_HANDLING
+                #  value: "1"
+                #- name: PYTORCH_CUDA_ALLOC_CONF
+                #  value: "expandable_segments:True"
+                #- name: NCCL_SOCKET_IFNAME
+                #  value: "^lo"
               volumeMounts:
                 - mountPath: /fsx-shared
                   name: fsx-pv-storage
+                - mountPath: /dev/shm
+                  name: shmem
               imagePullPolicy: Always
               command:
-                - "python3"
+                - torchrun
+                - --nproc_per_node=${GPU_PER_NODE}
+                - --nnodes=${NUM_NODES}
                 - /workspace/bionemo2/sub-packages/bionemo-esm2/src/bionemo/esm2/scripts/train_esm2.py
                 - --train-cluster-path=${DATA_DIR}/2024_03_sanity/train_clusters_sanity.parquet
                 - --train-database-path=${DATA_DIR}/2024_03_sanity/train_sanity.db
