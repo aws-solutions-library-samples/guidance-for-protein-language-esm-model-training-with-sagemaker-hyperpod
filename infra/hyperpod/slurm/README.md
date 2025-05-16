@@ -236,7 +236,7 @@ aws ec2 describe-security-groups \
               'Name=vpc-id,Values=vpc-0123456789012345a'
 ```
 
-### 3.3 Launch a new HyoerPod cluster
+### 3.3 Launch a new HyperPod cluster
 
 Now that everything is in place, we can launch our cluster with the following command from the `5.sagemaker-hyperpod` directory.
 
