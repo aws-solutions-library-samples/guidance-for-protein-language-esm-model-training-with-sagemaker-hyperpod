@@ -460,4 +460,18 @@ drwxr-xr-x 4 root root 25600 May 15 23:42 'epoch=0-val_loss=2.91-step=99-consume
 drwxr-xr-x 4 root root 25600 May 15 23:42 'epoch=0-val_loss=3.04-step=74-consumed_samples=300.0'
 ....
 ```
+
+And, if needed, confirm that `model.yaml` is present in its subfolders:
+```bash
+kubectl exec -it fsx-share-test -- ls -al /fsx-shared/bionemo/esm2/dev/checkpoints/'epoch=0-val_loss=3.04-step=74-consumed_samples=300.0'/context
+total 141
+drwxr-xr-x 2 root root 33280 May 16 21:40 .
+drwxr-xr-x 4 root root 25600 May 16 21:40 ..
+-rw-r--r-- 1 root root   127 May 16 21:40 2d2e44cf-7478-40f1-8fe6-d40d73719578
+-rw-r--r-- 1 root root   584 May 16 21:40 d2fe299b-b3d7-4abf-9371-84ad36c74309
+-rw-r--r-- 1 root root   202 May 16 21:40 df77a1e0-8fc7-4c00-88dc-fd90e8cd2877
+-rw-r--r-- 1 root root   203 May 16 21:40 f788a2eb-3392-4c3e-ba60-bba4dd4c3bbb
+-rw-r--r-- 1 root root 40683 May 16 21:40 io.json
+-rw-r--r-- 1 root root  8967 May 16 21:40 model.yaml
+```
 That confirms that model training using BioNemo tframework completed successfully..
