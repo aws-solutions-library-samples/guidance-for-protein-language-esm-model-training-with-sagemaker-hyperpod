@@ -46,55 +46,77 @@ Once built you can push the Docker image to ECR as follows:
 
 ## 4. Prepare dataset of training data
 
-Next we need to download the Uniref50 training data. You can do so by running:
+Next we need to download the Uniref50 training data. You can do so by running the following K8s job:
 
 ```bash
 cat download-data-template.yaml | envsubst > download-data-real.yaml
-kubectl apply -f download-data-real.yaml
-pod/download-uniref-data created
 ```
+Then apply it via CLI call:
+```bash
+kubectl apply -f download-data-real.yaml
+job/download-uniref-data created
+```
+
 It would download the data and partitions the data in 50 .csv files in the folder specified by the `TARGET_PATH` environment variable. 
 The whole process should take less than 30 mins. 
-
+You can monitor the process by tailing the pod created by the Job:
 
 ```bash
-kubectl logs -f download-uniref-data
-04/18/2025 22:03:54 - INFO - Parsing arguments
-04/18/2025 22:03:54 - INFO - Downloading FASTA
-04/18/2025 22:03:54 - INFO - Downloading https://ftp.uniprot.org/pub/databases/uniprot/uniref/uniref50/uniref50.fasta.gz to /workspace/tmpoynct05t/fasta
-https://ftp.uniprot.org/pub/databases/uniprot/uniref/uniref50/uniref50.fasta.gz: 100%|██████████| 13.5G/13.5G [00:53<00:00, 270MB/s]
-04/18/2025 22:04:48 - INFO - Generating csv files
+kubectl logs -f download-uniref-data-g245r
+05/21/2025 21:35:03 - INFO - Parsing arguments
+05/21/2025 21:35:03 - INFO - Downloading FASTA
+05/21/2025 21:35:03 - INFO - Downloading https://ftp.uniprot.org/pub/databases/uniprot/uniref/uniref50/uniref50.fasta.gz to /workspace/tmphdt41nh1/fasta
+https://ftp.uniprot.org/pub/databases/uniprot/uniref/uniref50/uniref50.fasta.gz: 100%|██████████| 13.6G/13.6G [01:05<00:00, 222MB/s]
+05/21/2025 21:36:08 - INFO - Generating csv files
 Reading FASTA file
-496248it [00:10, 67980.24it/s]04/18/2025 22:04:59 - INFO - Writing 500000 records to /fsx-shared/esm/csv/x000.csv
-993450it [00:32, 90583.72it/s]04/18/2025 22:05:21 - INFO - Writing 500000 records to /fsx-shared/esm/csv/x001.csv
-1492283it [00:47, 102759.08it/s]04/18/2025 22:05:35 - INFO - Writing 500000 records to /fsx-shared/esm/csv/x002.csv
-1995100it [00:59, 113624.67it/s]04/18/2025 22:05:48 - INFO - Writing 500000 records to /fsx-shared/esm/csv/x003.csv
+498366it [00:10, 68862.07it/s]05/21/2025 21:36:19 - INFO - Writing 500000 records to /fsx-shared/esm/csv/x000.csv
+992530it [00:32, 90643.92it/s]05/21/2025 21:36:41 - INFO - Writing 500000 records to /fsx-shared/esm/csv/x001.csv
+1490619it [00:47, 103665.90it/s]05/21/2025 21:36:55 - INFO - Writing 500000 records to /fsx-shared/esm/csv/x002.csv
+1992703it [00:59, 114299.16it/s]05/21/2025 21:37:08 - INFO - Writing 500000 records to /fsx-shared/esm/csv/x003.csv
+2491566it [01:10, 124266.36it/s]05/21/2025 21:37:18 - INFO - Writing 500000 records to /fsx-shared/esm/csv/x004.csv
+2987781it [01:19, 132450.56it/s]05/21/2025 21:37:28 - INFO - Writing 500000 records to /fsx-shared/esm/csv/x005.csv
 ...
 8957193it [08:17, 686030.19it/s]04/18/2025 22:13:06 - INFO - Writing 500000 records to /fsx-shared/esm/csv/x137.csv
 69290910it [08:18, 139067.03it/s]
 04/18/2025 22:13:07 - INFO - Writing 290910 records to /fsx-shared/esm/csv/x138.csv
 04/18/2025 22:13:09 - INFO - Save complete
 ```
-We can valildate contents of the shared directory `fsx-shared/esm` using the provided `view-fsx.yaml` deployment descriptor:
+If we check status of launched job and corresponding pod, they should be `Complete` and `Completed` respectively:
+
+```bash
+kc get job,po
+NAME                             STATUS     COMPLETIONS   DURATION   AGE
+job.batch/download-uniref-data   Complete   1/1           14m        24m
+
+NAME                                                             READY   STATUS      RESTARTS      AGE
+pod/download-uniref-data-g245r                                   0/1     Completed   0             24m
+pod/fsx-share-test                                               1/1     Running     0             11m
+pod/hyperpod-dependencies-aws-efa-k8s-device-plugin-dlxs8        1/1     Running     0             27h
+```
+
+We can also valildate contents of the shared data directory `fsx-shared/esm` using the provided `view-fsx.yaml` deployment descriptor that creates a pod with that directory mounted:
 
 ```bash
 kubectl apply -f view-fsx.yaml
 pod/fsx-share-test created
 ```
-Then we can get "inside" that pod and review contents of the shared folder:
+
+Using that pod, we can get "inside" and review contents of the shared data folder:
 ```bash
-ubectl exec -it fsx-share-test -- /bin/bash
-root@fsx-share-test:/# ls -ltr /fsx-shared/esm/csv
-total 20538966
--rw-r--r-- 1 root root  160442718 Apr 18 22:09 x043.csv
--rw-r--r-- 1 root root  157890712 Apr 18 22:09 x044.csv
--rw-r--r-- 1 root root  155384478 Apr 18 22:09 x045.csv
--rw-r--r-- 1 root root  152885989 Apr 18 22:09 x046.csv
--rw-r--r-- 1 root root  150458014 Apr 18 22:09 x047.csv
+kubectl exec -it fsx-share-test -- ls -ltr /fsx-shared/esm/csv
+total 20593930
+-rw-r--r-- 1 root root 1338965519 May 21 21:36 x000.csv
+-rw-r--r-- 1 root root  739136803 May 21 21:36 x001.csv
+-rw-r--r-- 1 root root  608770034 May 21 21:37 x002.csv
+-rw-r--r-- 1 root root  537187950 May 21 21:37 x003.csv
+-rw-r--r-- 1 root root  487469687 May 21 21:37 x004.csv
+-rw-r--r-- 1 root root  449800266 May 21 21:37 x005.csv
+-rw-r--r-- 1 root root  419801146 May 21 21:37 x006.csv
 ...
-- rw-r--r-- 1 root root  168375903 Apr 18 22:19 x040.csv
--rw-r--r-- 1 root root  165337183 Apr 18 22:19 x041.csv
--rw-r--r-- 1 root root  163011902 Apr 18 22:19 x042.csv
+-rw-r--r-- 1 root root   35932545 May 21 21:44 x135.csv
+-rw-r--r-- 1 root root   32936597 May 21 21:44 x136.csv
+-rw-r--r-- 1 root root   29808230 May 21 21:44 x137.csv
+-rw-r--r-- 1 root root   23821111 May 21 21:44 x138.csv
 ```
 
 
@@ -105,6 +127,7 @@ Next we need to tokenize the dataset in order to provide training data in the sp
 ```bash
 cat preprocess-template.yaml | envsubst > preprocess-data.yaml
 cat preprocess-data.yaml
+------
 apiVersion: v1
 kind: Pod
 metadata:
@@ -140,7 +163,8 @@ Then initiate pre-processing job using generated deployment descriptor:
 kubectl apply -f preprocess-data.yaml
 pod/preprocess-data created
 ```
-You can check the progress of data pre-processing by tailing that pod's log:
+You can check the progress of data pre-processing by tailing that pod log:
+
 ```bash
 usr/local/lib/python3.12/dist-packages/transformers/utils/hub.py:127: FutureWarning: Using `TRANSFORMERS_CACHE` is deprecated and will be removed in v5 of Transformers. Use `HF_HOME` instead.
   warnings.warn(
