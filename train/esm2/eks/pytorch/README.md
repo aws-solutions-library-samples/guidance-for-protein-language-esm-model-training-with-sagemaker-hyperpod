@@ -10,7 +10,7 @@
 
 ## 1. Setup environment variables
 
-SSH into the head or login node of your cluster or VM that has access to its Kubernetes API and run:
+SSH into the head or login node of your cluster or connect to VM that has access to its Kubernetes API and run:
 
 ```
 # Path to save training data and checkpoints
@@ -188,10 +188,13 @@ Flattening the indices: 100%|██████████| 50000/50000 [00:00<
 Flattening the indices: 100%|██████████| 50000/50000 [00:00<00:00, 116411.89 examples/s]
 05/21/2025 22:04:16 - INFO - Saving splits to csv
 ...
-Creating CSV from Arrow format: 100%|██████████| 10000/10000 [01:11<00:00, 140.49ba/s]
-Creating CSV from Arrow format: 100%|██████████| 50/50 [00:00<00:00, 140.69ba/s]
-Creating CSV from Arrow format: 100%|██████████| 50/50 [00:00<00:00, 142.16ba/s]
-05/21/2025 22:25:34 - INFO - Processing line by line
+05/21/2025 22:45:41 - INFO - Processing line by line
+Running tokenizer on dataset line_by_line (num_proc=8): 100%|██████████| 10000000/10000000 [12:36<00:00, 13211.30 examples/s]
+Running tokenizer on dataset line_by_line (num_proc=8): 100%|██████████| 50000/50000 [00:05<00:00, 9848.93 examples/s]
+Running tokenizer on dataset line_by_line (num_proc=8): 100%|██████████| 50000/50000 [00:05<00:00, 9857.74 examples/s]
+Saving the dataset (62/62 shards): 100%|██████████| 10000000/10000000 [00:51<00:00, 193657.14 examples/s]
+Saving the dataset (1/1 shards): 100%|██████████| 50000/50000 [00:00<00:00, 190996.75 examples/s]
+Saving the dataset (1/1 shards): 100%|██████████| 50000/50000 [00:00<00:00, 198004.43 examples/s]
 ```
 To review the status of data tokenization, we can use the same `fsx-share-test` pod used in previous step and run the following command:
 
@@ -225,6 +228,7 @@ To kick off DDP framework based distributed training execute, we first need to g
 ```bash
 cat train-ddp-template.yaml | envsubst > train-ddp.yaml
 cat train-ddp.yaml
+-----
 apiVersion: v1
 kind: Service
 metadata:
