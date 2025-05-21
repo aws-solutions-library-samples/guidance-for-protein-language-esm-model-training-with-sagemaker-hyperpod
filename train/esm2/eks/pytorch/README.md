@@ -10,11 +10,10 @@
 
 ## 1. Setup environment variables
 
-SSH into the head or login node of your cluster and run:
+SSH into the head or login node of your cluster or VM that has access to its Kubernetes API and run:
 
 ```
 # Path to save training data and checkpoints
-#export TARGET_PATH=/fsx/ubuntu/esm
 export TARGET_PATH=/fsx-shared/esm
 export DOCKER_IMAGE_NAME=esm
 export TAG=aws
@@ -166,42 +165,35 @@ pod/preprocess-data created
 You can check the progress of data pre-processing by tailing that pod log:
 
 ```bash
-usr/local/lib/python3.12/dist-packages/transformers/utils/hub.py:127: FutureWarning: Using `TRANSFORMERS_CACHE` is deprecated and will be removed in v5 of Transformers. Use `HF_HOME` instead.
-  warnings.warn(
-04/24/2025 18:47:49 - INFO - Parsing arguments
-04/24/2025 18:47:49 - INFO - Loading csv files from /fsx-shared/esm/csv
-Downloading data: 100%|██████████| 18/18 [00:00<00:00, 11638.27files/s]
-Downloading data: 100%|██████████| 18/18 [00:00<00:00, 11164.96files/s]
-Downloading data: 100%|██████████| 18/18 [00:00<00:00, 9749.16files/s]
-Downloading data: 100%|██████████| 18/18 [00:00<00:00, 6409.50files/s]
-Downloading data: 100%|██████████| 18/18 [00:00<00:00, 7044.65files/s]
-Downloading data: 100%|██████████| 18/18 [00:00<00:00, 22462.80files/s]
-Downloading data: 100%|██████████| 18/18 [00:00<00:00, 98560.67files/s]
-Generating train split: 69271261 examples [01:21, 850175.57 examples/s]
-04/24/2025 18:49:17 - INFO - DatasetDict({
+kc logs -f preprocess-data
+05/21/2025 22:02:00 - INFO - Parsing arguments
+05/21/2025 22:02:00 - INFO - Loading csv files from /fsx-shared/esm/csv
+Downloading data: 100%|██████████| 18/18 [00:00<00:00, 11893.11files/s]
+Downloading data: 100%|██████████| 18/18 [00:00<00:00, 41688.28files/s]
+Downloading data: 100%|██████████| 18/18 [00:00<00:00, 12151.53files/s]
+Downloading data: 100%|██████████| 18/18 [00:00<00:00, 19210.55files/s]
+Downloading data: 100%|██████████| 18/18 [00:00<00:00, 11163.31files/s]
+Downloading data: 100%|██████████| 18/18 [00:00<00:00, 59028.52files/s]
+Downloading data: 100%|██████████| 18/18 [00:00<00:00, 14725.47files/s]
+Generating train split: 69488478 examples [00:44, 1576533.60 examples/s]
+05/21/2025 22:02:49 - INFO - DatasetDict({
     train: Dataset({
         features: ['text'],
-        num_rows: 69271261       | 0/18 [00:00<?, ?files/s]
+        num_rows: 69488478
     })
 })
-04/24/2025 18:49:17 - INFO - Splitting dataset
-Flattening the indices: 100%|██████████| 10000000/10000000 [09:19<00:00, 17868.46 examples/s]
-Flattening the indices: 100%|██████████| 50000/50000 [00:01<00:00, 41290.51 examples/s]
-Flattening the indices: 100%|██████████| 50000/50000 [00:01<00:00, 33631.69 examples/s]
-04/24/2025 18:58:45 - INFO - Saving splits to csv
-Creating CSV from Arrow format: 100%|██████████| 10000/10000 [1:07:37<00:00,  2.46ba/s]
-Creating CSV from Arrow format: 100%|██████████| 50/50 [00:21<00:00,  2.31ba/s]
-Creating CSV from Arrow format: 100%|██████████| 50/50 [00:21<00:00,  2.30ba/s]
-04/24/2025 20:07:06 - INFO - Processing line by line
-Running tokenizer on dataset line_by_line (num_proc=8): 100%|██████████| 10000000/10000000 [19:22<00:00, 8600.75 examples/s]
-Running tokenizer on dataset line_by_line (num_proc=8): 100%|██████████| 50000/50000 [00:04<00:00, 10157.73 examples/s]
-Running tokenizer on dataset line_by_line (num_proc=8): 100%|██████████| 50000/50000 [00:05<00:00, 9801.23 examples/s]
-Saving the dataset (62/62 shards): 100%|██████████| 10000000/10000000 [01:19<00:00, 125729.95 examples/s]
-Saving the dataset (1/1 shards): 100%|██████████| 50000/50000 [00:00<00:00, 135181.52 examples/s]
-Saving the dataset (1/1 shards): 100%|██████████| 50000/50000 [00:00<00:00, 105235.24 examples/s]
+05/21/2025 22:02:49 - INFO - Splitting dataset
+Flattening the indices: 100%|██████████| 10000000/10000000 [01:20<00:00, 124318.23 examples/s]
+Flattening the indices: 100%|██████████| 50000/50000 [00:00<00:00, 117854.94 examples/s]
+Flattening the indices: 100%|██████████| 50000/50000 [00:00<00:00, 116411.89 examples/s]
+05/21/2025 22:04:16 - INFO - Saving splits to csv
+...
+Creating CSV from Arrow format: 100%|██████████| 10000/10000 [01:11<00:00, 140.49ba/s]
+Creating CSV from Arrow format: 100%|██████████| 50/50 [00:00<00:00, 140.69ba/s]
+Creating CSV from Arrow format: 100%|██████████| 50/50 [00:00<00:00, 142.16ba/s]
+05/21/2025 22:25:34 - INFO - Processing line by line
 ```
-
-To review the status of data tokenization using the same `fsx-share-test` pod used in previous step, run the following command:
+To review the status of data tokenization, we can use the same `fsx-share-test` pod used in previous step and run the following command:
 
 ```bash
 kubectl exec -it fsx-share-test  -- ls -ltr /fsx-shared/esm/processed/arrow/train
@@ -218,13 +210,17 @@ total 7126383
 -rw-r--r-- 1 root root 497488288 Apr 24 20:26 data-00009-of-00062.arrow
 -rw-r--r-- 1 root root 497488288 Apr 24 20:26 data-00010-of-00062.arrow
 ...
+-rw-r--r-- 1 root root 497485216 May 21 22:19 data-00060-of-00062.arrow
+-rw-r--r-- 1 root root      3846 May 21 22:19 state.json
+-rw-r--r-- 1 root root     15333 May 21 22:19 dataset_info.json
+-rw-r--r-- 1 root root 497485216 May 21 22:19 data-00061-of-00062.arrow
 ```
 
 ## 6. Training Using DDP Framework
 
-Now we are ready to submit distributed training jobs to pretrain ESM2 models. We provide the `train-ddp-template.yaml` template to run training on  HyperPod cluster compute nodes with certain number of GPUs, per node specification. Make sure data paths and model configuration is correct if you are running on custom data set.
+Now we are ready to submit distributed training jobs to pretrain ESM2 models. We provide the `train-ddp-template.yaml` template to run training on  HyperPod EKS cluster compute nodes with certain number of GPUs, per node specification. Make sure data paths and model configuration is correct if you are running on custom data set.
 
-To kick off DDP based distributed training execute, we first need to generate specific training job manifest for K8s:
+To kick off DDP framework based distributed training execute, we first need to generate specific training job manifest for K8s:
 
 ```bash
 cat train-ddp-template.yaml | envsubst > train-ddp.yaml
