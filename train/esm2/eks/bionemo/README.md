@@ -449,20 +449,17 @@ Validation: iteration 2/2
 Once completed, we should see the `bionemo-esm2` job in `Succeeded` state as well as the `bionemo-esm2-worker-0` and `bionemo-esm2-worker-1` pods are in `Completed` one:
 
 ```bash
-ubectl get pytorchjob,deploy,po,svc
+ubectl get pytorchjob,po,svc
 NAME                                   STATE       AGE
 pytorchjob.kubeflow.org/bionemo-esm2   Succeeded   4h
 
-NAME                                                        READY   UP-TO-DATE   AVAILABLE   AGE
-deployment.apps/etcd                                        1/1     1            1           4h
-deployment.apps/hyperpod-dependencies-hyperpod-helm-chart   1/1     1            1           127d
-deployment.apps/hyperpod-dependencies-mpi-operator          1/1     1            1           127d
 
 NAME                                                             READY   STATUS      RESTARTS      AGE
 pod/bionemo-esm2-worker-0                                        0/1     Completed   0             4h
 pod/bionemo-esm2-worker-1                                        0/1     Completed   0             4h
+pod/etcd-6cd66c884c-hzxpd                                        1/1     Running     0             20m
+pod/fsx-share-test                                               1/1     Running     0             3h11m
 ```
-
 We can also verify that model and training configurations and artifacts are present in the $OUTPUT_DIR by running the command via 
 
 ```bash
@@ -475,7 +472,6 @@ drwxr-xr-x 4 root root 25600 May 15 23:42 'epoch=0-val_loss=2.91-step=99-consume
 drwxr-xr-x 4 root root 25600 May 15 23:42 'epoch=0-val_loss=3.04-step=74-consumed_samples=300.0'
 ....
 ```
-
 And, if needed, confirm that `model.yaml` is present in its subfolders:
 ```bash
 kubectl exec -it fsx-share-test -- ls -al /fsx-shared/bionemo/esm2/dev/checkpoints/'epoch=0-val_loss=3.04-step=74-consumed_samples=300.0'/context
@@ -489,4 +485,4 @@ drwxr-xr-x 4 root root 25600 May 16 21:40 ..
 -rw-r--r-- 1 root root 40683 May 16 21:40 io.json
 -rw-r--r-- 1 root root  8967 May 16 21:40 model.yaml
 ```
-That confirms that model training using BioNemo tframework completed successfully..
+That and similar output confirm that model training using BioNemo tframework completed successfully..
