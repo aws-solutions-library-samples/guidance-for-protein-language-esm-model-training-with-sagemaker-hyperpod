@@ -11,9 +11,9 @@ Have a EKS based Sagemaker HyperPod cluster with Nvidia GPUs. You can verify ava
 ```bash
 kubectl get nodes "-o=custom-columns=NAME:.metadata.name,INSTANCETYPE:.metadata.labels.node\.kubernetes\.io/instance-type,GPU:.status.allocatable.nvidia\.com/gpu,EFA:.status.allocatable.vpc\.amazonaws\.com/efa"
 
-NAME                           INSTANCETYPE     GPU   EFA
-hyperpod-i-048cd15160ee28917   ml.p5.48xlarge   8     32
-hyperpod-i-09539ee1dd9971647   ml.p5.48xlarge   8     32
+NAME                           INSTANCETYPE    GPU      EFA
+hyperpod-i-0acca9f60bebf2b73   ml.g5.8xlarge   1        1
+hyperpod-i-0ed4f24e0eed5870e   ml.g5.8xlarge   1        1
 ```
 
 ## 1. Setup environment variables
@@ -36,8 +36,8 @@ export NUM_NODES=2
 export OUTPUT_DIR=/fsx-shared/bionemo
 ```
 
-Or just run the following command using the `env.conf` file:
-```
+Or - better - run the following command using the `env.conf` file:
+```bash
 source .env.conf
 ```
 
@@ -46,7 +46,7 @@ source .env.conf
 ```bash
 git clone https://github.com/aws-solutions-library-samples/guidance-for-protein-language-esm-model-training-with-nvidia-bionemo-framework.git
 
-cd guidance-for-protein-language-esm-model-training-with-nvidia-bionemo-framework/source/hyperpod_eks
+cd guidance-for-protein-language-esm-model-training-with-sagemaker-hyperpod/train/esm2/eks/bionemo
 chmod 777 *.sh
 ```
 ## 3. Build and push Docker Image
@@ -56,7 +56,7 @@ We provide an AWS optimized Docker image that sets up networking components (EFA
 ```bash
 ./build.sh
 ```
-Once built you can push the Docker image to ECR as follows:
+Once built you can push the Docker image to AWS ECR as follows:
 
 ```bash
 ./push.sh
@@ -65,45 +65,59 @@ You can verify that an image with tag ending with `bionemo:aws` is indeed presen
 
 ## 4. Download Training data
 
-BioNeMo 2.5 container provides a CLI `download_bionemo_data` to download test or full UniProt dataset from NVIDIA Catalog which we can run as below. To that end we provide a `get-data-template.yaml`. First substitute the environment variables to generate `get-data.yaml` like below:
+BioNeMo 2.5 container provides a CLI command `download_bionemo_data` to download test or full UniProt dataset from NVIDIA Catalog which we can run as below. To that end we provide a `get-data-template.yaml`. First substitute the environment variables to generate `get-data.yaml` like below:
 
 ```bash
-cat get-data-template.yaml | envsubst > get-data.yaml
-cat get-data.yaml
+cat download-data-template.yaml | envsubst > download-data.yaml
+cat download-data.yaml
 ---
-apiVersion: v1
-kind: Pod
+apiVersion: batch/v1
+kind: Job
 metadata:
   name: download-bionemo-data
 spec:
-  containers:
-  - name: download-bionemo-data
-    image: 3549183XXXXX.dkr.ecr.us-east-1.amazonaws.com/bionemo:aws
-    command: ["/bin/bash"]
-    args: ["-c", "download_bionemo_data esm2/testdata_esm2_pretrain:2.0"]
-    volumeMounts:
-    - name: bionemo-cache-volume
-      mountPath: /root/.cache/bionemo
-  volumes:
-  - name: bionemo-cache-volume
-    persistentVolumeClaim:
-      claimName: fsx-claim
+  template:
+    spec:
+       containers:
+       - name: download-bionemo-data
+         image: 354918380621.dkr.ecr.us-east-1.amazonaws.com/bionemo:aws
+         command: ["/bin/bash"]
+         args: ["-c", "download_bionemo_data esm2/testdata_esm2_pretrain:2.0"]
+         volumeMounts:
+          - name: bionemo-cache-volume
+            mountPath: /root/.cache/bionemo
+       volumes:
+       - name: bionemo-cache-volume
+         persistentVolumeClaim:
+           claimName: fsx-claim
+       restartPolicy: OnFailure
 ```
 
-The you can start the data downloading job as below. The pod will take roughly 6 minutes to start as it is a about 35GB image.
+The you can initiate the data downloading job, as shown below. The job will take roughly 6-8 minutes to start as it is a about 35GB image.
 
 ```bash
-kubectl apply -f get-data.yaml
-pod/download-bionemo-data created
+kubectl apply -f download-data.yaml
+job.batch/download-bionemo-data created
 ```
 
-You can monitor progress of data download by running a command like:
+You can monitor progress of data download by running a command that tails logs from the corresponding pod:
 ```bash
-kubectl logs -f download-bionemo-data
+kubectl logs -f download-bionemo-data-xk9dk 
 ---
 /root/.cache/bionemo/006911f92bbc0ded7ea302bbdbfab4c694b409e699c32fd49de1c527a99dba3e-2024_03_sanity.tar.gz.untar
 ```
-To verify that the data is available in the shared filesystem, we need a dummy pod with that shared filesystem mounted. For that purpose we provide       `view-fsx.yaml` which creates a pod called `fsx-share-test`. To view the contents of the file system we can exec in the pod as below:
+
+To check data download job status completion, you can run the following command:
+```bash
+kc get job,po
+NAME                              STATUS     COMPLETIONS   DURATION   AGE
+job.batch/download-bionemo-data   Complete   1/1           7m57s      8m16s
+
+NAME                                                             READY   STATUS      RESTARTS      AGE
+pod/download-bionemo-data-xk9dk                                  0/1     Completed   0             8m16s
+```
+
+To verify that the download data is available in the shared filesystem, we need a dummy pod with that shared filesystem mounted. For that purpose we provide  `view-fsx.yaml` descriptor that creates a pod called `fsx-share-test`. To view the contents of the file system we can exec the following command against that pod, as shown below:
 
 ```bash
 # Create the pod
@@ -124,16 +138,16 @@ export DATA_DIR=/fsx-shared/006911f92bbc0ded7ea302bbdbfab4c694b409e699c32fd49de1
 
 ## 5. Pretrain BioNemo ESM2 models
 
-Now we are ready to submit distributed training jobs to pretrain `ESM2` models. We provide the `esm2-pretrain-template.yaml` script to run training on various SageMaker HyperPode compute nodes with various number of GPUs. Make sure data paths and model configuration parameters is correct if you are running on custom data. 
+Now we are ready to submit distributed training jobs to pretrain `ESM2 BioNemo` models. We provide the `esm2-pretrain-template.yaml` script to run training on various SageMaker HyperPode compute nodes with various number of GPUs. Make sure data paths and model configuration parameters is correct if you are running using custom data. 
 
 To kick off distributed training, first we need to generate customized deployment descriptor for BioNemo training job:
 
 ```bash
-cat esm2-pretrain-template.yaml | envsubst > esm2-pretrain.yaml
+cat esm2-pretrain-template.yaml | envsubst > esm2-bionemo-pretrain.yaml
 ```
-Validate the resulting training job deployment descriptor:
+Review the resulting training job deployment descriptor:
 ```bash
-cat esm2-pretrain.yaml
+cat esm2-bionemo-pretrain.yaml
 ---
 apiVersion: v1
 kind: Service
@@ -291,14 +305,15 @@ spec:
                 - --result-dir=/fsx-shared/bionemo
 ```
 
-To initiate a training job, apply generated deployment descriptor to EKS API:
+To initiate a training job, apply generated deployment descriptor to using EKS CLI:
 ```bash
 kubectl apply -f esm2-pretrain.yaml
 service/etcd created
 deployment.apps/etcd created
 pytorchjob.kubeflow.org/bionemo-esm2 created
 ```
-To monitor BioNemo training job, you can check status of PyTorchJob, Deployment and Pods related to them:
+
+To monitor EM2 BioNemo training job, you can check status of `PyTorchJob`, `Deployment` and `Pod` related objects in EKS:
 ```bash
 kubectl get pytorchjob,deploy,po,svc
 NAME                                   STATE     AGE
