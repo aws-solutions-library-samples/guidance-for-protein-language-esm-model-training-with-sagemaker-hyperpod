@@ -53,6 +53,10 @@ cat download-data-template.yaml | envsubst > download-data-real.yaml
 Then apply it via CLI call:
 ```bash
 kubectl apply -f download-data-real.yaml
+```
+
+Output:
+```
 job/download-uniref-data created
 ```
 
@@ -60,8 +64,12 @@ It would download the data and partitions the data in 50 .csv files in the folde
 The whole process should take less than 30 mins. 
 You can monitor the process by tailing the pod created by the Job:
 
-```bash
+``` bash
 kubectl logs -f download-uniref-data-g245r
+```
+
+Output:
+```
 05/21/2025 21:35:03 - INFO - Parsing arguments
 05/21/2025 21:35:03 - INFO - Downloading FASTA
 05/21/2025 21:35:03 - INFO - Downloading https://ftp.uniprot.org/pub/databases/uniprot/uniref/uniref50/uniref50.fasta.gz to /workspace/tmphdt41nh1/fasta
@@ -84,6 +92,10 @@ If we check status of launched job and corresponding pod, they should be `Comple
 
 ```bash
 kc get job,po
+```
+Output:
+
+```
 NAME                             STATUS     COMPLETIONS   DURATION   AGE
 job.batch/download-uniref-data   Complete   1/1           14m        24m
 
@@ -97,12 +109,18 @@ We can also valildate contents of the shared data directory `fsx-shared/esm` usi
 
 ```bash
 kubectl apply -f view-fsx.yaml
+```
+Output:
+```
 pod/fsx-share-test created
 ```
 
 Using that pod, we can get "inside" and review contents of the shared data folder:
 ```bash
 kubectl exec -it fsx-share-test -- ls -ltr /fsx-shared/esm/csv
+```
+Output:
+```
 total 20593930
 -rw-r--r-- 1 root root 1338965519 May 21 21:36 x000.csv
 -rw-r--r-- 1 root root  739136803 May 21 21:36 x001.csv
@@ -160,12 +178,18 @@ Then initiate pre-processing job using generated deployment descriptor:
 
 ```bash
 kubectl apply -f preprocess-data.yaml
+```
+Output:
+```
 pod/preprocess-data created
 ```
 You can check the progress of data pre-processing by tailing that pod log:
 
 ```bash
 kc logs -f preprocess-data
+```
+Output:
+```
 05/21/2025 22:02:00 - INFO - Parsing arguments
 05/21/2025 22:02:00 - INFO - Loading csv files from /fsx-shared/esm/csv
 Downloading data: 100%|██████████| 18/18 [00:00<00:00, 11893.11files/s]
@@ -200,6 +224,9 @@ To review the status of data tokenization, we can use the same `fsx-share-test` 
 
 ```bash
 kubectl exec -it fsx-share-test  -- ls -ltr /fsx-shared/esm/processed/arrow/train
+```
+Output:
+```
 total 7126383
 -rw-r--r-- 1 root root 497488288 Apr 24 20:26 data-00000-of-00062.arrow
 -rw-r--r-- 1 root root 497488288 Apr 24 20:26 data-00001-of-00062.arrow
@@ -362,6 +389,9 @@ To initiate training, run the following command generated PyTorchJob deployment 
 
 ```bash
 kubectl apply -f train-ddp.yaml
+```
+Output:
+```
 service/etcd created
 deployment.apps/etcd created
 pytorchjob.kubeflow.org/esm2 created
@@ -369,6 +399,9 @@ pytorchjob.kubeflow.org/esm2 created
 To validate status of the ESM-2 training job containers, run the following command (assuming they run in the `default` namespace):
 ```bash
 kubectl get job,po
+```
+Output:
+```
 NAME                                                             READY   STATUS              RESTARTS         AGE
 pod/download-uniref-data                                         1/1     Running             11 (3m34s ago)   116m
 pod/esm2-worker-0                                                0/1     ContainerCreating    3 (30s ago)      2m4s
@@ -379,6 +412,9 @@ pod/esm2-worker-3                                                0/1     Contain
 To trace the training job logs, run the following command:
 ```bash
 kubectl logs -f esm2-worker-0
+```
+Output:
+```
 --
 esm2-worker-0:53:269 [0] NCCL INFO [Proxy Service] Device 0 CPU core 10
 esm2-worker-0:53:270 [0] NCCL INFO [Proxy Service UDS] Device 0 CPU core 15
@@ -409,6 +445,9 @@ After the ESM worker pods finish training jobs, they will be in `COMPLETE` state
 
 ```bash
 kubectl get pytorchjob,po
+```
+Output:
+```
 NAME                           STATE       AGE
 pytorchjob.kubeflow.org/esm2   Succeeded   40m
 
@@ -422,6 +461,9 @@ Finally, to verify that model training has been indeed complete, you can display
 
 ```bash
 kubectl exec -it fsx-share-test -- cat /fsx-shared/esm/output/train_results.json
+```
+Output:
+```
 {
     "epoch": 1.0,
     "total_flos": 2304587980079104.0,
@@ -585,6 +627,9 @@ spec:
 To initiate FSDP based PyTurch training job, run the command: 
 ```bash
 kubectl apply -f train-fsdp.yaml
+```
+Output:
+```
 ---
 service/etcd created
 deployment.apps/etcd created
@@ -594,6 +639,9 @@ To monitor how ESM worker pods process model training you can run the following 
 
 ```bash
 kubectl logs -f esm2-worker-0
+```
+Output:
+```
 [WARNING  | accelerate.commands.launch]: The following values were not passed to `accelerate launch` and had defaults used instead:
         `--mixed_precision` was set to a value of `'no'`
         `--dynamo_backend` was set to a value of `'no'`
@@ -645,6 +693,9 @@ esm2-worker-0:161:315 [0] NCCL INFO comm 0x2e177b70 rank 0 nranks 2 cudaDev 0 bu
 To confirm that PyTorch training job completed successfully along with ESM worker pods, you can run the following command:
 ```bash
 kubectl get pytorchjob,po,svc
+```
+Output:
+```
 NAME                           STATE       AGE
 pytorchjob.kubeflow.org/esm2   Succeeded   122m
 
@@ -659,6 +710,9 @@ Finally, to verify that model training has been indeed complete, you can display
 
 ```bash
 kubectl exec -it fsx-share-test -- cat /fsx-shared/fsdp-output/train_results.json
+```
+Output:
+```
 {
     "epoch": 0.99968,
     "total_flos": 1151925283717120.0,
@@ -668,3 +722,4 @@ kubectl exec -it fsx-share-test -- cat /fsx-shared/fsdp-output/train_results.jso
     "train_samples_per_second": 187.862,
     "train_steps_per_second": 2.134
 }
+```
