@@ -712,7 +712,7 @@ Finally, to verify that model training has been indeed complete, you can display
 kubectl exec -it fsx-share-test -- cat /fsx-shared/fsdp-output/train_results.json
 ```
 Output:
-```
+``` text
 {
     "epoch": 0.99968,
     "total_flos": 1151925283717120.0,
