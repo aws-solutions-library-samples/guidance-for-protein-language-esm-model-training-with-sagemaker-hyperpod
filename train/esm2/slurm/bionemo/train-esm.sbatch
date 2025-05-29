@@ -12,7 +12,7 @@ export NCCL_DEBUG=INFO
 ###########################
 
 # default variables for Enroot
-: "${IMAGE:=${DATA_HOME_DIR}/bionemo.sqsh}"
+: "${IMAGE:=${DATA_HOME_DIR}/bionemo-slurm.sqsh}"
 : "${DATA_PATH:=/fsxl}"
 : "${FSX_MOUNT:=$DATA_PATH:$DATA_PATH}"
 

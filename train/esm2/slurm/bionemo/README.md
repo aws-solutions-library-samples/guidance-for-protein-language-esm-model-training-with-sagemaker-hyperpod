@@ -17,6 +17,7 @@ SSH into the head or login node of your cluster and run:
 export TARGET_PATH=/fsx/ubuntu/bionemo
 export DOCKER_IMAGE_NAME=bionemo-slurm
 export TAG=aws
+export DATA_HOME_DIR=/fsx/ubuntu/bionemo
 ```
 Or source the `env.conf` file like:
 
@@ -28,11 +29,11 @@ source ./env.conf
 
 ```bash
 cd ${TARGET_PATH}
-git clone https://github.com/aws-solutions-library-samples/guidance-for-protein-language-esm-model-training-with-nvidia-bionemo-framework.git
+git clone https://github.com/aws-solutions-library-samples/guidance-for-protein-language-esm-model-training-with-sagemaker-hyperpod.git
 ```
 Change permissions for `.sh` scripts for executable:
 ```bash
-cd guidance-for-protein-language-esm-model-training-with-nvidia-bionemo-framework/source/hyperpod_slurm
+cd guidance-for-protein-language-esm-model-training-with-sagemaker-hyperpod/train/esm2/slurm/bionemo
 chmod 777 *.sh
 ```
 
@@ -42,6 +43,9 @@ We provide the Dockerfile for an AWS optimized Docker image that sets up network
 
 ```bash
 ./build.sh
+```
+Output:
+```
 ----
 [+] Building 171.3s (3/21)                                                                                                                    docker:default
  => [ 1/18] FROM nvcr.io/nvidia/clara/bionemo-framework:2.5@sha256:fbd1393898db19a6f252ba962b768efa24ae2baea6a4b98d7a806d20f47318a3                   169.9s
@@ -69,6 +73,9 @@ We provide the Dockerfile for an AWS optimized Docker image that sets up network
 
 ```bash
 ./enroot.sh
+```
+Output:
+```
 ----
 Preparing  image  /fsx/ubuntu/bionemo/bionemo-slurm.sqsh ..
 [INFO] Fetching image
@@ -93,6 +100,9 @@ BioNeMo 2.5 container provides a CLI `download_bionemo_data` to download test or
 
 ```bash
 ./get-data.sh
+```
+Output:
+```
 ---
 ============
 == PyTorch ==
@@ -138,23 +148,32 @@ Untarring contents of '/root/.cache/bionemo/006911f92bbc0ded7ea302bbdbfab4c694b4
 
 Now we are ready to submit distributed training jobs to pretrain ESM-2 models. We provide the `train-esm.slurm` script to run training on HyperPod compute nodes with respective GPU resources. Make sure data paths and model configuration is correct if you are running on custom data. 
 
-Modify the `train-esm.slurm` script according to the actual GPU and EFA cluster resources 
+Modify the `train-esm.sbatch` script according to the actual GPU and EFA cluster resources 
 
 To kick off distributed BioNemo model training, execute the following command:
 
 ```bash
-sbatch train-esm.slurm
+sbatch train-esm.sbatch
+```
+Output:
+```
 Submitted batch job 1
 ```
 To check the status of submitted job, run the following command:
 ```bash
 squeue
+```
+Output:
+```
 JOBID PARTITION     NAME     USER   ST       TIME  NODES NODELIST(REASON)
       4     dev   train-es   ubuntu  R       0:07      2 ip-10-1-0-96,ip-10-1-39-225
 ```
 Once training job starts you should see logs by running:
 ```bash
 tail -f bionemo-esm2-train-4.out
+```
+Output:
+```
 --------
 ...
 0: [NeMo I 2025-05-08 04:35:15 utils:302] Setting up optimizer with config OptimizerConfig(optimizer='adam', lr=0.0004, min_lr=None, decoupled_lr=None, decoupled_min_lr=None, weight_decay=0.01, fp16=False, bf16=True, params_dtype=torch.bfloat16, use_precision_aware_optimizer=False, main_grads_dtype=torch.float32, main_params_dtype=torch.float32, exp_avg_dtype=torch.float32, exp_avg_sq_dtype=torch.float32, loss_scale=None, initial_loss_scale=4294967296, min_loss_scale=1.0, loss_scale_window=1000, hysteresis=2, adam_beta1=0.9, adam_beta2=0.98, adam_eps=1e-08, sgd_momentum=0.9, use_distributed_optimizer=True, overlap_param_gather_with_optimizer_step=False, optimizer_cpu_offload=False, optimizer_offload_fraction=0.0, use_torch_optimizer_for_cpu_offload=False, overlap_cpu_optimizer_d2h_h2d=False, pin_cpu_grads=True, pin_cpu_params=True, clip_grad=1.0, log_num_zeros_in_grad=False, barrier_with_L1_time=False, timers=None, config_logger_dir='')
@@ -197,6 +216,9 @@ To confirm model creation, you should be able see checkpoints stored in the `${T
 
 ```bash
 ls -al /fsx/ubuntu/bionemo/esm2/dev/checkpoints/
+```
+Output:
+```
 ------------
 total 215
 ....

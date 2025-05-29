@@ -10,7 +10,9 @@ Have a EKS based Sagemaker HyperPod cluster with Nvidia GPUs. You can verify ava
 
 ```bash
 kubectl get nodes "-o=custom-columns=NAME:.metadata.name,INSTANCETYPE:.metadata.labels.node\.kubernetes\.io/instance-type,GPU:.status.allocatable.nvidia\.com/gpu,EFA:.status.allocatable.vpc\.amazonaws\.com/efa"
-
+```
+Output:
+```
 NAME                           INSTANCETYPE    GPU      EFA
 hyperpod-i-0acca9f60bebf2b73   ml.g5.8xlarge   1        1
 hyperpod-i-0ed4f24e0eed5870e   ml.g5.8xlarge   1        1
@@ -97,12 +99,18 @@ The you can initiate the data downloading job, as shown below. The job will take
 
 ```bash
 kubectl apply -f download-data.yaml
+```
+Output:
+```
 job.batch/download-bionemo-data created
 ```
 
 You can monitor progress of data download by running a command that tails logs from the corresponding pod:
 ```bash
 kubectl logs -f download-bionemo-data-xk9dk 
+```
+Output:
+```
 ---
 /root/.cache/bionemo/006911f92bbc0ded7ea302bbdbfab4c694b409e699c32fd49de1c527a99dba3e-2024_03_sanity.tar.gz.untar
 ```
@@ -110,6 +118,9 @@ kubectl logs -f download-bionemo-data-xk9dk
 To check data download job status completion, you can run the following command:
 ```bash
 kc get job,po
+```
+Output:
+```
 NAME                              STATUS     COMPLETIONS   DURATION   AGE
 job.batch/download-bionemo-data   Complete   1/1           7m57s      8m16s
 
@@ -124,6 +135,9 @@ To verify that the download data is available in the shared filesystem, we need 
 kubectl apply -f view-fsx.yaml
 # Exec in the pod and list the directory contents
 kubectl exec fsx-share-test -- ls -al /fsx-shared
+```
+Output:
+```
 total 71990
 ....
 -rw-r--r--  1 root root 73307674 May  6 23:38 006911f92bbc0ded7ea302bbdbfab4c694b409e699c32fd49de1c527a99dba3e-2024_03_sanity.tar.gz
@@ -308,6 +322,9 @@ spec:
 To initiate a training job, apply generated deployment descriptor to using EKS CLI:
 ```bash
 kubectl apply -f esm2-pretrain.yaml
+```
+Output:
+```
 service/etcd created
 deployment.apps/etcd created
 pytorchjob.kubeflow.org/bionemo-esm2 created
@@ -316,6 +333,9 @@ pytorchjob.kubeflow.org/bionemo-esm2 created
 To monitor EM2 BioNemo training job, you can check status of `PyTorchJob`, `Deployment` and `Pod` related objects in EKS:
 ```bash
 kubectl get pytorchjob,deploy,po,svc
+```
+Output:
+```
 NAME                                   STATE     AGE
 pytorchjob.kubeflow.org/bionemo-esm2   Running   2m37s
 
@@ -332,6 +352,9 @@ pod/bionemo-esm2-worker-1                                        0/1     Contain
 To tail ESM model training running pod logs, you can run the following command:
 ```bash
 kubectl logs -f  bionemo-esm2-worker-0
+```
+Output:
+```
 INFO 2025-05-15 23:40:46,089 Etcd machines: ['http://0.0.0.0:2379']
 ....
 INFO 2025-05-15 23:40:46,099 Attempting to join next rendezvous
@@ -449,7 +472,10 @@ Validation: iteration 2/2
 Once completed, we should see the `bionemo-esm2` job in `Succeeded` state as well as the `bionemo-esm2-worker-0` and `bionemo-esm2-worker-1` pods are in `Completed` one:
 
 ```bash
-ubectl get pytorchjob,po,svc
+kubectl get pytorchjob,po,svc
+```
+Output:
+```
 NAME                                   STATE       AGE
 pytorchjob.kubeflow.org/bionemo-esm2   Succeeded   4h
 
@@ -464,6 +490,9 @@ We can also verify that model and training configurations and artifacts are pres
 
 ```bash
 kubectl exec -it fsx-share-test -- ls -al /fsx-shared/bionemo/esm2/dev/checkpoints
+```
+Output:
+```
 total 140
 drwxr-xr-x 5 root root 33280 May 15 23:43  .
 drwxr-xr-x 3 root root 33280 May 15 23:41  ..
@@ -475,6 +504,9 @@ drwxr-xr-x 4 root root 25600 May 15 23:42 'epoch=0-val_loss=3.04-step=74-consume
 And, if needed, confirm that `model.yaml` is present in its subfolders:
 ```bash
 kubectl exec -it fsx-share-test -- ls -al /fsx-shared/bionemo/esm2/dev/checkpoints/'epoch=0-val_loss=3.04-step=74-consumed_samples=300.0'/context
+```
+Output:
+```
 total 141
 drwxr-xr-x 2 root root 33280 May 16 21:40 .
 drwxr-xr-x 4 root root 25600 May 16 21:40 ..
