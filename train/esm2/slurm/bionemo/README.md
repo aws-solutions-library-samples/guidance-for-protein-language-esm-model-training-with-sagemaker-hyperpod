@@ -148,7 +148,18 @@ Untarring contents of '/root/.cache/bionemo/006911f92bbc0ded7ea302bbdbfab4c694b4
 
 Now we are ready to submit distributed training jobs to pretrain ESM-2 models. We provide the `train-esm.slurm` script to run training on HyperPod compute nodes with respective GPU resources. Make sure data paths and model configuration is correct if you are running on custom data. 
 
-Modify the `train-esm.sbatch` script according to the actual GPU and EFA cluster resources 
+Modify the `train-esm.sbatch` script according to the actual GPU and EFA cluster resources. 
+Example:
+```
+#!/bin/bash
+#SBATCH --nodes=2                    # number of HyperPod compute nodes
+#SBATCH --ntasks-per-node=1         # n tasks per machine (one task per gpu) <required>
+#SBATCH --exclusive                  # exclusive node access
+#SBATCH --output bionemo-esm2-train-%j.out
+
+export FI_PROVIDER=efa
+export NCCL_DEBUG=INFO
+```
 
 To kick off distributed BioNemo model training, execute the following command:
 
