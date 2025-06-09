@@ -12,10 +12,10 @@ This guidance aims to instruct and guide users how to pretrain popular computati
 3. [Prerequisites](#prerequisites)
     - [Operating System](#operating-system)
 4. [Deployment Steps](#deployment-steps)
-5. [Deployment Validation](#deployment-validation-required)
-6. [Running the Guidance](#running-the-guidance-required)
-7. [Next Steps](#next-steps-required)
-8. [Cleanup](#cleanup-required)
+5. [Deployment Validation](#deployment-validation)
+6. [Running the Guidance](#running-the-guidance)
+7. [Next Steps](#next-steps)
+8. [Cleanup](#cleanup)
 
 ***Optional***
 
@@ -34,7 +34,7 @@ With the recent proliferation of new models and tools in this field, researchers
 
 [NVIDIA BioNeMo](https://nvidia.github.io/bionemo-framework/) is a generative AI platform for drug discovery that simplifies and accelerates the training of models using your own data. BioNeMo provides researchers and developers a fast and easy way to build and integrate state-of-the-art generative AI applications across the entire drug discovery pipeline—from target identification to lead optimization—with AI workflows for 3D protein structure prediction, de novo design, virtual screening, docking, and property prediction.
 
-The BioNeMo framework facilitates centralized model training, optimization, fine-tuning, and inferencing for protein and molecular design. Researchers can build and train foundation models from scratch at scale, or use pre-trained model checkpoints provided with the BioNeMo Framework for fine-tuning for downstream tasks. Currently, BioNeMo supports models such as ESM1nv, ESM2nv, ProtT5nv, DNABERT, OpenFold, EquiDock, DiffDock, and MegaMolBART. To read more about BioNeMo, visit the documentation page.
+The BioNeMo framework facilitates centralized model training, optimization, fine-tuning, and inferencing for protein and molecular design. Researchers can build and train foundation models from scratch at scale, or use pre-trained model checkpoints provided with the BioNeMo Framework for fine-tuning for downstream tasks. Currently, BioNeMo supports biomolecular AI architectures that can be scaled to billions of parameters, such as BERT, Striped Hyena, along with models such as ESM-2, Evo-2, and Geneformer.
 
   
 ### Architecture overview
@@ -77,7 +77,7 @@ _You are responsible for the cost of the AWS services used while running this Gu
 
 _We recommend creating a [Budget](https://docs.aws.amazon.com/cost-management/latest/userguide/budgets-managing-costs.html) through [AWS Cost Explorer](https://aws.amazon.com/aws-cost-management/aws-cost-explorer/) to help manage costs. Prices are subject to change. For full details, refer to the pricing webpage for each AWS service used in this Guidance._
 
-### Sample Cost Table ( required )
+### Sample Cost Table
 
 
 The following table provides a sample cost breakdown for deploying this Guidance with the default parameters in the US East (N. Virginia) Region for one month.
@@ -205,7 +205,6 @@ Deployment steps must be numbered, comprehensive, and usable to customers at any
 4. Edit content of **file-name** and replace **s3-bucket** with the bucket name in your account.
 5. Run this command to deploy the stack ```cdk deploy``` 
 6. Capture the domain name created by running this CLI command ```aws apigateway ............```
--->
 
 ### Deployment of SLURM based SageMaker HyperPod cluster
 
@@ -685,14 +684,13 @@ We provide an AWS optimized Docker image that sets up networking components (EFA
 
 5. Download Model traning data
 
-<!--
 BioNeMo 2.5 container provides a CLI `download_bionemo_data` to download test or full UniProt dataset from NVIDIA Catalog which we can run as below. 
 `get-data.sh` script runs a container based on the customized BioNemo container image created above, runs the `download_bionemo_data` CLI to download test data and kills the container when done and saves `_sanity.tar.gz` compressed file (71M) and `_sanity.tar.gz.untar` (134M) with training and validation data.
 
 ```bash
 ./get-data.sh
 ```
--->
+
 
 6. Pretrain ESM2 models using SLURM scheduler
 
@@ -1139,10 +1137,14 @@ Initializing distributed: GLOBAL_RANK: 6, MEMBER: 7/16
 ..
 ```
 and continue monitoring pod/container logs in real time. It is expected to take at least a few hours to complete pre-training of ESM-2 models on 2 `p5.48xlarge` nodes.
+-->
+
+**TODO: update to Live IG link once available**
+Please see details HyperPod cluster deployment instructions in this section of the [detailed Implementation Guide](https://implementationguides.kits.eventoutfitters.aws.dev/pl-esm-0422/compute/protein-language-esm-model-training-on-amazon-sagemaker.html#deploy-the-guidance)
 
 ## Running the Guidance (required)
 
-<Provide instructions to run the Guidance with the sample data or input provided, and interpret the output received.> 
+<!-- Provide instructions to run the Guidance with the sample data or input provided, and interpret the output received. 
 
 This section should include:
 
@@ -1150,13 +1152,16 @@ This section should include:
 * Commands to run
 * Expected output (provide screenshot if possible)
 * Output description
+-->
+**TODO: update to Live IG link once available**
+Please see details about training of ESM-2 models on HyperPod clusters in this section of the [Detailed Implementation Guide](https://implementationguides.kits.eventoutfitters.aws.dev/pl-esm-0422/compute/protein-language-esm-model-training-on-amazon-sagemaker.html#running-the-guidance)
 
-## Next Steps (required)
+## Next Steps
 
 Provide suggestions and recommendations about how customers can modify the parameters and the components of the Guidance to further enhance it according to their requirements.
 
 
-## Cleanup (required)
+## Cleanup
 
 - Include detailed instructions, commands, and console actions to delete the deployed Guidance.
 - If the Guidance requires manual deletion of resources, such as the content of an S3 bucket, please specify.
