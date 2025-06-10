@@ -1158,15 +1158,15 @@ Please see details about training of ESM-2 models on HyperPod clusters in this s
 
 ## Next Steps
 
+**TODO: update to Live IG link once available**
 Provide suggestions and recommendations about how customers can modify the parameters and the components of the Guidance to further enhance it according to their requirements.
-
+Please see details about patching software on HyperPod clusters in this section of the [Detailed Implementation Guide](https://implementationguides.kits.eventoutfitters.aws.dev/pl-esm-0422/compute/protein-language-esm-model-training-on-amazon-sagemaker.html#next-steps)
 
 ## Cleanup
 
-- Include detailed instructions, commands, and console actions to delete the deployed Guidance.
-- If the Guidance requires manual deletion of resources, such as the content of an S3 bucket, please specify.
-
-
+**TODO: update to Live IG link once available**
+Provide suggestions and recommendations about how customers can modify the parameters and the components of the Guidance to further enhance it according to their requirements.
+Please see details about deletipn of HyperPod clusters in this section of the [Detailed Implementation Guide](https://implementationguides.kits.eventoutfitters.aws.dev/pl-esm-0422/compute/protein-language-esm-model-training-on-amazon-sagemaker.html#cleanup)
 
 ## FAQ, known issues, additional considerations, and limitations (optional)
 
