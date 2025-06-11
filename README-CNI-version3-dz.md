@@ -98,11 +98,11 @@ an AWS Region where AWS Network Firewall is available. For the most current avai
 Services List](https://aws.amazon.com/about-aws/global-infrastructure/regional-product-services/).
 
 ![](./media/image2.png)
+<br/>
 
 ## Deployment Steps
 
-[]{#deployment-validation-required .anchor}The high-level process ﬂow for the solution components deployed with the CloudFormation template is
-as follows:
+[]{#deployment-validation-required .anchor}The high-level process ﬂow for the solution components deployed with the CloudFormation template is as follows:
 
 1.  The CloudFormation template deploys an [inspection VPC](https://aws.amazon.com/blogs/networking-and-content-delivery/deployment-models-for-aws-network-firewall/) with four subnets in randomly- selected Availability Zones in the Region where the solution is deployed.
 
@@ -112,24 +112,20 @@ as follows:
     b.  The solution uses the other two subnets to create [AWS Network Firewall](https://aws.amazon.com/network-firewall/)
         endpoints in two randomly-selected Availability Zones in the Region where the solution is deployed.
 
-
 2.  The CloudFormation template creates a new [AWS CodeCommit](https://aws.amazon.com/codecommit/) repository and a default network ﬁrewall conﬁguration that allows all traﬃc. This initiates [AWS CodePipeline](https://aws.amazon.com/codepipeline/) to run the following stages:
 
 ![](./media/image2.png)
-
-    a.  Validation stage -- The solution validates the Network Firewall conﬁguration by using Network Firewall application programming
-        interfaces (APIs) with dry run mode enabled. This allows the user to ﬁnd unexpected issues before attempting an actual change. This stage
-        also checks whether all the referenced ﬁles in the conﬁguration exist in the JSON ﬁle structure.
-
-    b.  Deployment stage -- The solution creates a new
-        [ﬁrewall](https://docs.aws.amazon.com/network-firewall/latest/developerguide/firewalls.html),
-        [ﬁrewall policy](https://docs.aws.amazon.com/network-firewall/latest/developerguide/firewall-policies.html),
+<br/>
+    a.  Validation stage -- The guidance validates the Network Firewall conﬁguration by using Network Firewall application programming
+        interfaces (APIs) with dry run mode enabled. This allows the user to ﬁnd unexpected issues before attempting an actual change. This          stage also checks whether all the referenced ﬁles in the conﬁguration exist in the JSON ﬁle structure.
+<br/>
+    b.  Deployment stage -- The guidance creates a new
+        [AWS Firewall](https://docs.aws.amazon.com/network-firewall/latest/developerguide/firewalls.html),
+        [AWS Firewall policy](https://docs.aws.amazon.com/network-firewall/latest/developerguide/firewall-policies.html),
         and [rule groups](https://docs.aws.amazon.com/network-firewall/latest/developerguide/rule-groups.html).
         If any of the resources already exist, the solution updates these resources. This stage also helps with detecting any changes and
         remediates by applying the latest conﬁguration from the CodeCommit repository. The rule group changes roll back to the original state
-        if one of the rule group changes fails. The appliance mode activates for the Transit Gateway to [Amazon VPC](https://aws.amazon.com/vpc/)  attachment          to avoid asymmetric traﬃc. For more information, refer to [Appliance in a](https://docs.aws.amazon.com/vpc/latest/tgw/transit-gateway-appliance-scenario.html) [shared services VPC](https://docs.aws.amazon.com/vpc/latest/tgw/transit-gateway-appliance-scenario.html).
-
-<!-- -->
+        if one of the rule group changes fails. The appliance mode activates for the Transit Gateway to [Amazon VPC](https://aws.amazon.com/vpc/) attachment to avoid asymmetric traﬃc. For more information, refer to [Appliance in a](https://docs.aws.amazon.com/vpc/latest/tgw/transit-gateway-appliance-scenario.html) [shared services VPC](https://docs.aws.amazon.com/vpc/latest/tgw/transit-gateway-appliance-scenario.html).
 
 3.  The guidance creates [Amazon VPC route tables](https://docs.aws.amazon.com/vpc/latest/userguide/RouteTables.html) for each Availability Zone. The default route destination target for each is the Amazon VPC endpoint for Network Firewall.
 
@@ -138,8 +134,7 @@ as follows:
 
 Follow the steps for deploying your custom version of the solution.
 
-- Create an S3 bucket with the bucket appended with the region in which the deployment is to be made. example, if the deployment is to be made
-  in us-east-1 create a bucket name as `\[BUCKET_NAME\]-us-east-1`.
+- Create an S3 bucket with the bucket appended with the region in which the deployment is to be made. example, if the deployment is to be made in us-east-1 create a bucket name as `\[BUCKET_NAME\]-us-east-1`.
 
 - Create the distribution files using the script provided in the build section above.
 
@@ -160,7 +155,7 @@ Follow the steps for deploying your custom version of the solution.
 Once the above steps are completed, use the file
 `./deployment/global-s3-assets/centralized-network-inspection-on-aws.template` to create a stack in CloudFormation.
 
-1.  Build the CDK code
+1.  Build the CDK code using the following command:
 
 ```bash
 cd source/
