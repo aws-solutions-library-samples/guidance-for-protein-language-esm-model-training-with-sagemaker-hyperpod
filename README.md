@@ -1,6 +1,6 @@
-# Guidance for training Evolutionary Scale Modeling (ESM-2) Models on Amazon SageMaker HyperPod clusters on AWS
+# Guidance for Training Evolutionary Scale Models (ESM-2) with Amazon SageMaker HyperPod on EKS and SLURM on AWS
 
-This guidance aims to instruct and guide users how to pretrain popular computational drug discovery models such as Evolutionary Scale Models (ESM) 2nd generation using the [DDP and FSDP](https://pub.aimind.so/distributed-data-parallel-ddp-vs-fully-sharded-data-parallel-fsdp-for-distributed-training-8de14a34d95d) frameworks on Amazon [Sagemaker Hyperpod](https://aws.amazon.com/sagemaker-ai/hyperpod/) clusters. This guidance instructs users on how to create Sagemaker Hyperpod clusters using both [Slurm](https://slurm.schedmd.com/documentation.html) and [Kubernetes](https://kubernetes.io/) orchestrations. In addition, this guidance will showcase how to train ESM-2 models on the HyperPod clusters.
+This guidance aims to instruct and guide users how to pretrain popular computational drug discovery models such as Evolutionary Scale Models (ESM) 2nd generation using the [DDP and FSDP](https://pub.aimind.so/distributed-data-parallel-ddp-vs-fully-sharded-data-parallel-fsdp-for-distributed-training-8de14a34d95d) frameworks on Amazon [Sagemaker Hyperpod](https://aws.amazon.com/sagemaker-ai/hyperpod/) clusters. This guidance instructs users on how to create Sagemaker Hyperpod clusters using both [Slurm](https://slurm.schedmd.com/documentation.html) and [Kubernetes](https://kubernetes.io/) orchestrations. In addition, this guidance will showcase how to train ESM-2 models on the HyperPod clusters based on both orchestrators.
 
 ## Table of Contents
 
@@ -16,13 +16,10 @@ This guidance aims to instruct and guide users how to pretrain popular computati
 6. [Running the Guidance](#running-the-guidance)
 7. [Next Steps](#next-steps)
 8. [Cleanup](#cleanup)
-
-***Optional***
-
-8. [FAQ, known issues, additional considerations, and limitations](#faq-known-issues-additional-considerations-and-limitations-optional)
-9. [Revisions](#revisions-optional)
-10. [Notices](#notices-optional)
-11. [Authors](#authors-optional)
+9. [FAQ, known issues, additional considerations, and limitations](#faq-known-issues-additional-considerations-and-limitations-optional)
+10. [Revisions](#revisions)
+11. [Notices](#notices)
+12. [Authors](#authors)
 
 ## Overview
 
@@ -1140,7 +1137,7 @@ and continue monitoring pod/container logs in real time. It is expected to take 
 -->
 
 **TODO: update to Live IG link once available**
-Please see details HyperPod cluster deployment instructions in this section of the [detailed Implementation Guide](https://implementationguides.kits.eventoutfitters.aws.dev/pl-esm-0422/compute/protein-language-esm-model-training-on-amazon-sagemaker.html#deploy-the-guidance)
+Please see detailed HyperPod clusters deployment instructions in this section of the [Implementation Guide](https://implementationguides.kits.eventoutfitters.aws.dev/pl-esm-0422/compute/protein-language-esm-model-training-on-amazon-sagemaker.html#deploy-the-guidance)
 
 ## Running the Guidance (required)
 
@@ -1154,19 +1151,19 @@ This section should include:
 * Output description
 -->
 **TODO: update to Live IG link once available**
-Please see details about training of ESM-2 models on HyperPod clusters in this section of the [Detailed Implementation Guide](https://implementationguides.kits.eventoutfitters.aws.dev/pl-esm-0422/compute/protein-language-esm-model-training-on-amazon-sagemaker.html#running-the-guidance)
+Please see details about training of ESM-2 models on HyperPod clusters in this section of the [Implementation Guide](https://implementationguides.kits.eventoutfitters.aws.dev/pl-esm-0422/compute/protein-language-esm-model-training-on-amazon-sagemaker.html#running-the-guidance)
 
 ## Next Steps
 
 **TODO: update to Live IG link once available**
 Provide suggestions and recommendations about how customers can modify the parameters and the components of the Guidance to further enhance it according to their requirements.
-Please see details about patching software on HyperPod clusters in this section of the [Detailed Implementation Guide](https://implementationguides.kits.eventoutfitters.aws.dev/pl-esm-0422/compute/protein-language-esm-model-training-on-amazon-sagemaker.html#next-steps)
+Please see details about patching software on HyperPod clusters in this section of the [Implementation Guide](https://implementationguides.kits.eventoutfitters.aws.dev/pl-esm-0422/compute/protein-language-esm-model-training-on-amazon-sagemaker.html#next-steps)
 
 ## Cleanup
 
 **TODO: update to Live IG link once available**
 Provide suggestions and recommendations about how customers can modify the parameters and the components of the Guidance to further enhance it according to their requirements.
-Please see details about deletipn of HyperPod clusters in this section of the [Detailed Implementation Guide](https://implementationguides.kits.eventoutfitters.aws.dev/pl-esm-0422/compute/protein-language-esm-model-training-on-amazon-sagemaker.html#cleanup)
+Please see details about deletipn of HyperPod clusters in this section of the [Implementation Guide](https://implementationguides.kits.eventoutfitters.aws.dev/pl-esm-0422/compute/protein-language-esm-model-training-on-amazon-sagemaker.html#cleanup)
 
 ## FAQ, known issues, additional considerations, and limitations (optional)
 
@@ -1191,21 +1188,18 @@ Provide a link to the *GitHub issues page* for users to provide feedback.
 
 **Example:** *“For any feedback, questions, or suggestions, please use the issues tab under this repo.”*
 
-## Revisions (optional)
+## Revisions
 
 Document all notable changes to this project.
 
 Consider formatting this section based on Keep a Changelog, and adhering to Semantic Versioning.
 
-## Notices (optional)
+## Notices
 
-Include a legal disclaimer
-
-**Example:**
 *Customers are responsible for making their own independent assessment of the information in this Guidance. This Guidance: (a) is for informational purposes only, (b) represents AWS current product offerings and practices, which are subject to change without notice, and (c) does not create any commitments or assurances from AWS and its affiliates, suppliers or licensors. AWS products or services are provided “as is” without warranties, representations, or conditions of any kind, whether express or implied. AWS responsibilities and liabilities to its customers are controlled by AWS agreements, and this Guidance is not part of, nor does it modify, any agreement between AWS and its customers.*
 
 
-## Authors (optional)
+## Authors
 
 Daniel Zilberman, Sr SA AWS Tech Solutions <br/>
 Mark Vinciguerra, Associate WW Specialist SA GenAI <br/>
