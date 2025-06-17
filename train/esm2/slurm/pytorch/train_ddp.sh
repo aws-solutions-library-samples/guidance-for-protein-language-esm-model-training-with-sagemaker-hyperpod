@@ -3,7 +3,8 @@
 # Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
 # SPDX-License-Identifier: MIT-0
 
-#SBATCH --nodes=2 # number of nodes to use
+###SBATCH --nodes=2 # number of nodes to use
+#SBATCH --nodes=${NUM_NODES} 
 #SBATCH --gpus-per-node=1
 #SBATCH --job-name=esm2-ddp # name of your job
 #SBATCH --output=esm2-ddp-%x.%j.out
@@ -15,7 +16,8 @@ set -ex;
 ###### User Variables #####
 ###########################
 
-GPUS_PER_NODE=1 # 4 for G5.12x, 8 for P4/P5
+#GPUS_PER_NODE=1 # 4 for G5.12x, 8 for P4/P5
+GPUS_PER_NODE=${GPU_PER_NODE}
 
 IMAGE=${TARGET_PATH}/${DOCKER_IMAGE_NAME}.sqsh
 ###########################
