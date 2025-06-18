@@ -27,7 +27,11 @@ We provide an AWS optimized Docker image built file that sets up networking comp
 To initiate container image build, run the following command:
 
 ```bash
+chmod 777 *.sh
 ./build.sh
+```
+Output:
+```
 ---
  => [internal] load build definition from Dockerfile                                                                                                     0.0s
  => => transferring dockerfile: 710B                                                                                                                     0.0s
@@ -49,6 +53,9 @@ We can check that newly built Docker image is available in the local file system
 
 ```bash
 docker image list
+```
+Output:
+```
 REPOSITORY   TAG       IMAGE ID       CREATED              SIZE
 esm-slurm    aws       6ef0e285fe3b   About a minute ago   24.9GB
 ```
@@ -58,7 +65,11 @@ esm-slurm    aws       6ef0e285fe3b   About a minute ago   24.9GB
 [NVIDIA Enroot](https://github.com/NVIDIA/enroot) is a lightweight container runtime that allows users to run containerized applications without requiring full-fledged container engines like Docker. It is designed for HPC environments, particularly the Slurm Workload Manager. To convert Docker images to Enroot squash files, run the following script:
 
 ```bash
+mkdir /fsx/ubuntu/esm-slurm
 ./enroot.sh
+```
+Output:
+```
 ---
 [INFO] Fetching image
 9e55c640dba7f3a1f54a83f2b83557ddd1d371defbf6f39df3be312db558d967
@@ -93,6 +104,9 @@ We can also confirm that target file `esm-slurm.sqsh` is there in the shared dir
 
 ```bash
 ls -al $TARGET_PATH
+```
+Output:
+```
 -rw-r--r--  1 ubuntu ubuntu 24348430336 Apr 29 19:28 esm-slurm.sqsh
 ```
 
@@ -102,6 +116,9 @@ Next we need to download the [Uniref50](https://huggingface.co/datasets/agemagic
 
 ```bash
 docker run -v ${TARGET_PATH}:/data  ${DOCKER_IMAGE_NAME}:${TAG}  python3 0.download_data.py --output_dir /data
+```
+Output:
+```
 ----
 
 =============
@@ -148,6 +165,9 @@ That container execution should download the Uniref 50 training data as 50 .csv 
 To confirm that the dataset files are indeed saved to that directory, we can run the following command:
 ```bash
 ls -al  $TARGET_PATH/csv
+```
+Output:
+```
 total 20594019
 drwxr-xr-x 3 root   root        41472 Apr 30 19:46 .
 drwxrwxr-x 3 ubuntu ubuntu      33280 Apr 30 19:10 ..
@@ -175,6 +195,9 @@ Next we need to tokenize the downloaded dataset. This will split the data in `tr
 
 ```bash
 docker run --rm -v ${TARGET_PATH}:/data ${DOCKER_IMAGE_NAME}:${TAG} /bin/bash -c "python3 1.tokenize_uniref_csv.py --input_dir /data/csv --output_dir /data/processed"
+```
+Output:
+```
 ----
 05/02/2025 20:47:00 - INFO - Parsing arguments
 05/02/2025 20:47:00 - INFO - Loading csv files from /data/csv
@@ -201,6 +224,9 @@ sbatch train_ddp.sh
 To verify that the training jobs are running on requested number of HyperPod nodes, run the following command: 
 ```bash
 squeue
+```
+Output:
+```
 JOBID PARTITION     NAME     USER ST       TIME  NODES NODELIST(REASON)
 1       dev  esm2-ddp   ubuntu  R       0:07      2 ip-10-1-29-[105,166]
 ```
@@ -209,6 +235,9 @@ JOBID PARTITION     NAME     USER ST       TIME  NODES NODELIST(REASON)
 If you need to follow the training process output, we can run a command like against the .OUT file
 ```bash
 tail -f <esm2-ddp-esm2-ddp.N.out>
+```
+Output:
+```
 ---
 [INFO     | __main__           ]: *** Evaluate ***
 0: [INFO|trainer.py:805] 2025-05-02 21:39:49,138 >> The following columns in the evaluation set don't have a corresponding argument in `EsmForMaskedLM.forward` and have been ignored: special_tokens_mask. If special_tokens_mask are not expected by `EsmForMaskedLM.forward`,  you can safely ignore this message.
@@ -283,6 +312,9 @@ sbatch train_fsdp.sh
 To verify that the training jobs are running on requested number of HyperPod nodes, run the following command: 
 ```bash
 squeue
+```
+Output:
+```
 JOBID PARTITION     NAME     USER ST       TIME  NODES NODELIST(REASON)
 1       dev  esm2-fsdp   ubuntu  R       0:07      2 ip-10-1-29-[105,166]
 ```
@@ -292,6 +324,9 @@ An output of such command should be like shown below:
 If you want to follow the output of FSDP training job, you can run a command like:
 ```bash
 tail -f esm2-fsdp-esm2-fsdp.20.out
+```
+Output:
+```
 1: [INFO|trainer.py:2134] 2025-05-02 22:42:34,741 >>   Total train batch size (w. parallel, distributed & accumulation) = 88
 1: [INFO|trainer.py:2135] 2025-05-02 22:42:34,741 >>   Gradient Accumulation steps = 11
 1: [INFO|trainer.py:2136] 2025-05-02 22:42:34,741 >>   Total optimization steps = 1,136

@@ -1,6 +1,6 @@
-# Guidance for training Evolutionary Scale Modeling (ESM-2) Models on Amazon SageMaker HyperPod clusters on AWS
+# Guidance for Training Evolutionary Scale Models (ESM-2) with Amazon SageMaker HyperPod on EKS and SLURM on AWS
 
-This guidance aims to instruct and guide users how to pretrain popular computational drug discovery models such as Evolutionary Scale Models (ESM) 2nd generation using the [DDP and FSDP](https://pub.aimind.so/distributed-data-parallel-ddp-vs-fully-sharded-data-parallel-fsdp-for-distributed-training-8de14a34d95d) frameworks on Amazon [Sagemaker Hyperpod](https://aws.amazon.com/sagemaker-ai/hyperpod/) clusters. This guidance instructs users on how to create Sagemaker Hyperpod clusters using both [Slurm](https://slurm.schedmd.com/documentation.html) and [Kubernetes](https://kubernetes.io/) orchestrations. In addition, this guidance will showcase how to train ESM-2 models on the HyperPod clusters.
+This guidance aims to instruct and guide users how to pretrain popular computational drug discovery models such as Evolutionary Scale Models (ESM) 2nd generation using the [DDP and FSDP](https://pub.aimind.so/distributed-data-parallel-ddp-vs-fully-sharded-data-parallel-fsdp-for-distributed-training-8de14a34d95d) frameworks on Amazon [Sagemaker Hyperpod](https://aws.amazon.com/sagemaker-ai/hyperpod/) clusters. This guidance instructs users on how to create Sagemaker Hyperpod clusters using both [Slurm](https://slurm.schedmd.com/documentation.html) and [Kubernetes](https://kubernetes.io/) orchestrations. In addition, this guidance will showcase how to train ESM-2 models on the HyperPod clusters based on both orchestrators.
 
 ## Table of Contents
 
@@ -12,17 +12,14 @@ This guidance aims to instruct and guide users how to pretrain popular computati
 3. [Prerequisites](#prerequisites)
     - [Operating System](#operating-system)
 4. [Deployment Steps](#deployment-steps)
-5. [Deployment Validation](#deployment-validation-required)
-6. [Running the Guidance](#running-the-guidance-required)
-7. [Next Steps](#next-steps-required)
-8. [Cleanup](#cleanup-required)
-
-***Optional***
-
-8. [FAQ, known issues, additional considerations, and limitations](#faq-known-issues-additional-considerations-and-limitations-optional)
-9. [Revisions](#revisions-optional)
-10. [Notices](#notices-optional)
-11. [Authors](#authors-optional)
+5. [Deployment Validation](#deployment-validation)
+6. [Running the Guidance](#running-the-guidance)
+7. [Next Steps](#next-steps)
+8. [Cleanup](#cleanup)
+9. [FAQ, known issues, additional considerations, and limitations](#faq-known-issues-additional-considerations-and-limitations-optional)
+10. [Revisions](#revisions)
+11. [Notices](#notices)
+12. [Authors](#authors)
 
 ## Overview
 
@@ -34,7 +31,7 @@ With the recent proliferation of new models and tools in this field, researchers
 
 [NVIDIA BioNeMo](https://nvidia.github.io/bionemo-framework/) is a generative AI platform for drug discovery that simplifies and accelerates the training of models using your own data. BioNeMo provides researchers and developers a fast and easy way to build and integrate state-of-the-art generative AI applications across the entire drug discovery pipeline—from target identification to lead optimization—with AI workflows for 3D protein structure prediction, de novo design, virtual screening, docking, and property prediction.
 
-The BioNeMo framework facilitates centralized model training, optimization, fine-tuning, and inferencing for protein and molecular design. Researchers can build and train foundation models from scratch at scale, or use pre-trained model checkpoints provided with the BioNeMo Framework for fine-tuning for downstream tasks. Currently, BioNeMo supports models such as ESM1nv, ESM2nv, ProtT5nv, DNABERT, OpenFold, EquiDock, DiffDock, and MegaMolBART. To read more about BioNeMo, visit the documentation page.
+The BioNeMo framework facilitates centralized model training, optimization, fine-tuning, and inferencing for protein and molecular design. Researchers can build and train foundation models from scratch at scale, or use pre-trained model checkpoints provided with the BioNeMo Framework for fine-tuning for downstream tasks. Currently, BioNeMo supports biomolecular AI architectures that can be scaled to billions of parameters, such as BERT, Striped Hyena, along with models such as ESM-2, Evo-2, and Geneformer.
 
   
 ### Architecture overview
@@ -77,7 +74,7 @@ _You are responsible for the cost of the AWS services used while running this Gu
 
 _We recommend creating a [Budget](https://docs.aws.amazon.com/cost-management/latest/userguide/budgets-managing-costs.html) through [AWS Cost Explorer](https://aws.amazon.com/aws-cost-management/aws-cost-explorer/) to help manage costs. Prices are subject to change. For full details, refer to the pricing webpage for each AWS service used in this Guidance._
 
-### Sample Cost Table ( required )
+### Sample Cost Table
 
 
 The following table provides a sample cost breakdown for deploying this Guidance with the default parameters in the US East (N. Virginia) Region for one month.
@@ -205,7 +202,6 @@ Deployment steps must be numbered, comprehensive, and usable to customers at any
 4. Edit content of **file-name** and replace **s3-bucket** with the bucket name in your account.
 5. Run this command to deploy the stack ```cdk deploy``` 
 6. Capture the domain name created by running this CLI command ```aws apigateway ............```
--->
 
 ### Deployment of SLURM based SageMaker HyperPod cluster
 
@@ -685,14 +681,13 @@ We provide an AWS optimized Docker image that sets up networking components (EFA
 
 5. Download Model traning data
 
-<!--
 BioNeMo 2.5 container provides a CLI `download_bionemo_data` to download test or full UniProt dataset from NVIDIA Catalog which we can run as below. 
 `get-data.sh` script runs a container based on the customized BioNemo container image created above, runs the `download_bionemo_data` CLI to download test data and kills the container when done and saves `_sanity.tar.gz` compressed file (71M) and `_sanity.tar.gz.untar` (134M) with training and validation data.
 
 ```bash
 ./get-data.sh
 ```
--->
+
 
 6. Pretrain ESM2 models using SLURM scheduler
 
@@ -1139,10 +1134,14 @@ Initializing distributed: GLOBAL_RANK: 6, MEMBER: 7/16
 ..
 ```
 and continue monitoring pod/container logs in real time. It is expected to take at least a few hours to complete pre-training of ESM-2 models on 2 `p5.48xlarge` nodes.
+-->
+
+**TODO: update to Live IG link once available**
+Please see detailed HyperPod clusters deployment instructions in this section of the [Implementation Guide](https://implementationguides.kits.eventoutfitters.aws.dev/pl-esm-0422/compute/protein-language-esm-model-training-on-amazon-sagemaker.html#deploy-the-guidance)
 
 ## Running the Guidance (required)
 
-<Provide instructions to run the Guidance with the sample data or input provided, and interpret the output received.> 
+<!-- Provide instructions to run the Guidance with the sample data or input provided, and interpret the output received. 
 
 This section should include:
 
@@ -1150,18 +1149,21 @@ This section should include:
 * Commands to run
 * Expected output (provide screenshot if possible)
 * Output description
+-->
+**TODO: update to Live IG link once available**
+Please see details about training of ESM-2 models on HyperPod clusters in this section of the [Implementation Guide](https://implementationguides.kits.eventoutfitters.aws.dev/pl-esm-0422/compute/protein-language-esm-model-training-on-amazon-sagemaker.html#running-the-guidance)
 
-## Next Steps (required)
+## Next Steps
 
+**TODO: update to Live IG link once available**
 Provide suggestions and recommendations about how customers can modify the parameters and the components of the Guidance to further enhance it according to their requirements.
+Please see details about patching software on HyperPod clusters in this section of the [Implementation Guide](https://implementationguides.kits.eventoutfitters.aws.dev/pl-esm-0422/compute/protein-language-esm-model-training-on-amazon-sagemaker.html#next-steps)
 
+## Cleanup
 
-## Cleanup (required)
-
-- Include detailed instructions, commands, and console actions to delete the deployed Guidance.
-- If the Guidance requires manual deletion of resources, such as the content of an S3 bucket, please specify.
-
-
+**TODO: update to Live IG link once available**
+Provide suggestions and recommendations about how customers can modify the parameters and the components of the Guidance to further enhance it according to their requirements.
+Please see details about deletipn of HyperPod clusters in this section of the [Implementation Guide](https://implementationguides.kits.eventoutfitters.aws.dev/pl-esm-0422/compute/protein-language-esm-model-training-on-amazon-sagemaker.html#cleanup)
 
 ## FAQ, known issues, additional considerations, and limitations (optional)
 
@@ -1186,21 +1188,18 @@ Provide a link to the *GitHub issues page* for users to provide feedback.
 
 **Example:** *“For any feedback, questions, or suggestions, please use the issues tab under this repo.”*
 
-## Revisions (optional)
+## Revisions
 
 Document all notable changes to this project.
 
 Consider formatting this section based on Keep a Changelog, and adhering to Semantic Versioning.
 
-## Notices (optional)
+## Notices
 
-Include a legal disclaimer
-
-**Example:**
 *Customers are responsible for making their own independent assessment of the information in this Guidance. This Guidance: (a) is for informational purposes only, (b) represents AWS current product offerings and practices, which are subject to change without notice, and (c) does not create any commitments or assurances from AWS and its affiliates, suppliers or licensors. AWS products or services are provided “as is” without warranties, representations, or conditions of any kind, whether express or implied. AWS responsibilities and liabilities to its customers are controlled by AWS agreements, and this Guidance is not part of, nor does it modify, any agreement between AWS and its customers.*
 
 
-## Authors (optional)
+## Authors
 
 Daniel Zilberman, Sr SA AWS Tech Solutions <br/>
 Mark Vinciguerra, Associate WW Specialist SA GenAI <br/>
