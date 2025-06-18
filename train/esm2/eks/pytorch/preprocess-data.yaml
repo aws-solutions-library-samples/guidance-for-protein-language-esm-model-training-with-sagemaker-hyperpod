@@ -1,0 +1,17 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: preprocess-data
+spec:
+  containers:
+  - name: preprocess-data
+    image: 354918380621.dkr.ecr.us-east-1.amazonaws.com/esm:aws
+    command: ["/bin/bash"]
+    args: ["-c", "python3 1.tokenize_uniref_csv.py --input_dir /fsx-shared/esm/csv --output_dir /fsx-shared/esm/processed"]
+    volumeMounts:
+    - name: volume
+      mountPath: /fsx-shared
+  volumes:
+  - name: volume
+    persistentVolumeClaim:
+      claimName: fsx-claim

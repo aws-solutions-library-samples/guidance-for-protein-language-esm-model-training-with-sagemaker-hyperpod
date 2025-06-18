@@ -1,0 +1,124 @@
+apiVersion: kubeflow.org/v2beta1
+kind: MPIJob
+metadata:
+  name: train-esm2-mpi-ddp
+spec:
+  runPolicy:
+    cleanPodPolicy: Running
+    backoffLimit: 20
+  slotsPerWorker: 1
+  mpiImplementation: "OpenMPI"
+  mpiReplicaSpecs:
+    Launcher:
+      replicas: 1
+      template:
+        spec:
+          restartPolicy: OnFailure
+          containers:
+          - image: 354918380621.dkr.ecr.us-east-1.amazonaws.com/bionemo:aws
+            name: train-esm2-mpi-ddp-launcher
+            imagePullPolicy: Always
+            env:
+             - name: NCCL_DEBUG
+               value: INFO
+            command:
+            - /opt/amazon/openmpi/bin/mpirun
+            - --allow-run-as-root
+            - --tag-output
+            - -npernode
+            - "1"
+            - -np
+            - "2"
+            - -bind-to
+            - none
+            - -map-by
+            - slot
+            - -x
+            - NCCL_DEBUG
+            #- -x
+            #- FI_PROVIDER=
+            #- -x
+            #- FI_EFA_USE_DEVICE_RDMA=
+            #- -x
+            #- FI_EFA_FORK_SAFE=
+            #- -x
+            #- NCCL_SHM_DISABLE=
+            - --mca
+            - pml
+            - ^cm,ucx
+            #- --mca
+            #- plm_rsh_agent
+            #- ssh
+            - --mca
+            - btl
+            - tcp,self
+            - --mca
+            - btl_tcp_if_exclude
+            - lo,docker0,veth_def_agent
+            - /usr/bin/python3 
+            - /workspace/bionemo2/sub-packages/bionemo-esm2/src/bionemo/esm2/scripts/train_esm2.py 
+            - --train-cluster-path
+            - /fsx-shared/006911f92bbc0ded7ea302bbdbfab4c694b409e699c32fd49de1c527a99dba3e-2024_03_sanity.tar.gz.untar/2024_03_sanity/train_clusters_sanity.parquet 
+            - --train-database-path 
+            - /fsx-shared/006911f92bbc0ded7ea302bbdbfab4c694b409e699c32fd49de1c527a99dba3e-2024_03_sanity.tar.gz.untar/2024_03_sanity/train_sanity.db 
+            - --valid-cluster-path
+            - /fsx-shared/006911f92bbc0ded7ea302bbdbfab4c694b409e699c32fd49de1c527a99dba3e-2024_03_sanity.tar.gz.untar/2024_03_sanity/valid_clusters.parquet 
+            - --valid-database-path
+            -  /fsx-shared/006911f92bbc0ded7ea302bbdbfab4c694b409e699c32fd49de1c527a99dba3e-2024_03_sanity.tar.gz.untar/2024_03_sanity/validation.db 
+            - --precision 
+            - "bf16-mixed"
+            - --num-gpus 
+            - "1" 
+            - --num-nodes
+            - "2"
+            - --num-steps
+            - "100" 
+            - --val-check-interval
+            - "25" 
+            - --max-seq-length
+            - "1024"
+            - --limit-val-batches
+            - "2"
+            - --micro-batch-size
+            - "2"
+            - --num-layers
+            - "33"
+            - --hidden-size
+            - "1280"
+            - --num-attention-head
+            - "20"
+            - --ffn-hidden-size
+            - "5120"
+            - --tensor-model-parallel-size
+            - "1"
+            - --create-tensorboard-logger
+            - --result-dir
+            - /fsx-shared/bionemo
+    Worker:
+      replicas: 2
+      template:
+        spec:
+          #nodeSelector:
+          #  node.kubernetes.io/instance-type: ""
+          containers:
+          - image: 354918380621.dkr.ecr.us-east-1.amazonaws.com/bionemo:aws
+            name: esm2-worker
+            imagePullPolicy: Always
+            volumeMounts:
+            - name: shmem
+              mountPath: /dev/shm
+            resources:
+              limits:
+                nvidia.com/gpu: 1
+                #hugepages-2Mi: 
+                vpc.amazonaws.com/efa: 1
+                #memory: 
+              requests:
+                nvidia.com/gpu: 1
+                #hugepages-2Mi: 
+                vpc.amazonaws.com/efa: 1
+                #memory: 
+          volumes:
+          - name: shmem
+            hostPath:
+              path: /dev/shm
