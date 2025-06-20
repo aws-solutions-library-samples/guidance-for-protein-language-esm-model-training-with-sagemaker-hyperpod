@@ -118,6 +118,7 @@ spec:
                 - --logging_steps=16
                 - --num_train_epochs=1
                 - --output_dir=${TARGET_PATH}
+                - --overwrite_output_dir
                 - --per_device_train_batch_size=8
                 - --max_train_samples=100000
                 - --tokenizer_name=${MODEL} 
