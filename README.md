@@ -6,7 +6,7 @@ This guidance aims to instruct and guide users how to pretrain popular computati
 
 ### Required
 
-1. [Overview](#overview-required)
+1. [Overview](#overview)
     - [Architecture overview](#architecture-overview)
     - [Cost](#cost)
 3. [Prerequisites](#prerequisites)
@@ -1139,7 +1139,7 @@ and continue monitoring pod/container logs in real time. It is expected to take 
 **TODO: update to Live IG link once available**
 Please see detailed HyperPod clusters deployment instructions in this section of the [Implementation Guide](https://implementationguides.kits.eventoutfitters.aws.dev/pl-esm-0422/compute/protein-language-esm-model-training-on-amazon-sagemaker.html#deploy-the-guidance)
 
-## Running the Guidance (required)
+## Running the Guidance
 
 <!-- Provide instructions to run the Guidance with the sample data or input provided, and interpret the output received. 
 
