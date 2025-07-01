@@ -1,6 +1,6 @@
-# Guidance for Training Evolutionary Scale Models (ESM-2) with Amazon SageMaker HyperPod on EKS and SLURM on AWS
+# Guidance for Training Evolutionary Scale Models (ESM-2) with Amazon SageMaker HyperPod on AWS
 
-This guidance aims to instruct and guide users how to pretrain popular computational drug discovery models such as Evolutionary Scale Models (ESM) 2nd generation using the [DDP and FSDP](https://pub.aimind.so/distributed-data-parallel-ddp-vs-fully-sharded-data-parallel-fsdp-for-distributed-training-8de14a34d95d) frameworks on Amazon [Sagemaker Hyperpod](https://aws.amazon.com/sagemaker-ai/hyperpod/) clusters. This guidance instructs users on how to create Sagemaker Hyperpod clusters using both [Slurm](https://slurm.schedmd.com/documentation.html) and [Kubernetes](https://kubernetes.io/) orchestrations. In addition, this guidance will showcase how to train ESM-2 models on the HyperPod clusters based on both orchestrators.
+This guidance aims to instruct and guide users how to pretrain popular computational drug discovery models such as Evolutionary Scale Models (ESM) 2nd generation using the [DDP and FSDP](https://pub.aimind.so/distributed-data-parallel-ddp-vs-fully-sharded-data-parallel-fsdp-for-distributed-training-8de14a34d95d) frameworks on Amazon [Sagemaker Hyperpod](https://aws.amazon.com/sagemaker-ai/hyperpod/) clusters. This guidance instructs users on how to create Sagemaker Hyperpod clusters using both [Slurm](https://slurm.schedmd.com/documentation.html) and [Kubernetes](https://kubernetes.io/) based orchestrations. In addition, this guidance will showcase how to train ESM-2 models on the HyperPod clusters based on both orchestrators.
 
 ## Table of Contents
 
@@ -83,8 +83,8 @@ As of June, 2025 the costs for running this Guidance with the default settings i
 
 | AWS service  |   Dimensions   |  Cost [USD] / month |
 | ----------- | --------------- | ------------ |
-|   Compute   |   EC2 2 * ml.g5.8xlarge |   3574.08    |
-|   Compute   |   EC2 1 * ml.m5.12xlarge |   1681.92    |
+|   Compute   |   EC2 2 * ml.g5.8xlarge - compute nodes|   3574.08    |
+|   Compute   |   EC2 1 * ml.m5.12xlarge - head node|   1681.92    |
 |   Compute   |  Amazon SageMaker | 426.56  |
 |   Storage   |   S3 (100GB)    |     11.50    |
 |   Storage   |   EBS (500GB)   |    250.00    |
@@ -98,10 +98,10 @@ Please see details of this estimate in this AWS Calculator [instance](https://ca
 
 | AWS service  |   Dimensions   |  Cost [USD] / month |
 | ----------- | --------------- | ------------ |
-|   Compute   |   EC2 2 * ml.g5.8xlarge |   3574.08    |
+|   Compute   |   EC2 2 * ml.g5.8xlarge - compute nodes |   3574.08    |
 |   Compute   |  Amazon SageMaker | 426.56  |
 |   Control Plane   |   EKS Control Plane |    73.00    |
-|   Container Registry   |   ECR    |   20.50    |
+|   Container Registry   |   ECR for built images   |   20.50    |
 |   Storage   |   S3 (100GB)    |     11.50    |
 |   Storage   |   EBS (500GB)   |    162.44    |
 |   Storage   |   FSx (1.2TB)    |   720.07    |
