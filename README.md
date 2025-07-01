@@ -76,11 +76,8 @@ _We recommend creating a [Budget](https://docs.aws.amazon.com/cost-management/l
 
 ### Sample Cost Table
 
-
-The following table provides a sample cost breakdown for deploying this Guidance with the default parameters in the US East (N. Virginia) Region for one month.
-
-The following table provides a sample cost breakdown for deploying this Guidance with the default parameters in the US East (N. Virginia) Region for one month.
-As of June, 2025 the costs for running this Guidance with the default settings in the US East (N. Virginia) `us-east-1` region are shown below for SLURM and EKS based clusters respectively:
+The following table provides a sample cost breakdown for deploying this Guidance with the default parameters in the US East (N. Virginia) `us-east-1`  Region for one month.
+As of June, 2025 the costs for running this Guidance with the default settings in the `us-east-1` region are shown below for SLURM and EKS based clusters respectively:
 
 #### HyperPod with SLURM Infrastructure
 
@@ -95,7 +92,7 @@ As of June, 2025 the costs for running this Guidance with the default settings i
 |   Network   | VPC, Subnets, NAT Gateway, VPC Endpoints | 507.80|
 |   **Total**   |      |  **$7171.93/month**    |
 
-Please see details in this AWS Calculator [instance](https://calculator.aws/#/estimate?id=68f1b5d0e71b291d1ca3f30a5a5ed04a115f22ff)
+Please see details of this estimate in this AWS Calculator [instance](https://calculator.aws/#/estimate?id=68f1b5d0e71b291d1ca3f30a5a5ed04a115f22ff)
 
 #### HyperPod with EKS Infrastructure
 
@@ -111,7 +108,7 @@ Please see details in this AWS Calculator [instance](https://calculator.aws/#/es
 |   Network   | VPC, Subnets, NAT Gateway, VPC Endpoints | 507.80|
 |   **Total**   |      |  **$5495.95/month**    |
 
-Please see details in this AWS Calculator [instance](https://calculator.aws/#/estimate?id=cde634731857aaa566234bdd4609cfe1b9ff945a)
+Please see details of this estimate in this AWS Calculator [instance](https://calculator.aws/#/estimate?id=cde634731857aaa566234bdd4609cfe1b9ff945a)
 
 
 ## Prerequisites 
@@ -220,6 +217,16 @@ As of June, 2025 the Guidance sample code is supported in the following AWS regi
 
 
 ## Deployment Steps
+
+**TODO: update to Live IG link once available**
+Please see details about deployment of HyperPod clusters in this section of the [Implementation Guide](https://implementationguides.kits.eventoutfitters.aws.dev/pl-esm-0422/compute/protein-language-esm-model-training-on-amazon-sagemaker.html#deploy-the-guidance)
+
+## Deployment Validation
+
+**TODO: update to Live IG link once available**
+Please see details about deployment validation of provisioned HyperPod clusters in this section of the [Implementation Guide](https://implementationguides.kits.eventoutfitters.aws.dev/pl-esm-0422/compute/protein-language-esm-model-training-on-amazon-sagemaker.html#deployment-validation)
+
+## Running the Guidance
 
 **TODO: update to Live IG link once available**
 Please see details about training of ESM-2 models on HyperPod clusters in this section of the [Implementation Guide](https://implementationguides.kits.eventoutfitters.aws.dev/pl-esm-0422/compute/protein-language-esm-model-training-on-amazon-sagemaker.html#running-the-guidance)
