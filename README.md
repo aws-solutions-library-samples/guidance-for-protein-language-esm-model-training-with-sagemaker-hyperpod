@@ -93,7 +93,7 @@ As of June, 2025 the costs for running this Guidance with the default settings i
 |   Storage   |   EBS (500GB)   |    344.87    |
 |   Storage   |   FSx (1.2TB)    |   720.07   |
 |   Network   | VPC, Subnets, NAT Gateway, VPC Endpoints | 513.20|
-|   **Total**   |      |  **$8064.21/month**    |
+|   **Total**   |      |  **$8064.21**    |
 
 Please see details in this AWS Calculator [instance](https://calculator.aws/#/estimate?id=065d8ccadb6498343c595d93f7bc1918929e6278)
 
@@ -108,7 +108,7 @@ Please see details in this AWS Calculator [instance](https://calculator.aws/#/es
 |   Storage   |   EBS (500GB)   |    229.92    |
 |   Storage   |   FSx (1.2TB)    |   720.07    |
 |   Network   | VPC, Subnets, NAT Gateway, VPC Endpoints | 507.80|
-|   **Total**   |      |  **$5999.73/month**    |
+|   **Total**   |      |  **$5999.73**    |
 
 Please see details in this AWS Calculator [instance](https://calculator.aws/#/estimate?id=5fad4fb9b97eeac68d06663cbde18cb08a9880cd)
 
@@ -199,22 +199,20 @@ As of June, 2025 the Guidance sample code is supported in the following AWS regi
 
 | Region Name | Region Code |
 |-------------|-------------|
-|US East (Ohio) | us-east-2 |
-|US East (N. Virginia) | us-east-1 |
-|US West (N. California) | us-west-1 |
-|US West (Oregon) | us-west-2 |
-|Asia Pacific (Tokyo) | ap-northeast-1 |
-|Asia Pacific (Singapore) | ap-southeast-1 |
-|Asia Pacific (Sydney) | ap-southeast-2 |
-|Asia Pacific (Melbourne) | ap-southeast-4 |
-|Asia Pacific (Jakarta) | ap-southeast-3 |
-|Asia Pacific (Mumbai) | ap-south-1 |
-|Europe (Ireland) | eu-west-1 |
-|Europe (London) | eu-west-2 |
-|Europe (Zaragoza, Spain) | eu-southwest-1 |
-|Europe (Frankfurt) | eu-central-1 |
-|Europe (Stockholm) | eu-north-1 |
-|South America (Sao Paulo) | sa-east-1 |
+| US East (N. Virginia) | us-east-1 |
+| US East (Ohio) | us-east-2 |
+| US West (Oregon) | us-west-2 |
+| Asia Pacific (Mumbai) | ap-south-1 |
+| Asia Pacific (Seoul) | ap-northeast-2 |
+| Asia Pacific (Singapore) | ap-southeast-1 |
+| Asia Pacific (Sydney) | ap-southeast-2 |
+| Asia Pacific (Tokyo) | ap-northeast-1 |
+| Europe (Frankfurt) | eu-central-1 |
+| Europe (Ireland) | eu-west-1 |
+| Europe (London) | eu-west-2 |
+| Europe (Paris) | eu-west-3 |
+| Europe (Stockholm) | eu-north-1 |
+| South America (São Paulo) | sa-east-1 |
 
 
 ## Deployment Steps
