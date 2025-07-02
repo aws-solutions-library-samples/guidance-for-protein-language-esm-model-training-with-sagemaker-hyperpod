@@ -80,39 +80,37 @@ _We recommend creating a [Budget](https://docs.aws.amazon.com/cost-management/l
 
 ### Sample Cost Table
 
-The following table provides a sample cost breakdown for deploying this Guidance with the default parameters in the US East (N. Virginia) `us-east-1`  Region for one month.
-As of June, 2025 the costs for running this Guidance with the default settings in the `us-east-1` region are shown below for SLURM and EKS based clusters respectively:
+The following table provides a sample cost breakdown for deploying this Guidance with the default parameters in the US East (N. Virginia) Region for one month.
+As of June, 2025 the costs for running this Guidance with the default settings in the US East (N. Virginia) `us-east-1` region are shown below for SLURM and EKS based clusters respectively:
 
 #### HyperPod with SLURM Infrastructure
 
 | AWS service  |   Dimensions   |  Cost [USD] / month |
 | ----------- | --------------- | ------------ |
-|   Compute   |   EC2 2 * ml.g5.8xlarge - compute nodes|   3574.08    |
-|   Compute   |   EC2 1 * ml.m5.12xlarge - head node|   1681.92    |
-|   Compute   |  Amazon SageMaker | 426.56  |
-|   Storage   |   S3 (100GB)    |     11.50    |
-|   Storage   |   EBS (500GB)   |    250.00    |
+|   Compute   |   2 * ml.g5.8xlarge |   4467.60    |
+|   Compute   |   1 * ml.m5.12xlarge |   2018.45    |
+|   Storage   |   S3 (1GB)    |     00.02    |
+|   Storage   |   EBS (500GB)   |    344.87    |
 |   Storage   |   FSx (1.2TB)    |   720.07   |
-|   Network   | VPC, Subnets, NAT Gateway, VPC Endpoints | 507.80|
-|   **Total**   |      |  **$7171.93/month**    |
+|   Network   | VPC, Subnets, NAT Gateway, VPC Endpoints | 513.20|
+|   **Total**   |      |  **$8064.21/month**    |
 
-Please see details of this estimate in this AWS Calculator [instance](https://calculator.aws/#/estimate?id=68f1b5d0e71b291d1ca3f30a5a5ed04a115f22ff)
+Please see details in this AWS Calculator [instance](https://calculator.aws/#/estimate?id=065d8ccadb6498343c595d93f7bc1918929e6278){:target="_blank"}
 
 #### HyperPod with EKS Infrastructure
 
 | AWS service  |   Dimensions   |  Cost [USD] / month |
 | ----------- | --------------- | ------------ |
-|   Compute   |   EC2 2 * ml.g5.8xlarge - compute nodes |   3574.08    |
-|   Compute   |  Amazon SageMaker | 426.56  |
+|   Compute   |   EC2 2 * ml.g5.8xlarge |   4467.60    |
 |   Control Plane   |   EKS Control Plane |    73.00    |
-|   Container Registry   |   ECR for built images   |   20.50    |
-|   Storage   |   S3 (100GB)    |     11.50    |
-|   Storage   |   EBS (500GB)   |    162.44    |
+|   Container Registry   |   ECR    |   01.32    |
+|   Storage   |   S3 (1GB)    |     00.02    |
+|   Storage   |   EBS (500GB)   |    229.92    |
 |   Storage   |   FSx (1.2TB)    |   720.07    |
 |   Network   | VPC, Subnets, NAT Gateway, VPC Endpoints | 507.80|
-|   **Total**   |      |  **$5495.95/month**    |
+|   **Total**   |      |  **$5999.73/month**    |
 
-Please see details of this estimate in this AWS Calculator [instance](https://calculator.aws/#/estimate?id=cde634731857aaa566234bdd4609cfe1b9ff945a)
+Please see details in this AWS Calculator [instance](https://calculator.aws/#/estimate?id=5fad4fb9b97eeac68d06663cbde18cb08a9880cd){:target="_blank"}
 
 
 ## Prerequisites 
