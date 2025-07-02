@@ -99,6 +99,8 @@ spec:
               env:
                 - name: NCCL_DEBUG
                   value: "INFO"
+                - name: WANDB_MODE
+                  value: "offline"
                 - name: POD_RANK
                   valueFrom:
                     fieldRef:
