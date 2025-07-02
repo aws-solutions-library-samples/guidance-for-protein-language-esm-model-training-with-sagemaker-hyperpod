@@ -99,6 +99,8 @@ spec:
               env:
                 - name: NCCL_DEBUG
                   value: "INFO"
+                - name: WANDB_MODE
+                  value: "offline"
               volumeMounts:
                 - mountPath: /fsx-shared
                   name: fsx-pv-storage
