@@ -42,7 +42,7 @@ This section provides architecture diagrams and describes the components deploye
  <p align="center">
 <img src="assets/ref_arch_hyperpod_slurm1.jpg" alt="Reference Architecture - HyperPod SLURM Cluster">
 <br/>
-Figure 1. Reference Architecture - HyperPod SLURM Cluster
+Figure 1. Reference Architecture - HyperPod SLURM based Cluster
 </p>
 
  1. Account team reserves compute capacity with [On-Demand Capacity Reservation (ODCR)](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/capacity-reservation-overview.html) or [Amazon SageMaker HyperPod Flexible Training Plans](https://aws.amazon.com/about-aws/whats-new/2024/12/amazon-sagemaker-hyperpod-flexible-training-plans/)
@@ -54,12 +54,12 @@ Figure 1. Reference Architecture - HyperPod SLURM Cluster
  7. Admin/DevOps Engineers configure [IAM](https://aws.amazon.com/iam/) to use [Amazon Managed Prometheus](https://aws.amazon.com/prometheus/) to collect metrics and [Amazon Managed Grafana](https://aws.amazon.com/grafana/) for metric visualization
  8. Admin/DevOps Engineers can make further changes to the cluster using the AWS CLI
 
-
  **Architecture and steps for provisioning SageMaker HyperPod EKS Cluster**
+ 
 <p align="center">
 <img src="assets/ref_arch_hyperpod_eks1.jpg" alt="Reference Architecture - HyperPod EKS Cluster">
 <br/>
-Figure 2. Reference Architecture - HyperPod EKS Cluster
+Figure 2. Reference Architecture - HyperPod EKS based Cluster
 </p>
  
  1. Account team reserves capacity with ODCRs or [Flexible Training Plans]((https://aws.amazon.com/about-aws/whats-new/2024/12/amazon-sagemaker-hyperpod-flexible-training-plans/)).
@@ -95,7 +95,7 @@ As of June, 2025 the costs for running this Guidance with the default settings i
 |   Network   | VPC, Subnets, NAT Gateway, VPC Endpoints | 513.20|
 |   **Total**   |      |  **$8064.21/month**    |
 
-Please see details in this AWS Calculator [instance](https://calculator.aws/#/estimate?id=065d8ccadb6498343c595d93f7bc1918929e6278){:target="_blank"}
+Please see details in this AWS Calculator [instance](https://calculator.aws/#/estimate?id=065d8ccadb6498343c595d93f7bc1918929e6278)
 
 #### HyperPod with EKS Infrastructure
 
@@ -110,8 +110,7 @@ Please see details in this AWS Calculator [instance](https://calculator.aws/#/es
 |   Network   | VPC, Subnets, NAT Gateway, VPC Endpoints | 507.80|
 |   **Total**   |      |  **$5999.73/month**    |
 
-Please see details in this AWS Calculator [instance](https://calculator.aws/#/estimate?id=5fad4fb9b97eeac68d06663cbde18cb08a9880cd){:target="_blank"}
-
+Please see details in this AWS Calculator [instance](https://calculator.aws/#/estimate?id=5fad4fb9b97eeac68d06663cbde18cb08a9880cd)
 
 ## Prerequisites 
 
