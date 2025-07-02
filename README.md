@@ -40,7 +40,9 @@ This section provides architecture diagrams and describes the components deploye
  **Architecture and steps for provisioning SageMaker HyperPod SLURM Cluster**
 
  <p align="center">
-<img src="assets/ref_arch_traning_hyperpod_slurm.jpg" alt="Reference Architecture HyperPod SLURM Cluster">
+<img src="assets/ref_arch_hyperpod_slurm1.jpg" alt="Reference Architecture - HyperPod SLURM Cluster">
+<br/>
+Figure 1. Reference Architecture - HyperPod SLURM Cluster
 </p>
 
  1. Account team reserves compute capacity with [On-Demand Capacity Reservation (ODCR)](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/capacity-reservation-overview.html) or [Amazon SageMaker HyperPod Flexible Training Plans](https://aws.amazon.com/about-aws/whats-new/2024/12/amazon-sagemaker-hyperpod-flexible-training-plans/)
@@ -55,7 +57,9 @@ This section provides architecture diagrams and describes the components deploye
 
  **Architecture and steps for provisioning SageMaker HyperPod EKS Cluster**
 <p align="center">
-<img src="assets/ref_arch_hyperpod_eks.jpg" alt="Reference Architecture HyperPod SLURM Cluster">
+<img src="assets/ref_arch_hyperpod_eks1.jpg" alt="Reference Architecture - HyperPod EKS Cluster">
+<br/>
+Figure 2. Reference Architecture - HyperPod EKS Cluster
 </p>
  
  1. Account team reserves capacity with ODCRs or [Flexible Training Plans]((https://aws.amazon.com/about-aws/whats-new/2024/12/amazon-sagemaker-hyperpod-flexible-training-plans/)).
