@@ -43,6 +43,7 @@ This section provides architecture diagrams and describes the components deploye
 <img src="assets/ref_arch_hyperpod_slurm1.jpg" alt="Reference Architecture - HyperPod SLURM Cluster">
 </p>
 <br/>
+
 *Figure 1. Reference Architecture - HyperPod SLURM based Cluster*
 
  1. Account team reserves compute capacity with [On-Demand Capacity Reservation (ODCR)](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/capacity-reservation-overview.html) or [Amazon SageMaker HyperPod Flexible Training Plans](https://aws.amazon.com/about-aws/whats-new/2024/12/amazon-sagemaker-hyperpod-flexible-training-plans/)
@@ -60,6 +61,7 @@ This section provides architecture diagrams and describes the components deploye
 <img src="assets/ref_arch_hyperpod_eks1.jpg" alt="Reference Architecture - HyperPod EKS Cluster">
 </p>
 <br/>
+
 *Figure 2. Reference Architecture - HyperPod EKS based Cluster*
 
  1. Account team reserves capacity with ODCRs or [Flexible Training Plans]((https://aws.amazon.com/about-aws/whats-new/2024/12/amazon-sagemaker-hyperpod-flexible-training-plans/)).
@@ -79,8 +81,8 @@ _We recommend creating a [Budget](https://docs.aws.amazon.com/cost-management/l
 
 ### Sample Cost Table
 
-The following table provides a sample cost breakdown for deploying this Guidance with the default parameters in the US East (N. Virginia) Region for one month.
-As of July, 2025 the costs for running this Guidance with the default settings in the US East (N. Virginia) `us-east-1` region are shown below for SLURM and EKS based clusters respectively:
+The following tables provide sample cost breakdown for deploying this guidance with the default parameters in the US East (N. Virginia) Region for one month.
+As of July, 2025 the costs for running this Guidance with the default settings in the US East (N. Virginia) `us-east-1` region are shown below for HyperPod SLURM and EKS based clusters respectively:
 
 #### HyperPod cluster with SLURM Infrastructure
 
@@ -173,7 +175,7 @@ Default region name [None]: us-west-2
 Default output format [None]: json
 ```
 
-### AWS account requirements (If applicable)
+### AWS account requirements
 
 *List out pre-requisites required on the AWS account if applicable, this includes enabling AWS regions, requiring ACM certificate.*
 
@@ -190,7 +192,25 @@ Default output format [None]: json
 
 ### Service limits
 
-<Talk about any critical service limits that affect the regular functioning of the Guidance. If the Guidance requires service limit increase, include the service name, limit name and link to the service quotas page.>
+Here are the key service quota limits for SageMaker HyperPod clusters:
+
+**1. Instance-related limits:**
+- Maximum instances per HyperPod cluster: Must exceed procured capacity + 1 (for controller node)
+- Total instances across all HyperPod clusters: Must exceed procured capacity + 1
+- ML instance type quota for cluster usage: Must exceed procured capacity
+- ML instance type quota for head node
+
+**2. Storage limit:**
+- Maximum EBS volume size per cluster instance: 2000 GB (recommended)
+- FsX for Lustre storage Capacity Increments:
+-- Persistent or Scratch 2: 1.2 TiB or increments of 2.4 TiB
+-- Scratch 1: 1.2, 2.4, or increments of 3.6 TiB
+
+**3. Training plan limits (if using training plans):**
+- Training-plan-total_count: Limits the number of training plans per Region
+- Reserved-capacity-ml: Limits the number of instances in reserved capacity across training plans per Region
+
+If you need to increase these limits, you can submit service quota increase requests through the AWS Service Quotas console. These requests are typically reviewed and processed within 1-2 business days.
 
 ### Supported Regions
 
