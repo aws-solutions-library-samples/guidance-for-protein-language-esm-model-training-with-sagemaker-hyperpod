@@ -1,4 +1,4 @@
-# Guidance for Training Evolutionary Scale Models (ESM-2) with Amazon SageMaker HyperPod on AWS
+# Guidance for Training Transformer Protein Language Models (ESM-2) with Amazon SageMaker HyperPod on AWS
 
 This guidance aims to instruct and guide users how to pretrain popular computational drug discovery models such as Evolutionary Scale Models (ESM) 2nd generation using the [DDP and FSDP](https://pub.aimind.so/distributed-data-parallel-ddp-vs-fully-sharded-data-parallel-fsdp-for-distributed-training-8de14a34d95d) frameworks on Amazon [Sagemaker Hyperpod](https://aws.amazon.com/sagemaker-ai/hyperpod/) clusters. This guidance instructs users on how to create Sagemaker Hyperpod clusters using both [Slurm](https://slurm.schedmd.com/documentation.html) and [Kubernetes](https://kubernetes.io/) based orchestrations. In addition, this guidance will showcase how to train ESM-2 models on the HyperPod clusters based on both orchestrators.
 
@@ -16,10 +16,10 @@ This guidance aims to instruct and guide users how to pretrain popular computati
 6. [Running the Guidance](#running-the-guidance)
 7. [Next Steps](#next-steps)
 8. [Cleanup](#cleanup)
-9. [FAQ, known issues, additional considerations, and limitations](#faq-known-issues-additional-considerations-and-limitations-optional)
-10. [Revisions](#revisions)
-11. [Notices](#notices)
-12. [Authors](#authors)
+<!-- 9. [FAQ, known issues, additional considerations, and limitations](#faq-known-issues-additional-considerations-and-limitations-optional) -->
+9. [Revisions](#revisions)
+10. [Notices](#notices)
+11. [Authors](#authors)
 
 ## Overview
 
@@ -41,9 +41,9 @@ This section provides architecture diagrams and describes the components deploye
 
  <p align="center">
 <img src="assets/ref_arch_hyperpod_slurm1.jpg" alt="Reference Architecture - HyperPod SLURM Cluster">
-<br/>
-Figure 1. Reference Architecture - HyperPod SLURM based Cluster
 </p>
+<br/>
+*Figure 1. Reference Architecture - HyperPod SLURM based Cluster*
 
  1. Account team reserves compute capacity with [On-Demand Capacity Reservation (ODCR)](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/capacity-reservation-overview.html) or [Amazon SageMaker HyperPod Flexible Training Plans](https://aws.amazon.com/about-aws/whats-new/2024/12/amazon-sagemaker-hyperpod-flexible-training-plans/)
  2. Admins/DevOps Engineers use the [AWS CloudFormation](https://aws.amazon.com/cloudformation/) stack to deploy Virtual Private Cloud (VPC) networking, [Amazon Simple Storage Service (S3)](https://aws.amazon.com/s3/) or [FSx for Lustre (FSxL)](https://aws.amazon.com/fsx/lustre/) storage and [Identity and Access Management (IAM)](https://aws.amazon.com/iam/) resources into Customer Account
@@ -58,19 +58,18 @@ Figure 1. Reference Architecture - HyperPod SLURM based Cluster
  
 <p align="center">
 <img src="assets/ref_arch_hyperpod_eks1.jpg" alt="Reference Architecture - HyperPod EKS Cluster">
-<br/>
-Figure 2. Reference Architecture - HyperPod EKS based Cluster
 </p>
- 
+<br/>
+*Figure 2. Reference Architecture - HyperPod EKS based Cluster*
+
  1. Account team reserves capacity with ODCRs or [Flexible Training Plans]((https://aws.amazon.com/about-aws/whats-new/2024/12/amazon-sagemaker-hyperpod-flexible-training-plans/)).
  2. Admin/DevOps Engineers can use eksctl ClI to provision an [Amazon EKS](https://aws.amazon.com/eks/) cluster
  3. Admin/DevOps Engineers use the Sagemaker HyperPod [VPC]((https://aws.amazon.com/vpc/)) stack to deploy Hyperpod managed node group on the EKS cluster
  4. Admin/DevOps Engineers verify access to EKS cluster and SSM access to HyperPod nodes.
  5. Admin/DevOps Engineers can install [FSx for Lustre](https://aws.amazon.com/fsx/lustre/) CSI driver and mount file system on the EKS cluster
  6. Admin/DevOps Engineers install Amazon EFA Kubernetes device plugin
- 7. Admin/DevOps Engineers configures IAM to use [Amazon Managed Prometheus]((https://aws.amazon.com/prometheus/)) to collect metrics and [Amazon Managed Grafana]((https://aws.amazon.com/grafana/)) to set up the observability stack
+ 7. Admin/DevOps Engineers configures IAM to use [Amazon Managed Prometheus]((https://aws.amazon.com/prometheus/)) to configure the observability stack and collect metrics and [Amazon Managed Grafana]((https://aws.amazon.com/grafana/)) to display those metrics.
  8. Admin/DevOps Engineers can configure [Container Insights](https://docs.aws.amazon.com/AmazonCloudWatch/latest/monitoring/ContainerInsights.html) to push metrics in [Amazon Cloudwatch](https://aws.amazon.com/cloudwatch/)
-
 
 ### Cost
 
@@ -81,9 +80,9 @@ _We recommend creating a [Budget](https://docs.aws.amazon.com/cost-management/l
 ### Sample Cost Table
 
 The following table provides a sample cost breakdown for deploying this Guidance with the default parameters in the US East (N. Virginia) Region for one month.
-As of June, 2025 the costs for running this Guidance with the default settings in the US East (N. Virginia) `us-east-1` region are shown below for SLURM and EKS based clusters respectively:
+As of July, 2025 the costs for running this Guidance with the default settings in the US East (N. Virginia) `us-east-1` region are shown below for SLURM and EKS based clusters respectively:
 
-#### HyperPod with SLURM Infrastructure
+#### HyperPod cluster with SLURM Infrastructure
 
 | AWS service  |   Dimensions   |  Cost [USD] / month |
 | ----------- | --------------- | ------------ |
@@ -97,7 +96,7 @@ As of June, 2025 the costs for running this Guidance with the default settings i
 
 Please see details in this AWS Calculator [instance](https://calculator.aws/#/estimate?id=065d8ccadb6498343c595d93f7bc1918929e6278)
 
-#### HyperPod with EKS Infrastructure
+#### HyperPod cluster with EKS Infrastructure
 
 | AWS service  |   Dimensions   |  Cost [USD] / month |
 | ----------- | --------------- | ------------ |
@@ -233,22 +232,21 @@ Please see details about training of ESM-2 models on HyperPod clusters in this s
 ## Next Steps
 
 **TODO: update to Live IG link once available**
-Provide suggestions and recommendations about how customers can modify the parameters and the components of the Guidance to further enhance it according to their requirements.
+It is highly recommended to patch your HyperPod cluster software on a regular basis.
 Please see details about patching software on HyperPod clusters in this section of the [Implementation Guide](https://implementationguides.kits.eventoutfitters.aws.dev/pl-esm-0422/compute/protein-language-esm-model-training-on-amazon-sagemaker.html#next-steps)
 
 ## Cleanup
 
 **TODO: update to Live IG link once available**
-Provide suggestions and recommendations about how customers can modify the parameters and the components of the Guidance to further enhance it according to their requirements.
-Please see details about deletipn of HyperPod clusters in this section of the [Implementation Guide](https://implementationguides.kits.eventoutfitters.aws.dev/pl-esm-0422/compute/protein-language-esm-model-training-on-amazon-sagemaker.html#cleanup)
 
+Please see details about uninstallation of HyperPod clusters and related components in this section of the [Implementation Guide](https://implementationguides.kits.eventoutfitters.aws.dev/pl-esm-0422/compute/protein-language-esm-model-training-on-amazon-sagemaker.html#cleanup)
+
+<!--
 ## FAQ, known issues, additional considerations, and limitations (optional)
-
 
 **Known issues (optional)**
 
 <If there are common known issues, or errors that can occur during the Guidance deployment, describe the issue and resolution steps here>
-
 
 **Additional considerations (if applicable)**
 
@@ -264,6 +262,7 @@ Please see details about deletipn of HyperPod clusters in this section of the [I
 Provide a link to the *GitHub issues page* for users to provide feedback.
 
 **Example:** *“For any feedback, questions, or suggestions, please use the issues tab under this repo.”*
+-->
 
 ## Revisions
 
