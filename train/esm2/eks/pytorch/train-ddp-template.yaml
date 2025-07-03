@@ -108,7 +108,7 @@ spec:
               command:
                 - "torchrun"
                 - --nproc_per_node=$GPU_PER_NODE
-                - --nnodes=$NUM_NODES
+                - --nnodes=${NUM_NODES}
                 - /workspace/train.py
                 - --config_name=${MODEL} 
                 - --dataloader_num_workers=8 
