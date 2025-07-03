@@ -86,6 +86,9 @@ spec:
           - name: fsx-pv-storage
             persistentVolumeClaim:
               claimName: fsx-claim
+          - name: shm
+            emptyDir:
+              medium: Memory
           containers:
             - name: pytorch
               image: ${REGISTRY}${DOCKER_IMAGE_NAME}:${TAG}
@@ -108,12 +111,14 @@ spec:
               volumeMounts:
                 - mountPath: /fsx-shared
                   name: fsx-pv-storage
+                - mountPath: /dev/shm
+                  name: shm
               imagePullPolicy: Always
               command:
                 - accelerate
                 - launch
-                - --num_processes=4 # Total GPUs
-                - --num_machines=4 # Num Nodes
+                - --num_processes=${NUM_NODES} # Total GPUs
+                - --num_machines=${NUM_NODES} # Num Nodes
                 - --machine_rank=$(POD_RANK)
                 - --rdzv_backend=etcd
                 - --main_process_port=2379
