@@ -5,7 +5,7 @@ metadata:
 spec:
   containers:
   - name: preprocess-data
-    image: 354918380621.dkr.ecr.us-east-1.amazonaws.com/esm:aws
+    image: ${REGISTRY}${DOCKER_IMAGE_NAME}:${TAG}
     command: ["/bin/bash"]
     args: ["-c", "python3 1.tokenize_uniref_csv.py --input_dir /fsx-shared/esm/csv --output_dir /fsx-shared/esm/processed"]
     volumeMounts:
