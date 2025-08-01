@@ -91,7 +91,7 @@ spec:
               path: /dev/shm
           containers:
             - name: pytorch
-              image: 354918380621.dkr.ecr.us-east-1.amazonaws.com/bionemo:aws
+              image: ${REGISTRY}${DOCKER_IMAGE_NAME}:${TAG}
               resources:
                 requests:
                   nvidia.com/gpu: 1

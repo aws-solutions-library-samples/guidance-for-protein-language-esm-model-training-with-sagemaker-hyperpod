@@ -169,9 +169,9 @@ Using the AWS credentials you fetched above, use aws configure to add the creden
 
 ```bash
 $ aws configure
-AWS Access Key ID [None]: AKIAIOSFODNN7EXAMPLE
-AWS Secret Access Key [None]: wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY
-Default region name [None]: us-west-2
+AWS Access Key ID [None]: <Access key>
+AWS Secret Access Key [None]: <Secret access key>
+Default region name [None]: <Region>
 Default output format [None]: json
 ```
 
@@ -293,6 +293,23 @@ Consider formatting this section based on Keep a Changelog, and adhering to Sema
 ## Notices
 
 *Customers are responsible for making their own independent assessment of the information in this Guidance. This Guidance: (a) is for informational purposes only, (b) represents AWS current product offerings and practices, which are subject to change without notice, and (c) does not create any commitments or assurances from AWS and its affiliates, suppliers or licensors. AWS products or services are provided “as is” without warranties, representations, or conditions of any kind, whether express or implied. AWS responsibilities and liabilities to its customers are controlled by AWS agreements, and this Guidance is not part of, nor does it modify, any agreement between AWS and its customers.*
+
+## Third-Party Dependencies Disclaimer
+
+This sample code utilizes various third-party packages, modules, models, and datasets, including but not limited to:
+
+- BioNemo
+- NVIDIA base images
+- Facebook ESM models
+- [List any other significant third-party components]
+
+**Important Notice:**
+- Amazon Web Services (AWS) is not associated to these third-party entities and their components.
+- The maintenance, updates, and security of these third-party dependencies are the sole responsibility of the customer/user.
+- Users should regularly review and update these dependencies to ensure security and compatibility.
+- Users are responsible for compliance with all applicable licenses and terms of use for these third-party components.
+
+Please review and comply with all relevant licenses and terms of service for each third-party component before use in your applications.
 
 
 ## Authors

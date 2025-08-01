@@ -82,7 +82,7 @@ spec:
     spec:
        containers:
        - name: download-bionemo-data
-         image: 354918380621.dkr.ecr.us-east-1.amazonaws.com/bionemo:aws
+         image: xxx.dkr.ecr.xxx.amazonaws.com/bionemo:aws
          command: ["/bin/bash"]
          args: ["-c", "download_bionemo_data esm2/testdata_esm2_pretrain:2.0"]
          volumeMounts:
@@ -256,7 +256,7 @@ spec:
               path: /dev/shm
           containers:
             - name: pytorch
-              image: 3549183XXXXX.dkr.ecr.us-east-1.amazonaws.com/bionemo:aws
+              image: xxx.dkr.ecr.xxx.amazonaws.com/bionemo:aws
               resources:
                 requests:
                   nvidia.com/gpu: 1

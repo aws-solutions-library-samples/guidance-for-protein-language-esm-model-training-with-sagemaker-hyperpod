@@ -15,7 +15,7 @@ spec:
         spec:
           restartPolicy: OnFailure
           containers:
-          - image: 354918380621.dkr.ecr.us-east-1.amazonaws.com/bionemo:aws
+          - image: ${REGISTRY}${DOCKER_IMAGE_NAME}:${TAG}
             name: train-esm2-mpi-ddp-launcher
             imagePullPolicy: Always
             env:
@@ -101,7 +101,7 @@ spec:
           #nodeSelector:
           #  node.kubernetes.io/instance-type: ""
           containers:
-          - image: 354918380621.dkr.ecr.us-east-1.amazonaws.com/bionemo:aws
+          - image: ${REGISTRY}${DOCKER_IMAGE_NAME}:${TAG}
             name: esm2-worker
             imagePullPolicy: Always
             volumeMounts:

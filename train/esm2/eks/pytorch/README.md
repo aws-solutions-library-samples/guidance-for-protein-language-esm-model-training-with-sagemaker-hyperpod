@@ -152,7 +152,7 @@ metadata:
 spec:
   containers:
   - name: preprocess-data
-    image: 354918380621.dkr.ecr.us-east-1.amazonaws.com/esm:aws
+    image: xxx.dkr.ecr.xxx.amazonaws.com/esm:aws
     imagePullPolicy: Always
 
     command: ["/bin/bash"]
@@ -346,7 +346,7 @@ spec:
               claimName: fsx-claim
           containers:
             - name: pytorch
-              image: 354918380621.dkr.ecr.us-east-1.amazonaws.com/esm:aws
+              image: xxx.dkr.ecr.xxx.amazonaws.com/esm:aws
               resources:
                 requests:
                   nvidia.com/gpu: 1
@@ -571,7 +571,7 @@ spec:
               claimName: fsx-claim
           containers:
             - name: pytorch
-              image: 354918380621.dkr.ecr.us-east-1.amazonaws.com/esm:aws
+              image: xxx.dkr.ecr.xxx.amazonaws.com/esm:aws
               resources:
                 requests:
                   nvidia.com/gpu: 1
