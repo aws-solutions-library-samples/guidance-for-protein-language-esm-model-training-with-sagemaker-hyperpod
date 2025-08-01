@@ -301,7 +301,6 @@ This sample code utilizes various third-party packages, modules, models, and dat
 - BioNemo
 - NVIDIA base images
 - Facebook ESM models
-- [List any other significant third-party components]
 
 **Important Notice:**
 - Amazon Web Services (AWS) is not associated to these third-party entities and their components.
