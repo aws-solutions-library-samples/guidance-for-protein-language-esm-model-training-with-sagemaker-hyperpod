@@ -91,7 +91,7 @@ Reading FASTA file
 If we check status of launched job and corresponding pod, they should be `Complete` and `Completed` respectively:
 
 ```bash
-kc get job,po
+kubectl get job,pods
 ```
 Output:
 
@@ -186,7 +186,7 @@ pod/preprocess-data created
 You can check the progress of data pre-processing by tailing that pod log:
 
 ```bash
-kc logs -f preprocess-data
+kubectl logs -f preprocess-data
 ```
 Output:
 ```

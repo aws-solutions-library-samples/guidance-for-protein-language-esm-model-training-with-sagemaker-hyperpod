@@ -117,7 +117,7 @@ Output:
 
 To check data download job status completion, you can run the following command:
 ```bash
-kc get job,po
+kubectl get job,pods
 ```
 Output:
 ```
@@ -319,7 +319,7 @@ spec:
                 - --result-dir=/fsx-shared/bionemo
 ```
 
-To initiate a training job, apply generated deployment descriptor to using EKS CLI:
+To initiate a training job, apply generated deployment descriptor:
 ```bash
 kubectl apply -f esm2-pretrain.yaml
 ```
@@ -518,3 +518,9 @@ drwxr-xr-x 4 root root 25600 May 16 21:40 ..
 -rw-r--r-- 1 root root  8967 May 16 21:40 model.yaml
 ```
 That and similar output confirm that model training using BioNemo tframework completed successfully..
+
+
+To clean up deployed job, please run:
+```
+kubectl delete -f esm2-bionemo-pretrain.yaml
+```
