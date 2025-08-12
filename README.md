@@ -316,3 +316,7 @@ Please review and comply with all relevant licenses and terms of service for eac
 Daniel Zilberman, Sr SA AWS Tech Solutions <br/>
 Mark Vinciguerra, Associate WW Specialist SA GenAI <br/>
 Alex Iankoulski, Principal WW Specialist SA GenAI <br/>
+
+## License
+
+This library is licensed under the MIT-0 License. See the [LICENSE](./LICENSE) file.
