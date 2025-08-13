@@ -2,7 +2,7 @@
 # Deploy HyperPod Infrastructure using CloudFormation
 🚨 We recommend following the official [Amazon SageMaker HyperPod EKS Workshop](https://catalog.us-east-1.prod.workshops.aws/workshops/2433d39e-ccfe-4c00-9d3d-9917b729258e/en-US) to deploy clusters, which contains detailed instructions and latest best-practices.
 
-As depicted below, the workshop infrastructure can be deployed using a series of nested CloudFormation stacks, each of which is responsible for deploying different aspects of a full HyperPod cluster environment.
+As depicted below, the guidance infrastructure can be deployed using a series of nested CloudFormation stacks, each of which is responsible for deploying different aspects of a full HyperPod cluster environment.
 
 <img src="../../../../assets/nested-stack-modules.png" width="50%"/>
 
