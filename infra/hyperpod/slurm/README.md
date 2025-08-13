@@ -1,8 +1,9 @@
 # AWS SageMaker HyperPod (SLURM) Distributed Training Reference Architectures
 
-
+<!--
 > [!IMPORTANT]  
 > 🚨 We recommend following the official [Amazon SageMaker HyperPod Workshop](https://catalog.workshops.aws/sagemaker-hyperpod/en-US) to deploy clusters, which contains detailed instructions and latest best-practices. The below deployment steps are no longer kept up-to-date with latest best practices
+-->
 
 ## 1. Architectures
 
