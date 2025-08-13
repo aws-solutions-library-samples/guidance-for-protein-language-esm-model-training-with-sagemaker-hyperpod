@@ -1,5 +1,5 @@
 AWSTemplateFormatVersion: '2010-09-09'
-Description:  This template deploys a VPC, with three public and private subnets spread
+Description:  (SO9604) This template deploys a VPC, with three public and private subnets spread
   across three Availability Zones. It deploys an internet gateway, with a default
   route on the public subnets. It deploys a NAT gateway in each AZ,
   and default routes for them in the private subnets. This template also deploys an EKS cluster, 
