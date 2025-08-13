@@ -3,7 +3,7 @@
 
 AWSTemplateFormatVersion: '2010-09-09'
 Description: >
-  This CloudFormation stack creates all the necessary pre-requisites for Amazon SageMaker Hyperpod,
+  (SO9604) This CloudFormation stack creates all the necessary pre-requisites for Amazon SageMaker Hyperpod,
   these include VPC and two Subnets, a security group, a FSx Lustre Filesystem, S3 Bucket and IAM Role.
   A public subnet and a private subnet are created in an Availability Zone that you provide as a parameter.
   As part of the template you'll deploy an Internet Gateway and NAT Gateway in
