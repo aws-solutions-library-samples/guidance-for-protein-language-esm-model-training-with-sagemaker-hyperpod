@@ -75,14 +75,13 @@ This section provides architecture diagrams and describes the components deploye
 
 ### Cost
 
-_You are responsible for the cost of the AWS services used while running this Guidance. As of April 2025, the cost for running this Guidance with the default settings in the `us-east01` US East (N. Virginia)) region is approximately **$<n.nn>** per month for processing ( <nnnnn> records )._
-
+_You are responsible for the cost of the AWS services used while running this Guidance.
 _We recommend creating a [Budget](https://docs.aws.amazon.com/cost-management/latest/userguide/budgets-managing-costs.html) through [AWS Cost Explorer](https://aws.amazon.com/aws-cost-management/aws-cost-explorer/) to help manage costs. Prices are subject to change. For full details, refer to the pricing webpage for each AWS service used in this Guidance._
 
 ### Sample Cost Table
 
 The following tables provide sample cost breakdown for deploying this guidance with the default parameters in the US East (N. Virginia) Region for one month.
-As of July, 2025 the costs for running this Guidance with the default settings in the US East (N. Virginia) `us-east-1` region are shown below for HyperPod SLURM and EKS based clusters respectively:
+As of September, 2025 the monthly costs for running this Guidance with the default settings in the US East (N. Virginia) `us-east-1` region are shown below for HyperPod SLURM and EKS based clusters, respectively:
 
 #### HyperPod cluster with SLURM Infrastructure
 
@@ -117,14 +116,13 @@ Please see details in this AWS Calculator [instance](https://calculator.aws/#/es
 
 ### Operating System 
 
-- Talk about the base Operating System (OS) and environment that can be used to run or deploy this Guidance, such as *Mac, Linux, or Windows*. Include all installable packages or modules required for the deployment. 
-- By default, assume Amazon Linux 2/Amazon Linux 2023 AMI as the base environment. All packages that are not available by default in AMI must be listed out.  Include the specific version number of the package or module.
+Amazon SageMaker HyperPod compute nodes support the following operating systems:
 
-**Example:**
-“These deployment instructions are optimized to best work on **<Amazon Linux 2 AMI>**.  Deployment in another OS may require additional steps.”
+- Amazon Linux 2
+- Ubuntu 20.04
+- Ubuntu 22.04
 
-- Include install commands for packages, if applicable.
-
+These Linux-based operating systems are optimized for machine learning workloads and are fully compatible with SageMaker HyperPod’s distributed training capabilities. The OS images are managed and maintained by AWS to ensure security and performance optimizations for ML training workloads. We highly recommend using optimized SageMaker Studio Code Editor environment to run HyperPod cluster provisioning commands
 
 ### Third-party tools (If applicable)
 
@@ -189,7 +187,6 @@ Default output format [None]: json
 - IAM role with specific permissions
 - Enabling a Region or service etc.
 
-
 ### Service limits
 
 Here are the key service quota limits for SageMaker HyperPod clusters:
@@ -220,6 +217,7 @@ As of June, 2025 the Guidance sample code is supported in the following AWS regi
 |-------------|-------------|
 | US East (N. Virginia) | us-east-1 |
 | US East (Ohio) | us-east-2 |
+| US West (California) | us-west-1 |
 | US West (Oregon) | us-west-2 |
 | Asia Pacific (Mumbai) | ap-south-1 |
 | Asia Pacific (Seoul) | ap-northeast-2 |
@@ -230,9 +228,22 @@ As of June, 2025 the Guidance sample code is supported in the following AWS regi
 | Europe (Ireland) | eu-west-1 |
 | Europe (London) | eu-west-2 |
 | Europe (Paris) | eu-west-3 |
-| Europe (Stockholm) | eu-north-1 |
 | South America (São Paulo) | sa-east-1 |
 
+## Quotas
+
+Service quotas, also referred to as limits, are the maximum number of service resources or operations for your AWS account.
+
+### Quotas for AWS services in this Guidance
+
+Make sure you have sufficient quota for each of the services implemented
+in this guidance. For more information, see [AWS service quotas](https://docs.aws.amazon.com/general/latest/gr/aws_service_limits.html).
+
+Specifically, make sure you have sufficient service quota for [SageMaker EC2 instances](https://docs.aws.amazon.com/general/latest/gr/sagemaker.html#limits_sagemaker)
+you are planning to deploy with the HyperPod clusters, wither SLURM or EKS orchestrator is used. 
+
+To view the service quotas for all AWS services in the documentation without switching pages, view the information in the [Service endpoints
+and quotas](https://docs.aws.amazon.com/general/latest/gr/aws-general.pdf#aws-service-information) page in the PDF instead.
 
 ## Deployment Steps
 
@@ -289,6 +300,9 @@ Provide a link to the *GitHub issues page* for users to provide feedback.
 Document all notable changes to this project.
 
 Consider formatting this section based on Keep a Changelog, and adhering to Semantic Versioning.
+|Date|Version|Changes|
+|----|-------|-------|
+|09/04/2025| 1.0 | Initial version of README with rereference to Implementation Guide|
 
 ## Notices
 
