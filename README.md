@@ -44,7 +44,7 @@ This section provides architecture diagrams and describes the components deploye
 </p>
 <br/>
 
-*Figure 1. Reference Architecture - HyperPod SLURM based Cluster*
+*Figure 1. Reference Architecture - AWS SageMaker HyperPod SLURM based Cluster*
 
  1. Account team reserves compute capacity with [On-Demand Capacity Reservation (ODCR)](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/capacity-reservation-overview.html) or [Amazon SageMaker HyperPod Flexible Training Plans](https://aws.amazon.com/about-aws/whats-new/2024/12/amazon-sagemaker-hyperpod-flexible-training-plans/)
  2. Admins/DevOps Engineers use the [AWS CloudFormation](https://aws.amazon.com/cloudformation/) stack to deploy Virtual Private Cloud (VPC) networking, [Amazon Simple Storage Service (S3)](https://aws.amazon.com/s3/) or [FSx for Lustre (FSxL)](https://aws.amazon.com/fsx/lustre/) storage and [Identity and Access Management (IAM)](https://aws.amazon.com/iam/) resources into Customer Account
@@ -62,7 +62,7 @@ This section provides architecture diagrams and describes the components deploye
 </p>
 <br/>
 
-*Figure 2. Reference Architecture - HyperPod EKS based Cluster*
+*Figure 2. Reference Architecture - AWS SageMaker HyperPod EKS based Cluster*
 
  1. Account team reserves capacity with ODCRs or [Flexible Training Plans]((https://aws.amazon.com/about-aws/whats-new/2024/12/amazon-sagemaker-hyperpod-flexible-training-plans/)).
  2. Admin/DevOps Engineers can use eksctl ClI to provision an [Amazon EKS](https://aws.amazon.com/eks/) cluster
