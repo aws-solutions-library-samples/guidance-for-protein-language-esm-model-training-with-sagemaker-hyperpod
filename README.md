@@ -1,6 +1,6 @@
 # Guidance for Training Transformer Protein Language Models (ESM-2) with Amazon SageMaker HyperPod on AWS
 
-This guidance aims to instruct and guide users how to pretrain popular computational drug discovery models such as Evolutionary Scale Models (ESM) 2nd generation using the [DDP and FSDP](https://pub.aimind.so/distributed-data-parallel-ddp-vs-fully-sharded-data-parallel-fsdp-for-distributed-training-8de14a34d95d) frameworks on Amazon [Sagemaker Hyperpod](https://aws.amazon.com/sagemaker-ai/hyperpod/) clusters. This guidance instructs users on how to create Sagemaker Hyperpod clusters using both [Slurm](https://slurm.schedmd.com/documentation.html) and [Kubernetes](https://kubernetes.io/) based orchestrations. In addition, this guidance will showcase how to train ESM-2 models on the HyperPod clusters based on both orchestrators.
+This guidance aims to instruct users on how to provision SageMaker HyperPod clusters using both [Slurm](https://slurm.schedmd.com/documentation.html) and [Kubernetes](https://kubernetes.io/) based orchestrations. In addition, this guidance provides code examples for pre-training popular computational protein folding models such as [Evolutionary Scale Models (ESM)](https://ramith.fyi/esm-2-evolutionary-scale-prediction-of-atomic-level-protein-structure-with-a-language-model/) 2nd generation using the [DDP and FSDP](https://pub.aimind.so/distributed-data-parallel-ddp-vs-fully-sharded-data-parallel-fsdp-for-distributed-training-8de14a34d95d) and [NVIDIA BioNemo](https://docs.nvidia.com/bionemo-framework/latest/) frameworks on Amazon [SageMaker Hyperpod](https://aws.amazon.com/sagemaker-ai/hyperpod/) clusters.
 
 ## Table of Contents
 
@@ -33,7 +33,7 @@ With the recent proliferation of new models and tools in this field, researchers
 The BioNeMo framework facilitates centralized model training, optimization, fine-tuning, and inferencing for protein and molecular design. Researchers can build and train foundation models from scratch at scale, or use pre-trained model checkpoints provided with the BioNeMo Framework for fine-tuning for downstream tasks. Currently, BioNeMo supports biomolecular AI architectures that can be scaled to billions of parameters, such as BERT, Striped Hyena, along with models such as ESM-2, Evo-2, and Geneformer.
 
   
-### Architecture overview
+### Architecture Overview
 This section provides architecture diagrams and describes the components deployed with this Guidance.
 
  **Architecture and steps for provisioning SageMaker HyperPod SLURM Cluster**
@@ -64,11 +64,11 @@ This section provides architecture diagrams and describes the components deploye
 *Figure 2. Reference Architecture - AWS SageMaker HyperPod EKS based Cluster*
 
  1. Account team reserves capacity with ODCRs or [Flexible Training Plans]((https://aws.amazon.com/about-aws/whats-new/2024/12/amazon-sagemaker-hyperpod-flexible-training-plans/)).
- 2. Admin/DevOps Engineers can use eksctl ClI to provision an [Amazon EKS](https://aws.amazon.com/eks/) cluster
- 3. Admin/DevOps Engineers use the Sagemaker HyperPod [VPC]((https://aws.amazon.com/vpc/)) stack to deploy Hyperpod managed node group on the EKS cluster
+ 2. Admin/DevOps Engineers can use eksctl CLI to provision an [Amazon EKS](https://aws.amazon.com/eks/) cluster
+ 3. Admin/DevOps Engineers use the Sagemaker HyperPod [VPC]((https://aws.amazon.com/vpc/)) stack to deploy HyperPod managed node group on the EKS cluster
  4. Admin/DevOps Engineers verify access to EKS cluster and SSM access to HyperPod nodes.
  5. Admin/DevOps Engineers can install [FSx for Lustre](https://aws.amazon.com/fsx/lustre/) CSI driver and mount file system on the EKS cluster
- 6. Admin/DevOps Engineers install Amazon EFA Kubernetes device plugin
+ 6. Admin/DevOps Engineers install Amazon EFA Kubernetes device plugins
  7. Admin/DevOps Engineers configures IAM to use [Amazon Managed Prometheus]((https://aws.amazon.com/prometheus/)) to configure the observability stack and collect metrics and [Amazon Managed Grafana]((https://aws.amazon.com/grafana/)) to display those metrics.
  8. Admin/DevOps Engineers can configure [Container Insights](https://docs.aws.amazon.com/AmazonCloudWatch/latest/monitoring/ContainerInsights.html) to push metrics in [Amazon Cloudwatch](https://aws.amazon.com/cloudwatch/)
 
@@ -121,18 +121,18 @@ Amazon SageMaker HyperPod compute nodes support the following operating systems:
 - Ubuntu 20.04
 - Ubuntu 22.04
 
-These Linux-based operating systems are optimized for machine learning workloads and are fully compatible with SageMaker HyperPod’s distributed training capabilities. The OS images are managed and maintained by AWS to ensure security and performance optimizations for ML training workloads. We highly recommend using optimized SageMaker Studio Code Editor environment to run HyperPod cluster provisioning commands
+These Linux-based operating systems are optimized for machine learning workloads and are fully compatible with SageMaker HyperPod’s distributed training capabilities. The OS images are managed and maintained by AWS to ensure security and performance optimizations for ML training workloads. We highly recommend using optimized SageMaker Studio Code Editor environment to run HyperPod cluster provisioning commands.
 
-### Third-party tools (If applicable)
+### Third-party tools
 
-#### Install the AWS CLI (both kinds of HyperPod clusters)
+#### Install the AWS CLI (for both kinds of HyperPod clusters)
 Depending on the OS that you are using, run a command similar to:
 ```bash
 curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
 unzip awscliv2.zip
 sudo ./aws/install --update
 ```
-#### Install kubectl (for EKS based clusters)
+#### Install kubectl (for EKS orchstrator clusters)
 The following command installs K8s API CLI client:
 ```bash
 curl -O https://s3.us-west-2.amazonaws.com/amazon-eks/1.30.4/2024-09-11/bin/linux/amd64/kubectl
@@ -141,7 +141,7 @@ mkdir -p $HOME/bin && cp ./kubectl $HOME/bin/kubectl && export PATH=$HOME/bin:$P
 echo 'export PATH=$HOME/bin:$PATH' >> ~/.bashrc
 ```
 #### Install eksctl CLI utility
-The following command installs `eksctl` AWS command line utility to manage EKS clusters
+The following command installs `eksctl` AWS command line utility to manage EKS based clusters
 
 ```bash
 # for ARM systems, set ARCH to: `arm64`, `armv6` or `armv7`
@@ -154,7 +154,7 @@ tar -xzf eksctl_$PLATFORM.tar.gz -C /tmp && rm eksctl_$PLATFORM.tar.gz
 sudo mv /tmp/eksctl /usr/local/bin
 ``` 
 #### Install Helm Package manager
-Helm  is a package manager for Kubernetes that will be used to install various dependancies using Charts , which bundle together all the resources needed to deploy an application to a Kubernetes cluster.
+Helm is a package manager for Kubernetes that will be used to install various dependencies using Charts , which bundle together all the resources needed to deploy an application to a Kubernetes cluster.
 
 ```bash
 curl -fsSL -o get_helm.sh https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3
@@ -206,17 +206,33 @@ Here are the key service quota limits for SageMaker HyperPod clusters:
 - Training-plan-total_count: Limits the number of training plans per Region
 - Reserved-capacity-ml: Limits the number of instances in reserved capacity across training plans per Region
 
-If you need to increase these limits, you can submit service quota increase requests through the AWS Service Quotas console. These requests are typically reviewed and processed within 1-2 business days.
+If you need to increase these limits, you can submit service quota increase requests through the AWS Service Quotas [console](https://us-east-1.console.aws.amazon.com/servicequotas/home?region=us-east-1). These requests are typically reviewed and processed within 1-2 business days.
 
 ### Supported Regions
 
-As of June, 2025 the Guidance sample code is supported in the following AWS regions: 
+As of September, 2025 the Guidance sample code is supported in the following AWS regions, based on Sagemaker HyperPod and specific EC2 instance availability: 
+<!--
+Asia Pacific (Tokyo)
+Europe (Ireland)
+US East (N. Virginia)
+US East (Ohio)
+US West (Oregon)
+Europe (Frankfurt)
+South America (São Paulo)
+Asia Pacific (Seoul)
+Europe (London)
+Asia Pacific (Singapore)
+Asia Pacific (Sydney)
+Canada (Central)
+Asia Pacific (Mumbai)
+Europe (Paris)
+Europe (Stockholm)
+-->
 
 | Region Name | Region Code |
 |-------------|-------------|
 | US East (N. Virginia) | us-east-1 |
 | US East (Ohio) | us-east-2 |
-| US West (California) | us-west-1 |
 | US West (Oregon) | us-west-2 |
 | Asia Pacific (Mumbai) | ap-south-1 |
 | Asia Pacific (Seoul) | ap-northeast-2 |
@@ -228,6 +244,8 @@ As of June, 2025 the Guidance sample code is supported in the following AWS regi
 | Europe (London) | eu-west-2 |
 | Europe (Paris) | eu-west-3 |
 | South America (São Paulo) | sa-east-1 |
+
+Please consult the current [Sagemaker HyperPod documentation](https://docs.aws.amazon.com/sagemaker/latest/dg/sagemaker-hyperpod.html) for most up-to-date supported AWS regions.
 
 ## Quotas
 
