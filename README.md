@@ -16,7 +16,6 @@ This guidance aims to instruct and guide users how to pretrain popular computati
 6. [Running the Guidance](#running-the-guidance)
 7. [Next Steps](#next-steps)
 8. [Cleanup](#cleanup)
-<!-- 9. [FAQ, known issues, additional considerations, and limitations](#faq-known-issues-additional-considerations-and-limitations-optional) -->
 9. [Revisions](#revisions)
 10. [Notices](#notices)
 11. [Authors](#authors)
@@ -155,7 +154,7 @@ tar -xzf eksctl_$PLATFORM.tar.gz -C /tmp && rm eksctl_$PLATFORM.tar.gz
 sudo mv /tmp/eksctl /usr/local/bin
 ``` 
 #### Install Helm Package manager
-Helm  is a package manager for Kubernetes that will be used to istall various dependancies using Charts , which bundle together all the resources needed to deploy an application to a Kubernetes cluster.
+Helm  is a package manager for Kubernetes that will be used to install various dependancies using Charts , which bundle together all the resources needed to deploy an application to a Kubernetes cluster.
 
 ```bash
 curl -fsSL -o get_helm.sh https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3
@@ -240,7 +239,7 @@ Make sure you have sufficient quota for each of the services implemented
 in this guidance. For more information, see [AWS service quotas](https://docs.aws.amazon.com/general/latest/gr/aws_service_limits.html).
 
 Specifically, make sure you have sufficient service quota for [SageMaker EC2 instances](https://docs.aws.amazon.com/general/latest/gr/sagemaker.html#limits_sagemaker)
-you are planning to deploy with the HyperPod clusters, wither SLURM or EKS orchestrator is used. 
+you are planning to deploy with the HyperPod clusters, whether SLURM or EKS orchestrator is used. 
 
 To view the service quotas for all AWS services in the documentation without switching pages, view the information in the [Service endpoints
 and quotas](https://docs.aws.amazon.com/general/latest/gr/aws-general.pdf#aws-service-information) page in the PDF instead.
@@ -263,37 +262,17 @@ Please see details about training of Protein Language (ESM-2) models on both typ
 ## Next Steps
 
 **TODO: update to Live IG link once available**<br/>
-It is highly recommended to patch your HyperPod clusters software on a regular basis to keep your clusters secured and up-to-date.
+>NOTE: It is highly recommended to patch your HyperPod clusters software on a regular basis to keep your clusters secured and up-to-date.
+
 Please see details about patching software on HyperPod clusters in this section of the [Implementation Guide](https://implementationguides.kits.eventoutfitters.aws.dev/pl-esm-0422/compute/protein-language-esm-model-training-on-amazon-sagemaker.html#next-steps)
+
+>NOTE: Also, as this is a very rapidly evolving area, please keep checking this repository for updates to both HyperPod Cluster [infrastructure](https://github.com/aws-solutions-library-samples/guidance-for-protein-language-esm-model-training-with-sagemaker-hyperpod/tree/main/infra) and [protein folding model training](https://github.com/aws-solutions-library-samples/guidance-for-protein-language-esm-model-training-with-sagemaker-hyperpod/tree/main/train/esm2) code.
 
 ## Cleanup
 
 **TODO: update to Live IG link once available**<br/>
 
 Please see details about uninstallation of HyperPod clusters and related components in this section of the [Implementation Guide](https://implementationguides.kits.eventoutfitters.aws.dev/pl-esm-0422/compute/protein-language-esm-model-training-on-amazon-sagemaker.html#cleanup)
-
-<!--
-## FAQ, known issues, additional considerations, and limitations (optional)
-
-**Known issues (optional)**
-
-<If there are common known issues, or errors that can occur during the Guidance deployment, describe the issue and resolution steps here>
-
-**Additional considerations (if applicable)**
-
-<Include considerations the customer must know while using the Guidance, such as anti-patterns, or billing considerations.>
-
-**Examples:**
-
-- “This Guidance creates a public AWS bucket required for the use-case.”
-- “This Guidance created an Amazon SageMaker notebook that is billed per hour irrespective of usage.”
-- “This Guidance creates unauthenticated public API endpoints.”
-
-
-Provide a link to the *GitHub issues page* for users to provide feedback.
-
-**Example:** *“For any feedback, questions, or suggestions, please use the issues tab under this repo.”*
--->
 
 ## Revisions
 
@@ -302,7 +281,8 @@ Document all notable changes to this project.
 Consider formatting this section based on Keep a Changelog, and adhering to Semantic Versioning.
 |Date|Version|Changes|
 |----|-------|-------|
-|09/04/2025| 1.0 | Initial version of README with rereference to Implementation Guide|
+|09/04/2025| 1.0 | Initial version of README with references to Implementation Guide|
+|09/15/2025| 1.1 | Validated versdion of README with references to Implementation Guide|
 
 ## Notices
 
@@ -322,8 +302,7 @@ This sample code utilizes various third-party packages, modules, models, and dat
 - Users should regularly review and update these dependencies to ensure security and compatibility.
 - Users are responsible for compliance with all applicable licenses and terms of use for these third-party components.
 
-Please review and comply with all relevant licenses and terms of service for each third-party component before use in your applications.
-
+Please review and comply with all relevant licenses and terms of service for each third-party component before using in your applications.
 
 ## Authors
 
