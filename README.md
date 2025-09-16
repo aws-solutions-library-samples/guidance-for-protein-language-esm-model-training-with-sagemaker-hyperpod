@@ -276,7 +276,6 @@ Please see details about training of Protein Language (ESM-2) models on both typ
 
 ## Next Steps
 
-**TODO: update to Live IG link once available**<br/>
 >NOTE: It is highly recommended to patch your HyperPod clusters software on a regular basis to keep your clusters secured and up-to-date.
 
 Please see details about patching software on HyperPod clusters in this section of the [Implementation Guide](https://aws-solutions-library-samples.github.io/compute/training-protein-language-models-esm-2-with-amazon-sagemaker-ai-hyperpod.html#next-steps)
@@ -285,9 +284,7 @@ Please see details about patching software on HyperPod clusters in this section 
 
 ## Cleanup
 
-**TODO: update to Live IG link once available**<br/>
-
-Please see details about uninstallation of HyperPod clusters and related components in this section of the [Implementation Guide](https://implementationguides.kits.eventoutfitters.aws.dev/pl-esm-0422/compute/protein-language-esm-model-training-on-amazon-sagemaker.html#cleanup)
+Please see details about uninstallation of HyperPod clusters and related components in this section of the [Implementation Guide](https://aws-solutions-library-samples.github.io/compute/training-protein-language-models-esm-2-with-amazon-sagemaker-ai-hyperpod.html#uninstall-the-guidance)
 
 ## Revisions
 
