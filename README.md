@@ -264,7 +264,7 @@ and quotas](https://docs.aws.amazon.com/general/latest/gr/aws-general.pdf#aws-se
 
 ## Deployment Steps
 
-Please see details of deployment of both types of HyperPod clusters in this section of the [Implementation Guide](https://aws-solutions-library-samples.github.io/compute/training-protein-language-models-esm-2-with-amazon-sagemaker-ai-hyperpod.html#deploy-the-guidance)
+Please see details of deployment of both types of SageMaker HyperPod clusters in this section of the [Implementation Guide](https://aws-solutions-library-samples.github.io/compute/training-protein-language-models-esm-2-with-amazon-sagemaker-ai-hyperpod.html#deploy-the-guidance)
 
 ## Deployment Validation
 
@@ -280,11 +280,11 @@ Please see details about training of Protein Language (ESM-2) models on both typ
 
 Please see details about patching software on HyperPod clusters in this section of the [Implementation Guide](https://aws-solutions-library-samples.github.io/compute/training-protein-language-models-esm-2-with-amazon-sagemaker-ai-hyperpod.html#next-steps)
 
->NOTE: Also, as this is a very rapidly evolving area, please keep checking this repository for updates to both HyperPod Cluster [infrastructure](https://github.com/aws-solutions-library-samples/guidance-for-protein-language-esm-model-training-with-sagemaker-hyperpod/tree/main/infra) and [protein folding model training](https://github.com/aws-solutions-library-samples/guidance-for-protein-language-esm-model-training-with-sagemaker-hyperpod/tree/main/train/esm2) code.
+>NOTE: Also, as this is a very rapidly evolving technology area, please keep checking this repository for updates to both HyperPod Cluster [infrastructure](https://github.com/aws-solutions-library-samples/guidance-for-protein-language-esm-model-training-with-sagemaker-hyperpod/tree/main/infra) and [protein folding model training](https://github.com/aws-solutions-library-samples/guidance-for-protein-language-esm-model-training-with-sagemaker-hyperpod/tree/main/train/esm2) code.
 
 ## Cleanup
 
-Please see details about uninstallation of HyperPod clusters and related components in this section of the [Implementation Guide](https://aws-solutions-library-samples.github.io/compute/training-protein-language-models-esm-2-with-amazon-sagemaker-ai-hyperpod.html#uninstall-the-guidance)
+Please see details about uninstallation of SageMaker HyperPod clusters and related components in this section of the [Implementation Guide](https://aws-solutions-library-samples.github.io/compute/training-protein-language-models-esm-2-with-amazon-sagemaker-ai-hyperpod.html#uninstall-the-guidance)
 
 ## Revisions
 
@@ -294,7 +294,8 @@ Consider formatting this section based on Keep a Changelog, and adhering to Sema
 |Date|Version|Changes|
 |----|-------|-------|
 |09/04/2025| 1.0 | Initial version of README with references to Implementation Guide|
-|09/15/2025| 1.1 | Validated versdion of README with references to Implementation Guide|
+|09/15/2025| 1.1 | Validated version of README|
+|09/16/2025| 1.2 | Validated version of README with references to Implementation Guide|
 
 ## Notices
 
