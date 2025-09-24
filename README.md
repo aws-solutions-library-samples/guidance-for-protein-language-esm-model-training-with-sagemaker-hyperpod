@@ -45,7 +45,7 @@ This section provides architecture diagrams and describes the components deploye
 
 *Figure 1. Reference Architecture - AWS SageMaker HyperPod SLURM based Cluster*
 
- 1. Account team reserves compute capacity with [On-Demand Capacity Reservation (ODCR)](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/capacity-reservation-overview.html) or [Amazon SageMaker HyperPod Flexible Training Plans](https://aws.amazon.com/about-aws/whats-new/2024/12/amazon-sagemaker-hyperpod-flexible-training-plans/)
+ 1. If required for EC2 instances to be provisioned as HyperPod cluster nodes, account team may reserve compute capacity with [On-Demand Capacity Reservation (ODCR)](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/capacity-reservation-overview.html) or [Amazon SageMaker HyperPod Flexible Training Plans](https://aws.amazon.com/about-aws/whats-new/2024/12/amazon-sagemaker-hyperpod-flexible-training-plans/)
  2. Admins/DevOps Engineers use the [AWS CloudFormation](https://aws.amazon.com/cloudformation/) stack to deploy Virtual Private Cloud (VPC) networking, [Amazon Simple Storage Service (S3)](https://aws.amazon.com/s3/) or [FSx for Lustre (FSxL)](https://aws.amazon.com/fsx/lustre/) storage and [Identity and Access Management (IAM)](https://aws.amazon.com/iam/) resources into Customer Account
  3. Admins/DevOps Engineers push [Lifecycle scripts](https://catalog.workshops.aws/sagemaker-hyperpod/en-US/01-cluster/option-b-manual-cluster-setup/02-lifecycle-scripts) to S3 bucket created in the previous step
  4. Admins/DevOps Engineers use the [AWS CLI](https://aws.amazon.com/cli/) to create the [SageMaker HyperPod](https://aws.amazon.com/sagemaker-ai/hyperpod/) cluster,including Controller Node, Compute nodes etc.
@@ -63,8 +63,8 @@ This section provides architecture diagrams and describes the components deploye
 
 *Figure 2. Reference Architecture - AWS SageMaker HyperPod EKS based Cluster*
 
- 1. Account team reserves capacity with ODCRs or [Flexible Training Plans]((https://aws.amazon.com/about-aws/whats-new/2024/12/amazon-sagemaker-hyperpod-flexible-training-plans/)).
- 2. Admin/DevOps Engineers can use eksctl CLI to provision an [Amazon EKS](https://aws.amazon.com/eks/) cluster
+ 1. If required for EC2 instances to be provisioned as HyperPod cluster nodes, account team may reserve capacity with ODCRs or [Flexible Training Plans]((https://aws.amazon.com/about-aws/whats-new/2024/12/amazon-sagemaker-hyperpod-flexible-training-plans/)).
+ 2. Admin/DevOps Engineers can use `eksctl` CLI to provision an [Amazon EKS](https://aws.amazon.com/eks/) cluster
  3. Admin/DevOps Engineers use the Sagemaker HyperPod [VPC]((https://aws.amazon.com/vpc/)) stack to deploy HyperPod managed node group on the EKS cluster
  4. Admin/DevOps Engineers verify access to EKS cluster and SSM access to HyperPod nodes.
  5. Admin/DevOps Engineers can install [FSx for Lustre](https://aws.amazon.com/fsx/lustre/) CSI driver and mount file system on the EKS cluster
@@ -74,7 +74,7 @@ This section provides architecture diagrams and describes the components deploye
 
 ### Cost
 
-_You are responsible for the cost of the AWS services used while running this Guidance.
+You are responsible for the cost of the AWS services used while running this Guidance.
 _We recommend creating a [Budget](https://docs.aws.amazon.com/cost-management/latest/userguide/budgets-managing-costs.html) through [AWS Cost Explorer](https://aws.amazon.com/aws-cost-management/aws-cost-explorer/) to help manage costs. Prices are subject to change. For full details, refer to the pricing webpage for each AWS service used in this Guidance._
 
 ### Sample Cost Table
@@ -94,7 +94,7 @@ As of September, 2025 the monthly costs for running this Guidance with the defau
 |   Network   | VPC, Subnets, NAT Gateway, VPC Endpoints | 513.20|
 |   **Total**   |      |  **$8064.21**    |
 
-Please see details in this AWS Calculator [instance](https://calculator.aws/#/estimate?id=065d8ccadb6498343c595d93f7bc1918929e6278)
+Please see cost breakdown details in this AWS Calculator [instance](https://calculator.aws/#/estimate?id=065d8ccadb6498343c595d93f7bc1918929e6278)
 
 #### HyperPod cluster with EKS Infrastructure
 
@@ -109,7 +109,7 @@ Please see details in this AWS Calculator [instance](https://calculator.aws/#/es
 |   Network   | VPC, Subnets, NAT Gateway, VPC Endpoints | 507.80|
 |   **Total**   |      |  **$5999.73**    |
 
-Please see details in this AWS Calculator [instance](https://calculator.aws/#/estimate?id=5fad4fb9b97eeac68d06663cbde18cb08a9880cd)
+Please see cost breakdown details in this AWS Calculator [instance](https://calculator.aws/#/estimate?id=5fad4fb9b97eeac68d06663cbde18cb08a9880cd)
 
 ## Prerequisites 
 
@@ -210,7 +210,7 @@ If you need to increase these limits, you can submit service quota increase requ
 
 ### Supported Regions
 
-As of September, 2025 the Guidance sample code is supported in the following AWS regions, based on Sagemaker HyperPod and specific EC2 instance availability: 
+As of September, 2025 the Guidance sample code is supported in the following AWS regions, based on SageMaker HyperPod and specific EC2 instance availability: 
 <!--
 Asia Pacific (Tokyo)
 Europe (Ireland)
@@ -264,21 +264,21 @@ and quotas](https://docs.aws.amazon.com/general/latest/gr/aws-general.pdf#aws-se
 
 ## Deployment Steps
 
-Please see details of deployment of both types of SageMaker HyperPod clusters in this section of the [Implementation Guide](https://aws-solutions-library-samples.github.io/compute/training-protein-language-models-esm-2-with-amazon-sagemaker-ai-hyperpod.html#deploy-the-guidance)
+Please see details of deployment for both types of SageMaker HyperPod clusters in this section of the [Implementation Guide](https://aws-solutions-library-samples.github.io/compute/training-protein-language-models-esm-2-with-amazon-sagemaker-ai-hyperpod.html#deploy-the-guidance)
 
 ## Deployment Validation
 
-Please see details about validation of deployment and access to provisioned HyperPod clusters in this section of the [Implementation Guide](https://aws-solutions-library-samples.github.io/compute/training-protein-language-models-esm-2-with-amazon-sagemaker-ai-hyperpod.html#deployment-validation---hyperpod-slurm-cluster)
+Please see details of validation of deployment and access to provisioned HyperPod clusters in this section of the [Implementation Guide](https://aws-solutions-library-samples.github.io/compute/training-protein-language-models-esm-2-with-amazon-sagemaker-ai-hyperpod.html#deployment-validation---hyperpod-slurm-cluster)
 
 ## Running the Guidance
 
-Please see details about training of Protein Language (ESM-2) models on both types of HyperPod clusters in the [Implementation Guide](https://aws-solutions-library-samples.github.io/compute/training-protein-language-models-esm-2-with-amazon-sagemaker-ai-hyperpod.html#running-the-guidance)
+Please see details of training of Protein Language (ESM-2) models on both types of HyperPod clusters in the [Implementation Guide](https://aws-solutions-library-samples.github.io/compute/training-protein-language-models-esm-2-with-amazon-sagemaker-ai-hyperpod.html#running-the-guidance)
 
 ## Next Steps
 
 >NOTE: It is highly recommended to patch your HyperPod clusters software on a regular basis to keep your clusters secured and up-to-date.
 
-Please see details about patching software on HyperPod clusters in this section of the [Implementation Guide](https://aws-solutions-library-samples.github.io/compute/training-protein-language-models-esm-2-with-amazon-sagemaker-ai-hyperpod.html#next-steps)
+Please see details of patching software on HyperPod clusters in this section of the [Implementation Guide](https://aws-solutions-library-samples.github.io/compute/training-protein-language-models-esm-2-with-amazon-sagemaker-ai-hyperpod.html#next-steps)
 
 >NOTE: Also, as this is a very rapidly evolving technology area, please keep checking this repository for updates to both HyperPod Cluster [infrastructure](https://github.com/aws-solutions-library-samples/guidance-for-protein-language-esm-model-training-with-sagemaker-hyperpod/tree/main/infra) and [protein folding model training](https://github.com/aws-solutions-library-samples/guidance-for-protein-language-esm-model-training-with-sagemaker-hyperpod/tree/main/train/esm2) code.
 
