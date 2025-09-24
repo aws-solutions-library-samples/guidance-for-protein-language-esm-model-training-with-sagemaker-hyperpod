@@ -45,7 +45,7 @@ This section provides architecture diagrams and describes the components deploye
 
 *Figure 1. Reference Architecture - AWS SageMaker HyperPod SLURM based Cluster*
 
- 1. If required for EC2 instances to be provisioned as HyperPod cluster nodes, account team may reserve compute capacity with [On-Demand Capacity Reservation (ODCR)](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/capacity-reservation-overview.html) or [Amazon SageMaker HyperPod Flexible Training Plans](https://aws.amazon.com/about-aws/whats-new/2024/12/amazon-sagemaker-hyperpod-flexible-training-plans/)
+ 1. If required for EC2 instance types to be provisioned as HyperPod cluster nodes, account team may reserve compute capacity with [On-Demand Capacity Reservation (ODCR)](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/capacity-reservation-overview.html) or [Amazon SageMaker HyperPod Flexible Training Plans](https://aws.amazon.com/about-aws/whats-new/2024/12/amazon-sagemaker-hyperpod-flexible-training-plans/)
  2. Admins/DevOps Engineers use the [AWS CloudFormation](https://aws.amazon.com/cloudformation/) stack to deploy Virtual Private Cloud (VPC) networking, [Amazon Simple Storage Service (S3)](https://aws.amazon.com/s3/) or [FSx for Lustre (FSxL)](https://aws.amazon.com/fsx/lustre/) storage and [Identity and Access Management (IAM)](https://aws.amazon.com/iam/) resources into Customer Account
  3. Admins/DevOps Engineers push [Lifecycle scripts](https://catalog.workshops.aws/sagemaker-hyperpod/en-US/01-cluster/option-b-manual-cluster-setup/02-lifecycle-scripts) to S3 bucket created in the previous step
  4. Admins/DevOps Engineers use the [AWS CLI](https://aws.amazon.com/cli/) to create the [SageMaker HyperPod](https://aws.amazon.com/sagemaker-ai/hyperpod/) cluster,including Controller Node, Compute nodes etc.
@@ -63,7 +63,7 @@ This section provides architecture diagrams and describes the components deploye
 
 *Figure 2. Reference Architecture - AWS SageMaker HyperPod EKS based Cluster*
 
- 1. If required for EC2 instances to be provisioned as HyperPod cluster nodes, account team may reserve capacity with ODCRs or [Flexible Training Plans]((https://aws.amazon.com/about-aws/whats-new/2024/12/amazon-sagemaker-hyperpod-flexible-training-plans/)).
+ 1. If required for EC2 instance types to be provisioned as HyperPod cluster nodes, account team may reserve capacity with [On-Demand Capacity Reservation (ODCR)](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/capacity-reservation-overview.html) or [Amazon SageMaker HyperPod Flexible Training Plans](https://aws.amazon.com/about-aws/whats-new/2024/12/amazon-sagemaker-hyperpod-flexible-training-plans/).
  2. Admin/DevOps Engineers can use `eksctl` CLI to provision an [Amazon EKS](https://aws.amazon.com/eks/) cluster
  3. Admin/DevOps Engineers use the Sagemaker HyperPod [VPC]((https://aws.amazon.com/vpc/)) stack to deploy HyperPod managed node group on the EKS cluster
  4. Admin/DevOps Engineers verify access to EKS cluster and SSM access to HyperPod nodes.
